@@ -58,7 +58,7 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 #work{background-image:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0))}
 </style></head><body><main>
 <h1>Ethan life tycoon</h1>
-<p class="sub">Ethan, mecánico. Su puta vida es una mierda.</p>
+<p class="sub">Ethan, mecánico. Cada hora extra son euros.</p>
 <div class="stats">
 <div class="st"><b id="m">€0</b><span>Dinero</span></div>
 <div class="st"><b id="per">€1</b><span>Por hora extra</span></div>
@@ -100,9 +100,8 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 <div id="lg" class="sub" style="margin:0"></div><div id="res"></div></div></div>
 <div id="gate" hidden><div id="gatec"><h1 style="font-size:28px;margin:0 0 4px">Ethan life tycoon</h1><p class="sub" style="margin:0 0 10px">Entra para jugar. Tu partida se guarda en tu cuenta.</p><div id="auth"></div></div></div>
 <div id="cv" hidden><div id="cvc"><button id="cvx" aria-label="Cerrar">&#10005;</button>
-<svg viewBox="0 0 120 90" width="130" aria-hidden="true"><rect x="10" y="38" width="100" height="46" rx="6" fill="#8b5a2b"/><path d="M10 40a50 32 0 0 1 100 0z" fill="#a8702f"/><rect x="10" y="38" width="100" height="8" fill="#5e3a17"/><rect x="52" y="34" width="16" height="22" rx="3" fill="#c9d856" stroke="#1f2f25" stroke-width="2"/></svg>
 <h3 id="cvt" style="margin:0;font-size:22px"></h3><div class="sub" id="cvp" style="margin:4px 0 0"></div>
-<button id="cvo">Abrir</button></div></div>
+<button id="cvo">Vale</button></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 var SB_URL='https://cpmkytdzdnpwbasolawe.supabase.co',SB_KEY='sb_publishable_-0W9FnZULlBbz8kQRfL5bQ_uBA5bkY8';
@@ -168,11 +167,8 @@ function roll(e,cb){
  w.style.transform='rotate('+(1800-a)+'deg)';
  setTimeout(function(){$('res').textContent=ok?(e.yes||'¡Pasa!'):n;
   setTimeout(function(){$('ov').hidden=true;cb(ok)},1200)},3000)}
-var chestV=0;
-function chest(){chestV=1+Math.floor(Math.random()*50);busy=true;$('cvt').textContent='¡Cofre común!';$('cvp').textContent='Contiene entre €1 y €50';$('cvo').textContent='Abrir';$('cv').hidden=false}
-function closeChest(){$('cv').hidden=true;busy=false;chestV=0}
-$('cvo').onclick=function(){if(chestV){S.m+=chestV;S.ch=(S.ch||0)+1;$('cvt').textContent='+'+eur(chestV);$('cvp').textContent='¡Cofre abierto!';chestV=0;$('cvo').textContent='Genial';save()}else closeChest()};
-$('cvx').onclick=closeChest;
+function closeMsg(){$('cv').hidden=true;busy=false}
+$('cvo').onclick=closeMsg;$('cvx').onclick=closeMsg;
 var shop=$('shop'),rows=[];
 ITEMS.forEach(function(it,i){
  var d=document.createElement('div');d.className='it';
@@ -198,7 +194,7 @@ EV.forEach(function(e){
  var d=document.createElement('div');d.className='it';
  d.innerHTML='<div><strong></strong><p></p></div><span style="font-weight:800"></span>';
  arows.push({d:d,s:d.querySelector('strong'),p:d.querySelector('p'),c:d.querySelector('span')});ach.appendChild(d)});
-function hit(e){var first=!S.lg[e.id];S.lg[e.id]=(S.lg[e.id]||0)+1;S.td[e.id]=1;if(e.msg){chestV=0;$('cvt').textContent=e.msg;$('cvp').textContent='';$('cvo').textContent='Vale';$('cv').hidden=false}
+function hit(e){var first=!S.lg[e.id];S.lg[e.id]=(S.lg[e.id]||0)+1;S.td[e.id]=1;if(e.msg){$('cvt').textContent=e.msg;$('cvp').textContent='';$('cvo').textContent='Vale';$('cv').hidden=false}
  $('log').textContent=(first?'Nuevo logro: ':'')+e.n;save()}
 function runList(list,i,wd){
  if(i>=list.length){busy=false;return}
@@ -220,12 +216,12 @@ function renderExtra(){
  GAR.forEach(function(g,i){var o=S.ga[g.id];grows[i].textContent=o?'Comprado':eur(g.c);grows[i].disabled=o||S.m<g.c;
   dots[i].setAttribute('fill',o?'var(--yel)':'var(--card)');dots[i].setAttribute('stroke',o?'var(--ink)':'var(--mute)')});
  var got=0;EV.forEach(function(e,i){var a=arows[i],n=S.lg[e.id]||0;if(n)got++;
-  a.s.textContent=e.n;a.p.textContent=e.d+(e.pd?'':' · '+pct(e.p))+(e.par?' (solo si hubo: '+EV.filter(function(x){return x.id===e.par})[0].n+')':'');a.c.textContent=n?'x'+n:'';a.d.style.opacity=n?1:.55});
+  a.s.textContent=n?e.n:'?';a.p.textContent=!n?'Aún no ha pasado':e.d+(e.pd?'':' · '+pct(e.p))+(e.par?' (solo si hubo: '+EV.filter(function(x){return x.id===e.par})[0].n+')':'');a.c.textContent=n?'x'+n:'';a.d.style.opacity=n?1:.55});
  var tn=EV.filter(function(e){return S.td[e.id]}).map(function(e){return e.n});
  $('clk').textContent=clock()+(tn.length?' · Esta semana: '+tn.join(', '):'')+' · Sucesos '+got+'/'+EV.length+(cloudErr?' · ⚠ '+cloudErr:'');renderMed();if(!$('t4').hidden)renderProf()}
 var MED=[
 {id:'garaje',n:'¿Te has comprado un garaje?',d:'Encuentra sitio para aparcar 10 veces',k:'garaje',v:function(){return S.lg.aparcar||0},m:10},
-{id:'cenas',n:'Rey de las cenas',d:'Cenar fuera 50 veces',k:'food',v:function(){return S.lg.cenita||0},m:50},
+{id:'cenas',n:'Rey de las cenas',d:'Que pase Cenita 50 veces',k:'food',v:function(){return S.lg.cenita||0},m:50},
 {id:'sadaba',n:'Sádaba tenía razón',d:'Consigue todos los objetos de la tienda',k:'star',hid:1,v:function(){return S.own},m:ITEMS.length},
 {id:'exitoso',n:'Ethan el exitoso',d:'Consigue todos los objetos y todos los garajes de Sestao',k:'star',hid:1,v:function(){return S.own+Object.keys(S.ga).length},m:ITEMS.length+GAR.length}];
 function kindOf(id){var q=MED.filter(function(x){return x.id===id})[0];return q?q.k:'garaje'}
@@ -300,11 +296,11 @@ $('work').onclick=function(){
  if(S.e<1){$('log').textContent='Ethan no tiene fuerzas. Espera un poco.';return}
  S.e-=1;S.m+=per();S.done++;
  $('log').textContent=JOBS[Math.floor(Math.random()*JOBS.length)]+': +'+eur(per());
- if(Math.random()<1/80&&$('cv').hidden)chest();render()};
+ render()};
 function render(){
  $('m').textContent=eur(S.m);$('per').textContent=eur(per());$('ps').textContent=eur(ps());
  $('et').textContent=Math.floor(S.e)+' / '+maxE();$('fill').style.width=(S.e/maxE()*100)+'%';
- $('work').disabled=S.e<1;$('done').textContent='Horas extra: '+S.done+' · Cofres comunes: '+(S.ch||0)+' (1 de cada 80 horas extra, más o menos)';
+ $('work').disabled=S.e<1;$('done').textContent='Horas extra: '+S.done;
  ITEMS.forEach(function(it,i){var r=rows[i];r.b.style.display=i>S.own?'none':'';
   if(i<S.own){r.s.textContent=it.n;r.p.textContent=S.br[it.id]?'Estropeado: no sirve':it.d;r.b.textContent='Comprado';r.b.disabled=true}
   else if(i===S.own){r.s.textContent=it.n;r.p.textContent=it.d;r.b.textContent=eur(it.c);r.b.disabled=S.m<it.c||busy}
