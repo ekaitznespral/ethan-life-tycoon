@@ -1,16 +1,17 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8">
+<meta name="theme-color" content="#4e7d5b">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ethan life tycoon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#dedbd3;--card:#f1efe9;--ink:#1c2a3d;--mute:#5d6572;--blue:#1f3a5f;--blue2:#142842;--yel:#f0b429;--line:#c4c0b6;
+:root{--bg:#dbe7d9;--bg2:#c6dccf;--card:#eef4ec;--ink:#1f2f25;--mute:#5b6f61;--blue:#4e7d5b;--blue2:#386048;--yel:#c9d856;--line:#b5c9b6;--edge:rgba(255,255,255,.6);--sh:rgba(40,85,60,.14);--water:#a7cdc6;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a2230;--card:#243044;--ink:#ecebe6;--mute:#9aa5b5;--blue:#3f6fb0;--blue2:#2b4f82;--line:#38465c}}
-:root[data-theme="dark"]{--bg:#1a2230;--card:#243044;--ink:#ecebe6;--mute:#9aa5b5;--blue:#3f6fb0;--blue2:#2b4f82;--line:#38465c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13201a;--bg2:#0f1a1c;--card:#1d2f25;--ink:#e4eee2;--mute:#93a99a;--blue:#5f9a70;--blue2:#447553;--yel:#c9d856;--line:#2d4536;--edge:rgba(255,255,255,.08);--sh:rgba(0,0,0,.35);--water:#244840}}
+:root[data-theme="dark"]{--bg:#13201a;--bg2:#0f1a1c;--card:#1d2f25;--ink:#e4eee2;--mute:#93a99a;--blue:#5f9a70;--blue2:#447553;--yel:#c9d856;--line:#2d4536;--edge:rgba(255,255,255,.08);--sh:rgba(0,0,0,.35);--water:#244840}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,sans-serif}
+body{margin:0;background:var(--bg);background-image:linear-gradient(180deg,var(--bg),var(--bg2));background-attachment:fixed;color:var(--ink);font-family:'Bricolage Grotesque',system-ui,sans-serif}
 main{max-width:480px;margin:0 auto;padding:16px}
 h1{font-size:30px;font-weight:800;margin:0}
 .sub{color:var(--mute);margin:2px 0 14px}
@@ -29,16 +30,13 @@ h2{font-size:18px;margin:0 0 8px}
 .it{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--card);border-radius:10px;padding:12px;margin-bottom:8px}
 .it p{margin:0;font-size:13px;color:var(--mute)}
 .it strong{font-size:16px}
-.it button{flex:none;min-width:84px;padding:10px;font:700 15px 'Bricolage Grotesque',system-ui,sans-serif;border:0;border-radius:8px;background:var(--yel);color:#1c2a3d;cursor:pointer}
+.it button{flex:none;min-width:84px;padding:10px;font:700 15px 'Bricolage Grotesque',system-ui,sans-serif;border:0;border-radius:8px;background:var(--yel);color:#1f2f25;cursor:pointer}
 .it button:disabled{opacity:.4;cursor:default}
 button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 #tabs{display:flex;gap:6px;margin:14px 0 0}
 #tabs button,#sortb button{flex:1;padding:10px 4px;font:700 15px 'Bricolage Grotesque',system-ui,sans-serif;border:2px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);cursor:pointer}
 #tabs button.on,#sortb button.on{background:var(--blue);border-color:var(--blue);color:#fff}
 #map{display:block;margin:12px 0}
-:root{--water:#b7cbdd}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--water:#2c4560}}
-:root[data-theme="dark"]{--water:#2c4560}
 .sm{width:100%;margin:-8px 0 16px;padding:10px;font:700 15px 'Bricolage Grotesque',system-ui,sans-serif;border:2px solid var(--yel);border-radius:10px;background:transparent;color:var(--ink);cursor:pointer}.sm:disabled{opacity:.4}
 [hidden]{display:none!important}
 #ov,#cv{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:9;padding:16px}
@@ -51,11 +49,13 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 #cvc{position:relative}
 #cvc svg{display:block;margin:6px auto 4px}
 #cvx{position:absolute;top:6px;right:8px;border:0;background:transparent;color:var(--ink);font-size:22px;cursor:pointer;padding:6px}
-#cvo{margin-top:10px;padding:12px 32px;font:800 18px 'Bricolage Grotesque',system-ui,sans-serif;background:var(--yel);color:#1c2a3d;border:0;border-radius:10px;cursor:pointer}
+#cvo{margin-top:10px;padding:12px 32px;font:800 18px 'Bricolage Grotesque',system-ui,sans-serif;background:var(--yel);color:#1f2f25;border:0;border-radius:10px;cursor:pointer}
 #sortb{display:flex;gap:6px;margin:8px 0}
 .in{width:100%;box-sizing:border-box;padding:10px;margin:4px 0;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
 #gate{position:fixed;inset:0;background:var(--bg);z-index:30;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
 #gatec{width:min(340px,100%)}
+.st,.it{border:1px solid var(--edge);box-shadow:0 2px 10px var(--sh)}
+#work{background-image:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0))}
 </style></head><body><main>
 <h1>Ethan life tycoon</h1>
 <p class="sub">Ethan, mecánico. Cada hora extra son euros.</p>
@@ -100,7 +100,7 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 <div id="lg" class="sub" style="margin:0"></div><div id="res"></div></div></div>
 <div id="gate" hidden><div id="gatec"><h1 style="font-size:28px;margin:0 0 4px">Ethan life tycoon</h1><p class="sub" style="margin:0 0 10px">Entra para jugar. Tu partida se guarda en tu cuenta.</p><div id="auth"></div></div></div>
 <div id="cv" hidden><div id="cvc"><button id="cvx" aria-label="Cerrar">&#10005;</button>
-<svg viewBox="0 0 120 90" width="130" aria-hidden="true"><rect x="10" y="38" width="100" height="46" rx="6" fill="#8b5a2b"/><path d="M10 40a50 32 0 0 1 100 0z" fill="#a8702f"/><rect x="10" y="38" width="100" height="8" fill="#5e3a17"/><rect x="52" y="34" width="16" height="22" rx="3" fill="#f0b429" stroke="#1c2a3d" stroke-width="2"/></svg>
+<svg viewBox="0 0 120 90" width="130" aria-hidden="true"><rect x="10" y="38" width="100" height="46" rx="6" fill="#8b5a2b"/><path d="M10 40a50 32 0 0 1 100 0z" fill="#a8702f"/><rect x="10" y="38" width="100" height="8" fill="#5e3a17"/><rect x="52" y="34" width="16" height="22" rx="3" fill="#c9d856" stroke="#1f2f25" stroke-width="2"/></svg>
 <h3 id="cvt" style="margin:0;font-size:22px"></h3><div class="sub" id="cvp" style="margin:4px 0 0"></div>
 <button id="cvo">Abrir</button></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -229,10 +229,10 @@ var MED=[
 {id:'sadaba',n:'Sádaba tenía razón',d:'Consigue todos los objetos de la tienda',k:'star',hid:1,v:function(){return S.own},m:ITEMS.length},
 {id:'exitoso',n:'Ethan el exitoso',d:'Consigue todos los objetos y todos los garajes de Sestao',k:'star',hid:1,v:function(){return S.own+Object.keys(S.ga).length},m:ITEMS.length+GAR.length}];
 function kindOf(id){var q=MED.filter(function(x){return x.id===id})[0];return q?q.k:'garaje'}
-var GL={garaje:'<path d="M12 34V21l12-8 12 8v13z" fill="#fff" stroke="#1c2a3d" stroke-width="2.5" stroke-linejoin="round"/><rect x="17" y="25" width="14" height="9" fill="#1f3a5f"/>',
-food:'<path d="M12 23a12 9 0 0 1 24 0z" fill="#c8791a" stroke="#1c2a3d" stroke-width="2"/><rect x="11" y="25" width="26" height="4" rx="2" fill="#4caf50" stroke="#1c2a3d" stroke-width="1.5"/><rect x="12" y="29" width="24" height="5" rx="2" fill="#6b3a1a" stroke="#1c2a3d" stroke-width="1.5"/><path d="M12 35h24v1a3 3 0 0 1-3 3H15a3 3 0 0 1-3-3z" fill="#c8791a" stroke="#1c2a3d" stroke-width="2"/>',
-star:'<path d="M24 11l4 9 10 1-7.5 6.5 2.3 9.8L24 32l-8.8 5.3 2.3-9.8L10 21l10-1z" fill="#fff" stroke="#1c2a3d" stroke-width="2.5" stroke-linejoin="round"/>'};
-function badge(on,w,k){return '<svg viewBox="0 0 48 48" width="'+w+'" height="'+w+'" style="opacity:'+(on?1:.3)+'"><circle cx="24" cy="24" r="22" fill="#f0b429" stroke="#1c2a3d" stroke-width="3"/>'+(GL[k]||GL.garaje)+'</svg>'}
+var GL={garaje:'<path d="M12 34V21l12-8 12 8v13z" fill="#fff" stroke="#1f2f25" stroke-width="2.5" stroke-linejoin="round"/><rect x="17" y="25" width="14" height="9" fill="#4e7d5b"/>',
+food:'<path d="M12 23a12 9 0 0 1 24 0z" fill="#c8791a" stroke="#1f2f25" stroke-width="2"/><rect x="11" y="25" width="26" height="4" rx="2" fill="#4caf50" stroke="#1f2f25" stroke-width="1.5"/><rect x="12" y="29" width="24" height="5" rx="2" fill="#6b3a1a" stroke="#1f2f25" stroke-width="1.5"/><path d="M12 35h24v1a3 3 0 0 1-3 3H15a3 3 0 0 1-3-3z" fill="#c8791a" stroke="#1f2f25" stroke-width="2"/>',
+star:'<path d="M24 11l4 9 10 1-7.5 6.5 2.3 9.8L24 32l-8.8 5.3 2.3-9.8L10 21l10-1z" fill="#fff" stroke="#1f2f25" stroke-width="2.5" stroke-linejoin="round"/>'};
+function badge(on,w,k){return '<svg viewBox="0 0 48 48" width="'+w+'" height="'+w+'" style="opacity:'+(on?1:.3)+'"><circle cx="24" cy="24" r="22" fill="#c9d856" stroke="#1f2f25" stroke-width="3"/>'+(GL[k]||GL.garaje)+'</svg>'}
 var med=$('med'),mrows=[];
 MED.forEach(function(m){var d=document.createElement('div');d.className='it';
  d.innerHTML='<div><strong></strong><p></p></div><span></span>';
