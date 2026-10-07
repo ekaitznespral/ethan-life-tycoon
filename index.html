@@ -58,7 +58,7 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 #work{background-image:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0))}
 </style></head><body><main>
 <h1>Ethan life tycoon</h1>
-<p class="sub">Ethan, mecánico. Cada hora extra son euros.</p>
+<p class="sub">Ethan, mecánico. Su puta vida es una mierda.</p>
 <div class="stats">
 <div class="st"><b id="m">€0</b><span>Dinero</span></div>
 <div class="st"><b id="per">€1</b><span>Por hora extra</span></div>
@@ -225,7 +225,7 @@ function renderExtra(){
  $('clk').textContent=clock()+(tn.length?' · Esta semana: '+tn.join(', '):'')+' · Sucesos '+got+'/'+EV.length+(cloudErr?' · ⚠ '+cloudErr:'');renderMed();if(!$('t4').hidden)renderProf()}
 var MED=[
 {id:'garaje',n:'¿Te has comprado un garaje?',d:'Encuentra sitio para aparcar 10 veces',k:'garaje',v:function(){return S.lg.aparcar||0},m:10},
-{id:'cenas',n:'Rey de las cenas',d:'Que pase Cenita 50 veces',k:'food',v:function(){return S.lg.cenita||0},m:50},
+{id:'cenas',n:'Rey de las cenas',d:'Cenar fuera 50 veces',k:'food',v:function(){return S.lg.cenita||0},m:50},
 {id:'sadaba',n:'Sádaba tenía razón',d:'Consigue todos los objetos de la tienda',k:'star',hid:1,v:function(){return S.own},m:ITEMS.length},
 {id:'exitoso',n:'Ethan el exitoso',d:'Consigue todos los objetos y todos los garajes de Sestao',k:'star',hid:1,v:function(){return S.own+Object.keys(S.ga).length},m:ITEMS.length+GAR.length}];
 function kindOf(id){var q=MED.filter(function(x){return x.id===id})[0];return q?q.k:'garaje'}
