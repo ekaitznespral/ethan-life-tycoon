@@ -243,4 +243,49 @@ function showAuth(){var a=$('auth');
  if(myId){a.innerHTML='<button class="sm" id="lo" style="margin:0 0 8px">Salir</button>';$('lo').onclick=function(){sb.auth.signOut()};return}
  a.innerHTML='<input class="in" id="ae" type="email" placeholder="Email"><input class="in" id="ap" type="password" placeholder="Contraseña (mínimo 6)"><input class="in" id="an" placeholder="Nombre (solo al crear cuenta)"><div style="display:flex;gap:8px"><button class="sm" id="ai" style="margin:6px 0">Entrar</button><button class="sm" id="ac" style="margin:6px 0">Crear cuenta</button></div><p class="sub" id="am" style="margin:0"></p>';
  $('ai').onclick=function(){sb.auth.signInWithPassword({email:$('ae').value,password:$('ap').value}).then(function(r){if(r.error)$('am').textContent=r.error.message})};
- $('ac').onclick=function(){sb.auth.signUp({email:$('ae').value,password:$('ap').value,options:{data:{name:$('an').value||'Ethan'}}}).then(function(r){$('am').textContent=r.error?r.error.message:
+ $('ac').onclick=function(){sb.auth.signUp({email:$('ae').value,password:$('ap').value,options:{data:{name:$('an').value||'Ethan'}}}).then(function(r){$('am').textContent=r.error?r.error.message:'Cuenta creada. Si pide confirmar el email, mira tu correo.'})}}
+function renderProf(){
+ var sig=[PL.map(function(x){return x.id+x.d.done+x.d.m+(x.d.md||[]).length}).join()+SK,Object.keys(NM).length,Object.keys(S.md).join(),S.done,S.own,cloudOk].join('|');
+ if(sig===lastSig)return;lastSig=sig;
+ var p=$('prof');p.innerHTML='';
+ var h=document.createElement('strong');h.style.fontSize='22px';h.textContent=(myId&&NM[myId])||'Ethan';p.appendChild(h);
+ var q=document.createElement('p');q.className='sub';q.style.margin='2px 0 8px';
+ q.textContent='Horas extra: '+S.done+' · Objetos: '+S.own+'/'+ITEMS.length+' · Garajes: '+Object.keys(S.ga).length+' · '+(cloudOk?'Guardado en tu cuenta':'Sin cuenta: se guarda solo en este navegador');p.appendChild(q);
+ var b=document.createElement('div');b.style.cssText='display:flex;gap:8px;flex-wrap:wrap';
+ MED.forEach(function(m){if(S.md[m.id]){var e=document.createElement('span');e.title=m.n;e.innerHTML=badge(true,48);b.appendChild(e)}});
+ if(!b.children.length){b.className='sub';b.textContent='Aún no tienes medallas.'}p.appendChild(b);
+ var l=$('plist');l.innerHTML='';
+ var val=function(x){return SK==='m'?x.d.m||0:SK==='own'?x.d.own||0:SK==='md'?(x.d.md||[]).length:x.d.done||0};
+ PL.slice().sort(function(a,c){return val(c)-val(a)}).forEach(function(x,i){
+  var d=document.createElement('div');d.className='it';if(x.id===myId)d.style.outline='2px solid var(--yel)';
+  var w=document.createElement('div'),n=document.createElement('strong');n.textContent='#'+(i+1)+' '+(NM[x.id]||'Jugador');w.appendChild(n);
+  var pp=document.createElement('p');pp.textContent=eur(x.d.m||0)+' · Objetos '+(x.d.own||0)+'/'+ITEMS.length+' · Horas extra '+(x.d.done||0);w.appendChild(pp);d.appendChild(w);
+  var m=document.createElement('span');m.style.cssText='display:flex;align-items:center;gap:6px;font-weight:800;font-size:18px';
+  m.textContent=String(SK==='m'?eur(val(x)):SK==='own'?val(x)+'/'+ITEMS.length:val(x));
+  var bd=document.createElement('span');bd.style.display='flex';bd.innerHTML=(x.d.md||[]).map(function(){return badge(true,24)}).join('');
+  m.appendChild(bd);d.appendChild(m);l.appendChild(d)});
+ if(!PL.length){l.className='sub';l.textContent='Cuando alguien guarde su perfil, aparecerá aquí.'}}
+showAuth();
+if(sb){sb.auth.onAuthStateChange(function(ev,ses){if(ev==='INITIAL_SESSION'||ev==='SIGNED_IN'||ev==='SIGNED_OUT')setTimeout(function(){onSession(ses)},0)});setInterval(loadPL,30000)}
+var tabs=document.querySelectorAll('#tabs button');
+tabs.forEach(function(b){b.onclick=function(){tabs.forEach(function(x){x.className=x===b?'on':''});['t1','t2','t3','t4'].forEach(function(id){$(id).hidden=id!==b.dataset.t})}});
+$('work').onclick=function(){
+ if(S.e<1){$('log').textContent='Ethan no tiene fuerzas. Espera un poco.';return}
+ S.e-=1;S.m+=per();S.done++;
+ $('log').textContent=JOBS[Math.floor(Math.random()*JOBS.length)]+': +'+eur(per());
+ if(Math.random()<1/80&&$('cv').hidden)chest();render()};
+function render(){
+ $('m').textContent=eur(S.m);$('per').textContent=eur(per());$('ps').textContent=eur(ps());
+ $('et').textContent=Math.floor(S.e)+' / '+maxE();$('fill').style.width=(S.e/maxE()*100)+'%';
+ $('work').disabled=S.e<1;$('done').textContent='Horas extra: '+S.done+' · Cofres comunes: '+(S.ch||0)+' (1 de cada 80 horas extra, más o menos)';
+ ITEMS.forEach(function(it,i){var r=rows[i];r.b.style.display=i>S.own?'none':'';
+  if(i<S.own){r.s.textContent=it.n;r.p.textContent=S.br[it.id]?'Estropeado: no sirve':it.d;r.b.textContent='Comprado';r.b.disabled=true}
+  else if(i===S.own){r.s.textContent=it.n;r.p.textContent=it.d;r.b.textContent=eur(it.c);r.b.disabled=S.m<it.c||busy}
+  else{r.s.textContent='???';r.p.textContent='Consigue lo anterior primero'}});
+ renderExtra()}
+function save(){S.ts=Date.now();try{localStorage.setItem('elt3',JSON.stringify(S))}catch(e){}}
+setInterval(function(){S.e=Math.min(maxE(),S.e+regen()*0.2);S.m+=ps()*0.2;render()},200);
+setInterval(save,5000);setInterval(cloudSave,30000);
+document.addEventListener('visibilitychange',function(){if(document.hidden){save();cloudSave()}});
+render();
+</script></body></html>
