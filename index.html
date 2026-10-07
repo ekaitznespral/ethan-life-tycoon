@@ -222,7 +222,7 @@ function renderExtra(){
  var got=0;EV.forEach(function(e,i){var a=arows[i],n=S.lg[e.id]||0;if(n)got++;
   a.s.textContent=e.n;a.p.textContent=e.d+(e.pd?'':' · '+pct(e.p))+(e.par?' (solo si hubo: '+EV.filter(function(x){return x.id===e.par})[0].n+')':'');a.c.textContent=n?'x'+n:'';a.d.style.opacity=n?1:.55});
  var tn=EV.filter(function(e){return S.td[e.id]}).map(function(e){return e.n});
- $('clk').textContent=clock()+(tn.length?' · Esta semana: '+tn.join(', '):'')+' · Sucesos '+got+'/'+EV.length;renderMed();if(!$('t4').hidden)renderProf()}
+ $('clk').textContent=clock()+(tn.length?' · Esta semana: '+tn.join(', '):'')+' · Sucesos '+got+'/'+EV.length+(cloudErr?' · ⚠ '+cloudErr:'');renderMed();if(!$('t4').hidden)renderProf()}
 var MED=[
 {id:'garaje',n:'¿Te has comprado un garaje?',d:'Encuentra sitio para aparcar 10 veces',k:'garaje',v:function(){return S.lg.aparcar||0},m:10},
 {id:'cenas',n:'Rey de las cenas',d:'Que pase Cenita 50 veces',k:'food',v:function(){return S.lg.cenita||0},m:50},
@@ -241,7 +241,7 @@ function renderMed(){MED.forEach(function(m,i){var v=m.v(),x=mrows[i];
  if(!S.md[m.id]&&v>=m.m){S.md[m.id]=1;$('log').textContent='Medalla conseguida: '+m.n;save()}
  var on=!!S.md[m.id];x.d.style.display=(m.hid&&!on)?'none':'';x.s.textContent=m.n;x.p.textContent=m.d+' ('+Math.min(v,m.m)+' / '+m.m+')';
  if(x.on!==on){x.on=on;x.c.innerHTML=badge(on,40,m.k)}})}
-var DB=null,myId=null,PL=[],NM={},cloudOk=false,lastSig='',SK='m';
+var DB=null,myId=null,PL=[],NM={},cloudOk=false,cloudErr='',lastSig='',SK='m';
 var sbar=$('sortb');[['m','Dinero'],['own','Objetos'],['done','Horas extra'],['md','Medallas']].forEach(function(k){
  var b=document.createElement('button');b.textContent=k[1];b.className=k[0]===SK?'on':'';
  b.onclick=function(){SK=k[0];Array.prototype.forEach.call(sbar.children,function(x){x.className=x===b?'on':''});lastSig='';renderProf()};sbar.appendChild(b)});
@@ -249,16 +249,21 @@ var sb=null;
 try{if(window.supabase&&SB_URL.indexOf('http')===0)sb=supabase.createClient(SB_URL,SB_KEY)}catch(e){}
 if(sb)S=freshS();
 function cloudSave(){if(!cloudOk||!sb)return;S.ts=Date.now();
- sb.from('saves').upsert({id:myId,state:S,ts:S.ts}).then(function(){});
- sb.from('profiles').upsert({id:myId,name:NM[myId]||'Ethan',m:Math.floor(S.m),md:Object.keys(S.md),done:S.done,own:S.own,ts:S.ts}).then(function(){})}
+ sb.from('saves').upsert({id:myId,state:S,ts:S.ts}).then(function(r){cloudErr=r.error?('No se pudo guardar: '+r.error.message):''});
+ sb.from('profiles').upsert({id:myId,name:NM[myId]||'Ethan',m:Math.floor(S.m),md:Object.keys(S.md),done:S.done,own:S.own,ts:S.ts}).then(function(r){if(r.error)cloudErr='No se pudo guardar el perfil: '+r.error.message})}
 function loadPL(){if(!sb||!myId)return;sb.from('profiles').select('*').then(function(r){if(!r.data)return;
  PL=r.data.map(function(x){return{id:x.id,d:x}});r.data.forEach(function(x){NM[x.id]=x.name||''})})}
 async function onSession(ses){
  if(!ses){cloudOk=false;myId=null;PL=[];S=freshS();showAuth();return}
  myId=ses.user.id;var nm=(ses.user.user_metadata&&ses.user.user_metadata.name)||'Ethan';
  var r=await sb.from('saves').select('state,ts').eq('id',myId).maybeSingle();
- if(r.data&&r.data.ts>(S.ts||0)){var o=r.data.state;if(o&&o.br&&o.lg){S=o;if(!S.md)S.md={}}}
- NM[myId]=nm;cloudOk=true;cloudSave();loadPL();showAuth()}
+ var best=null,bts=-1;
+ if(r.data&&r.data.state&&r.data.state.br){best=r.data.state;bts=r.data.ts||0}
+ try{var lo=JSON.parse(localStorage.getItem('elt4_'+myId)||'null');if(lo&&lo.br&&lo.lg&&(lo.ts||0)>bts){best=lo;bts=lo.ts||0}}catch(e){}
+ if(best){S=best;if(!S.md)S.md={}}
+ NM[myId]=nm;
+ if(r.error){cloudErr='No se pudo cargar tu partida: '+r.error.message;cloudOk=false;showAuth();return}
+ cloudErr='';cloudOk=true;cloudSave();loadPL();showAuth()}
 function showAuth(){var g=$('gate'),a=$('auth');
  if(!sb){g.hidden=true;return}
  if(myId){g.hidden=true;$('out').hidden=false;return}
@@ -267,12 +272,12 @@ function showAuth(){var g=$('gate'),a=$('auth');
  $('ai').onclick=function(){sb.auth.signInWithPassword({email:$('ae').value,password:$('ap').value}).then(function(r){if(r.error)$('am').textContent=r.error.message})};
  $('ac').onclick=function(){sb.auth.signUp({email:$('ae').value,password:$('ap').value,options:{data:{name:$('an').value||'Ethan'}}}).then(function(r){$('am').textContent=r.error?r.error.message:'Cuenta creada. Si pide confirmar el email, mira tu correo.'})}}
 function renderProf(){
- var sig=[PL.map(function(x){return x.id+x.d.done+x.d.m+(x.d.md||[]).length}).join()+SK,Object.keys(NM).length,Object.keys(S.md).join(),S.done,S.own,cloudOk].join('|');
+ var sig=[PL.map(function(x){return x.id+x.d.done+x.d.m+(x.d.md||[]).length}).join()+SK,Object.keys(NM).length,Object.keys(S.md).join(),S.done,S.own,cloudOk,cloudErr].join('|');
  if(sig===lastSig)return;lastSig=sig;
  var p=$('prof');p.innerHTML='';
  var h=document.createElement('strong');h.style.fontSize='22px';h.textContent=(myId&&NM[myId])||'Ethan';p.appendChild(h);
  var q=document.createElement('p');q.className='sub';q.style.margin='2px 0 8px';
- q.textContent='Horas extra: '+S.done+' · Objetos: '+S.own+'/'+ITEMS.length+' · Garajes: '+Object.keys(S.ga).length+' · '+(cloudOk?'Guardado en tu cuenta':'Sin cuenta: se guarda solo en este navegador');p.appendChild(q);
+ q.textContent='Horas extra: '+S.done+' · Objetos: '+S.own+'/'+ITEMS.length+' · Garajes: '+Object.keys(S.ga).length+' · '+(cloudErr?cloudErr:(cloudOk?'Guardado en tu cuenta':'Sin conexión con tu cuenta'));p.appendChild(q);
  var b=document.createElement('div');b.style.cssText='display:flex;gap:8px;flex-wrap:wrap';
  MED.forEach(function(m){if(S.md[m.id]){var e=document.createElement('span');e.title=m.n;e.innerHTML=badge(true,48,m.k);b.appendChild(e)}});
  if(!b.children.length){b.className='sub';b.textContent='Aún no tienes medallas.'}p.appendChild(b);
@@ -305,9 +310,9 @@ function render(){
   else if(i===S.own){r.s.textContent=it.n;r.p.textContent=it.d;r.b.textContent=eur(it.c);r.b.disabled=S.m<it.c||busy}
   else{r.s.textContent='???';r.p.textContent='Consigue lo anterior primero'}});
  renderExtra()}
-function save(){S.ts=Date.now();if(sb)return;try{localStorage.setItem('elt3',JSON.stringify(S))}catch(e){}}
+function save(){S.ts=Date.now();if(sb){if(myId){try{localStorage.setItem('elt4_'+myId,JSON.stringify(S))}catch(e){}}return}try{localStorage.setItem('elt3',JSON.stringify(S))}catch(e){}}
 setInterval(function(){S.e=Math.min(maxE(),S.e+regen()*0.2);S.m+=ps()*0.2;render()},200);
-setInterval(save,5000);setInterval(cloudSave,30000);
+setInterval(save,5000);setInterval(cloudSave,10000);window.addEventListener('pagehide',function(){save();cloudSave()});
 document.addEventListener('visibilitychange',function(){if(document.hidden){save();cloudSave()}});
 render();
 </script></body></html>
