@@ -218,14 +218,14 @@ var UP=[
 var JOBS=['Hora extra','Otra hora extra','Hora extra sin cobrar el café','Hora extra de viernes','Hora extra de última hora'];
 var DN=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],MN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 function freshS(){return {m:0,e:20,done:0,own:0,br:{},sn:0,ga:{},lg:{},td:{},t:16,acc:0,md:{},bo:0,ms:0,up:{},sp:1,tho:{},th:'taller',dstr:0,crc:0}}
-function fixS(s){if(!s.md)s.md={};s.bo=s.bo||0;if(!s.up)s.up={};if([1,2,4,10].indexOf(s.sp)<0)s.sp=1;if(!s.tho)s.tho={};if(!s.th)s.th='taller';s.dstr=s.dstr||0;s.crc=s.crc||0;if(s.ms===undefined){s.ms=0;var th=[100,1000,10000,100000,1000000];while(s.ms<th.length&&s.m>=th[s.ms])s.ms++}return s}
+function fixS(s){if(!s.md)s.md={};s.bo=s.bo||0;if(s.bo>1e10)s.bo=0;if(!s.up)s.up={};if([1,2,4,10].indexOf(s.sp)<0)s.sp=1;if(!s.tho)s.tho={};if(!s.th||s.th==='ria')s.th='taller';s.dstr=s.dstr||0;s.crc=s.crc||0;if(s.ms===undefined){s.ms=0;var th=[100,1000,10000,100000,1000000];while(s.ms<th.length&&s.m>=th[s.ms])s.ms++}return s}
 var S=freshS();
 try{var raw=localStorage.getItem('elt3');if(raw){var p=JSON.parse(raw);if(p&&p.br&&p.lg){S=p}}}catch(e){}
 fixS(S);
 function sum(k){var t=0;for(var i=0;i<S.own;i++){var it=ITEMS[i];if(S.br[it.id])continue;t+=it[k]||0;if(S.sn&&it.snpr&&k==='pr')t+=it.snpr}return t}
 function maxE(){return 20+sum('me')}
 function regen(){return 0.2+sum('rg')}
-function boostOn(){return Date.now()<(S.bo||0)}
+function boostOn(){return S.t<(S.bo||0)}
 function spd(){var v=S.sp||1;if(v===2&&!S.up.s2)return 1;if(v===4&&!S.up.s4)return 1;if(v===10&&!S.up.s10)return 1;return v}
 function autoRate(){return S.up.a2?3:S.up.a1?1:0}
 function per(){return (2+sum('pr'))*(boostOn()?2:1)}
@@ -253,25 +253,17 @@ var CRIT=['¡Pago en B!','¡El jefe no mira!','¡Chapuza cobrada dos veces!','¡
 var GOLD=[
 {e:'🚐',t:'El chatarrero compra "material sobrante" del taller. Nadie pregunta.',f:function(){return Math.max(per()*15,ps()*45)}},
 {e:'💶',t:'Sobre del jefe: dinero en B y ni una palabra a la gestora.',f:function(){return Math.max(per()*25,ps()*30)}},
-{e:'🕊️',t:'La paloma de Sestao te bendice: producción x2 durante 45 segundos.',b:45}];
+{e:'🕊️',t:'La paloma de Sestao te bendice: producción x2 durante 12 horas de juego.',b:24}];
 function spawnGold(){if(busy||document.hidden||document.getElementById('gold'))return;
  var g=GOLD[Math.random()*GOLD.length|0],b=document.createElement('button');b.id='gold';b.textContent=g.e;b.setAttribute('aria-label','Bonus');b.style.top=(12+Math.random()*45)+'%';
  b.onclick=function(ev){b.remove();snd('gold');var x=ev.clientX||innerWidth/2,y=ev.clientY||innerHeight/2;
-  if(g.b){S.bo=Date.now()+g.b*1000;flt('⚡ x2 · '+g.b+'s',x,y,'crit')}
+  if(g.b){S.bo=S.t+g.b;flt('⚡ x2 · '+(g.b/2)+'h de juego',x,y,'crit')}
   else{var v=g.f();S.m+=v;flt('+'+eur(v),x,y,'crit');popM()}
   conf(x,y,18);$('log').textContent=g.t;render();save()};
  document.body.appendChild(b);setTimeout(function(){if(b.parentNode)b.remove()},8200)}
 (function sg(){setTimeout(function(){spawnGold();sg()},50000+Math.random()*70000)})();
 var MS=[[100,'Primeros €100. El jefe dice que no te acostumbres.'],[1000,'€1.000. En Sestao eso ya es ser rico.'],[10000,'€10.000. Hacienda todavía no sabe nada.'],[100000,'€100.000. El taller es tuyo de facto.'],[1000000,'€1.000.000. Hasta Jokin te respeta.']];
 function checkMS(){while(S.ms<MS.length&&S.m>=MS[S.ms][0]){var t=MS[S.ms][1];S.ms++;flt(t,innerWidth/2,innerHeight*0.35,'ms');$('log').textContent=t;conf(innerWidth/2,innerHeight*0.3,22);snd('win');save()}}
-var offDone=false;
-function offline(){if(offDone)return;offDone=true;
- var el=(Date.now()-(S.ts||Date.now()))/1000;
- if(el>120&&ps()>0){var cap=Math.min(el,14400),g=Math.floor(ps()*spd()*cap*0.5);if(g<1)return;S.m+=g;
-  var mm=Math.floor(cap/60),tx=mm>=60?Math.floor(mm/60)+' h':mm+' min';
-  $('cvt').textContent='Mientras no estabas…';
-  $('cvp').textContent='Los garajes han seguido currando '+tx+' sin hacer preguntas. En Sestao nadie dice nada. +'+eur(g);
-  $('cvo').textContent='Cobrar';$('cv').hidden=false;snd('win')}}
 var ups=$('ups'),urows=[];
 UP.forEach(function(u){
  var d=document.createElement('div');d.className='it';
@@ -319,10 +311,17 @@ var BAD=[
 {n:'Jokin te da por culo',t:'Jokin aparece por detrás sin avisar. Como siempre.',f:.1},
 {n:'Multa de la OTA',t:'La OTA multa al C4. En Sestao. Sin pintura azul ni nada.',f:.05},
 {n:'Hacienda husmea',t:'Hacienda pregunta por los sobres del jefe. Toca regularizar.',f:.12}];
+var SCAM=[
+{n:'La estafa de la líquida',t:'Sádaba te vende una refrigeración líquida "nueva, de Wallapop". Era un radiador de Seat Panda con pegatinas.',a:2500},
+{n:'La estafa de la PS5',t:'Sádaba consigue una PS5 "precintada de fábrica". Dentro: dos ladrillos y una PS2 chipeada.',a:4000},
+{n:'La estafa del coche',t:'Sádaba te vende su coche por 5.000€. El motor era del desguace de Trapaga y el cuentakilómetros, de adorno.',a:5000},
+{n:'La estafa de la casa',t:'Sádaba te vende su casa por 250.000€. No era suya. Era de su amona. Y la amona vive dentro.',a:250000}];
 function spawnBad(){if(busy||document.hidden||(sb&&!myId)||Math.floor(S.m)<1000)return;
- var b=BAD[Math.random()*BAD.length|0],loss=Math.max(50,Math.floor(S.m*b.f));
+ var big=SCAM.filter(function(s){return S.m>=s.a*1.6}),b,loss,esc;
+ if(big.length&&Math.random()<.3){b=big[Math.floor(Math.random()*big.length)];loss=b.a;esc=.25}
+ else{b=BAD[Math.floor(Math.random()*BAD.length)];loss=Math.max(50,Math.floor(S.m*b.f));esc=.35}
  busy=true;snd('no');
- roll({q:b.n+': -'+eur(loss)+'. ¿Te libras?',p:.35,yes:'¡Te libras!',no:'A pagar',wait:8},function(ok){busy=false;
+ roll({q:b.n+': -'+eur(loss)+'. ¿Te libras?',p:esc,yes:'¡Te libras!',no:'A pagar',wait:8},function(ok){busy=false;
   if(ok){$('log').textContent=b.n+': Ethan se escaquea. Esta vez.'}
   else{S.m=Math.max(0,S.m-loss);$('log').textContent=b.t+' -'+eur(loss);
    flt('-'+eur(loss),innerWidth/2,innerHeight*0.35,'bad');shk($('m').parentNode);snd('no')}
@@ -380,8 +379,7 @@ function renderDM(){
 var THEMES=[
 {id:'taller',n:'Taller de siempre',c:0},
 {id:'kebab',n:'Kebab Ali',c:90000,v:{'--bg':'#f3ecdc','--bg2':'#e7dcc3','--card':'#fbf6e8','--ink':'#2d2412','--mute':'#7a6c4f','--blue':'#1f8a4c','--blue2':'#15693a','--yel':'#e0a83c','--line':'#d8c9a5','--water':'#bcd9c2'}},
-{id:'mcdo',n:"McDonald's",c:150000,v:{'--bg':'#f8e8c8','--bg2':'#f3d9a8','--card':'#fff6e3','--ink':'#3a1c08','--mute':'#8a6240','--blue':'#d02b2b','--blue2':'#a81f1f','--yel':'#ffc72c','--line':'#ecd2a3','--water':'#ffdf8f'}},
-{id:'ria',n:'Ría de noche',c:300000,v:{'--bg':'#0c1622','--bg2':'#0a1018','--card':'#15242f','--ink':'#dcecf2','--mute':'#8aa6b2','--blue':'#2e7fa3','--blue2':'#215e7a','--yel':'#ffd24a','--line':'#24404f','--edge':'rgba(255,255,255,.07)','--sh':'rgba(0,0,0,.4)','--water':'#133646'}}];
+{id:'mcdo',n:"McDonald's",c:150000,v:{'--bg':'#f8e8c8','--bg2':'#f3d9a8','--card':'#fff6e3','--ink':'#3a1c08','--mute':'#8a6240','--blue':'#d02b2b','--blue2':'#a81f1f','--yel':'#ffc72c','--line':'#ecd2a3','--water':'#ffdf8f'}}];
 function applyTheme(){var t=THEMES.filter(function(x){return x.id===(S.th||'taller')})[0]||THEMES[0];
  var r=document.documentElement;
  ['--bg','--bg2','--card','--ink','--mute','--blue','--blue2','--yel','--line','--edge','--sh','--water'].forEach(function(k){r.style.removeProperty(k)});
@@ -492,7 +490,7 @@ function renderExtra(){
  var got=0;EV.forEach(function(e,i){var a=arows[i],n=S.lg[e.id]||0;if(n)got++;
   a.s.textContent=n?e.n:'?';a.p.textContent=!n?'Aún no ha pasado':e.d+(e.pd?'':' · '+pct(e.p))+(e.par?' (solo si hubo: '+EV.filter(function(x){return x.id===e.par})[0].n+')':'');a.c.textContent=n?'x'+n:'';a.d.style.opacity=n?1:.55});
  var tn=EV.filter(function(e){return S.td[e.id]}).map(function(e){return e.n});
- $('clk').textContent=clock()+(boostOn()?' · ⚡x2 '+Math.ceil((S.bo-Date.now())/1000)+'s':'')+(tn.length?' · Esta semana: '+tn.join(', '):'')+' · Sucesos '+got+'/'+EV.length+(cloudErr?' · ⚠ '+cloudErr:'');renderEv();renderMed();if(!$('t4').hidden)renderProf()}
+ $('clk').textContent=clock()+(boostOn()?' · ⚡x2 '+((S.bo-S.t)/2)+'h de juego':'')+(tn.length?' · Esta semana: '+tn.join(', '):'')+' · Sucesos '+got+'/'+EV.length+(cloudErr?' · ⚠ '+cloudErr:'');renderEv();renderMed();if(!$('t4').hidden)renderProf()}
 var MED=[
 {id:'garaje',n:'¿Te has comprado un garaje?',d:'Encuentra sitio para aparcar 10 veces',k:'garaje',v:function(){return S.lg.aparcar||0},m:10},
 {id:'cenas',n:'Rey de las cenas',d:'Que pase Cenita 50 veces',k:'food',v:function(){return S.lg.cenita||0},m:50},
@@ -551,7 +549,7 @@ async function onSession(ses){
  applyTheme();
  NM[myId]=nm;
  if(r.error){cloudErr='No se pudo cargar tu partida: '+r.error.message;cloudOk=false;showAuth();return}
- cloudErr='';cloudOk=true;offline();cloudSave();loadPL();showAuth()}
+ cloudErr='';cloudOk=true;cloudSave();loadPL();showAuth()}
 function showAuth(){var g=$('gate'),a=$('auth');
  if(!sb){g.hidden=true;return}
  if(myId){g.hidden=true;$('out').hidden=false;return}
@@ -641,7 +639,6 @@ setInterval(function(){var sp=spd();S.e=Math.min(maxE(),S.e+regen()*0.2*sp);S.m+
 setInterval(save,5000);setInterval(cloudSave,10000);window.addEventListener('pagehide',function(){save();cloudSave()});
 document.addEventListener('visibilitychange',function(){if(document.hidden){save();cloudSave()}});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
-if(!sb)offline();
 applyTheme();
 render();
 </script></body></html>
