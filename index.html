@@ -109,7 +109,16 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 #hud .mi.done{color:var(--mute);text-decoration:line-through}
 #hud .mbar{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:3px}
 #hud .mbar i{display:block;height:100%;background:var(--yel)}
-#eth{width:64px;height:64px;background:url(sprites/ethan-sheet.png) 0 0/384px 64px no-repeat;image-rendering:pixelated;flex:none}
+#eth{width:96px;height:96px;background:url(sprites/ethan-sheet.png) 0 0/576px 96px no-repeat;image-rendering:pixelated;flex:none}
+#walker{position:fixed;bottom:0;left:0;width:96px;height:96px;z-index:3;cursor:pointer}
+#walker.flip{transform:scaleX(-1)}
+#wspr,.wcos{position:absolute;inset:0;image-rendering:pixelated;background-repeat:no-repeat}
+#wspr{background:url(sprites/ethan-walk.png) 0 0/384px 96px;animation:wk .7s steps(4) infinite}
+.wcos{background-size:96px 96px}
+@keyframes wk{from{background-position:0 0}to{background-position:-384px 0}}
+#cm{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:29;padding:16px}
+#cmc{background:var(--card);border-radius:16px;padding:20px;text-align:center;width:min(300px,100%)}
+#cmi{image-rendering:pixelated;background:var(--bg);border-radius:12px}
 </style></head><body><main>
 <div style="display:flex;align-items:center;gap:10px"><div id="eth"></div><div><h1>Ethan life tycoon</h1>
 <p class="sub" style="margin:2px 0 0">Ethan, mecánico. Cada hora extra son euros.</p></div></div>
@@ -156,6 +165,10 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 <div style="display:flex;gap:8px;align-items:center;margin:0 0 10px"><span class="sub" style="margin:0;flex:none">Multiplicador libre:</span><input class="in" id="bx" type="number" min="1.1" max="100" step="0.1" value="2" style="margin:0"></div>
 <button id="bgo" class="sm" style="margin:0 0 8px">Upgradear</button>
 <p class="sub" id="bstat" style="margin:0"></p>
+<h2 style="margin-top:18px">La caja de Sádaba</h2>
+<p class="sub" style="margin:0 0 8px">Cosméticos para el Ethan que pasea por tu pantalla. Común 65,4% · Poco común 25% · Raro 8% · Épico 1,5% · Legendario 0,08%. Sádaba jura que no está trucada.</p>
+<button id="lbgo" class="sm" style="margin:0 0 6px">Abrir caja · €7.500</button>
+<p class="sub" id="lbstat" style="margin:0"></p>
 </section>
 <section id="t3" hidden>
 <p class="sub" style="margin-top:12px">Colecciona sucesos raros. Cada día pasan cosas distintas, cada una con su probabilidad. Media hora del juego dura 3 segundos a velocidad x1.</p>
@@ -168,6 +181,12 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 <h2 style="margin-top:16px">Clasificación</h2><div id="sortb"></div><div id="plist"></div>
 </section>
 </main>
+<div id="walker" title="Ethan"><div id="wspr"></div></div>
+<div id="cm" hidden><div id="cmc"><div id="cmr" style="font-weight:800;letter-spacing:1px;font-size:14px"></div>
+<img id="cmi" width="96" height="96" alt="Cosmético" style="margin:8px auto 4px;display:block">
+<h3 id="cmn" style="margin:0;font-size:20px"></h3><p class="sub" id="cmd" style="margin:4px 0 0"></p>
+<div style="display:flex;gap:8px;justify-content:center;margin-top:12px"><button class="sm" id="cmeq" style="width:auto;margin:0;padding:10px 18px;border-color:var(--blue)">Equipar</button><button class="sm" id="cmok" style="width:auto;margin:0;padding:10px 18px">Continuar</button></div>
+</div></div>
 <aside id="hud" aria-label="Progreso"></aside>
 <div id="ov" hidden><div id="ovc"><h3 id="ovt"></h3><div class="sub" id="ovs" style="margin:0"></div>
 <div id="wr"><div id="wh"></div><div id="pr"><div id="ptr"></div></div></div>
@@ -238,8 +257,8 @@ var UP=[
 var JOBS=['Hora extra','Otra hora extra','Hora extra sin cobrar el café','Hora extra de viernes','Hora extra de última hora'];
 var DN=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],MN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 var TICK=3;
-function freshS(){return {m:0,e:20,done:0,own:0,br:{},sn:0,ga:{},lg:{},td:{},t:16,acc:0,md:{},bo:0,ms:0,up:{},sp:1,tho:{},th:'taller',dstr:0,crc:0}}
-function fixS(s){if(!s.md)s.md={};s.bo=s.bo||0;if(s.bo>1e10)s.bo=0;if(!s.up)s.up={};if([1,2,4,10].indexOf(s.sp)<0)s.sp=1;if(!s.tho)s.tho={};if(!s.th||s.th==='ria')s.th='taller';s.dstr=s.dstr||0;s.crc=s.crc||0;if(s.ms===undefined){s.ms=0;var th=[100,1000,10000,100000,1000000];while(s.ms<th.length&&s.m>=th[s.ms])s.ms++}return s}
+function freshS(){return {m:0,e:20,done:0,own:0,br:{},sn:0,ga:{},lg:{},td:{},t:16,acc:0,md:{},bo:0,ms:0,up:{},sp:1,tho:{},th:'taller',dstr:0,crc:0,cos:{},cq:{},lbo:0}}
+function fixS(s){if(!s.md)s.md={};s.bo=s.bo||0;if(s.bo>1e10)s.bo=0;if(!s.up)s.up={};if([1,2,4,10].indexOf(s.sp)<0)s.sp=1;if(!s.tho)s.tho={};if(!s.th||s.th==='ria')s.th='taller';s.dstr=s.dstr||0;s.crc=s.crc||0;if(!s.cos)s.cos={};if(!s.cq)s.cq={};s.lbo=s.lbo||0;if(s.ms===undefined){s.ms=0;var th=[100,1000,10000,100000,1000000];while(s.ms<th.length&&s.m>=th[s.ms])s.ms++}return s}
 var S=freshS();
 try{var raw=localStorage.getItem('elt3');if(raw){var p=JSON.parse(raw);if(p&&p.br&&p.lg){S=p}}}catch(e){}
 fixS(S);
@@ -280,7 +299,7 @@ function renderEth(){var i;
  else if(S.m>=1000000)i=2;
  else if(darkMQ&&darkMQ.matches&&(S.th||'taller')==='taller')i=5;
  else i=3;
- if(i!==ethIdx){ethIdx=i;$('eth').style.backgroundPosition=(-64*i)+'px 0'}}
+ if(i!==ethIdx){ethIdx=i;$('eth').style.backgroundPosition=(-96*i)+'px 0'}}
 var CRIT=['¡Pago en B!','¡El jefe no mira!','¡Chapuza cobrada dos veces!','¡Factura sin IVA!'];
 var GOLD=[
 {e:'🚐',t:'El chatarrero compra "material sobrante" del taller. Nadie pregunta.',f:function(){return Math.max(per()*15,ps()*45)}},
@@ -435,6 +454,56 @@ function applyTheme(){var t=THEMES.filter(function(x){return x.id===(S.th||'tall
  var r=document.documentElement;
  ['--bg','--bg2','--card','--ink','--mute','--blue','--blue2','--yel','--line','--edge','--sh','--water'].forEach(function(k){r.style.removeProperty(k)});
  if(t.v)for(var k in t.v)r.style.setProperty(k,t.v[k])}
+var RAR={comun:{n:'Común',c:'#8a9aa0',ref:400},poco:{n:'Poco común',c:'#4caf50',ref:1200},raro:{n:'Raro',c:'#42a5f5',ref:3000},epico:{n:'Épico',c:'#ab47bc',ref:12000},leg:{n:'★ LEGENDARIO ★',c:'#d4a017',ref:150000}};
+var COS=[
+{id:'cepillo',n:'Cepillo de dientes de Ethan',d:'Sin usar, pero sucio. Nadie sabe cómo.',r:'leg',slot:'mano',box:1},
+{id:'cable',n:'Cable neutro de cinturón',d:'Herencia del aita. Aguanta más que el cuero.',r:'leg',slot:'cintura',box:1},
+{id:'tresds',n:'3DS Hyrule Edition',d:'Trofeo nacional. Ni se vende ni se presta.',r:'leg',slot:'mano',box:1},
+{id:'llaveoro',n:'Llave inglesa de oro',d:'Solo para herederos de la empresa.',r:'epico',slot:'mano',med:'heredero'},
+{id:'kebabali',n:'Kebab eterno de Ali',d:'Nunca se acaba. Nunca caduca. Bueno, caducado ya venía.',r:'epico',slot:'mano',box:1},
+{id:'gorrathletic',n:'Gorra del Athletic',d:'De la final que no se nombra.',r:'epico',slot:'cabeza',box:1},
+{id:'rinonera',n:'Riñonera Rip Curl',d:'Dentro solo hay tornillos y un mechero.',r:'raro',slot:'cintura',box:1},
+{id:'gafas',n:'Gafas de sol de gasolinera',d:'Protección UV sin verificar.',r:'raro',slot:'cara',box:1,c:8000},
+{id:'movil',n:'Móvil con la pantalla añicos',d:'Funciona el 70% de la pantalla. De sobra.',r:'raro',slot:'mano',c:25000},
+{id:'gorrolana',n:'Gorro de lana del Naval',d:'Pica, pero abriga.',r:'poco',slot:'cabeza',box:1},
+{id:'destor',n:'Destornillador de confianza',d:'El que nunca falla. Los otros cinco sí.',r:'poco',slot:'mano',box:1},
+{id:'bufanda',n:'Bufanda de la amona',d:'Tejida con amor y con sobras.',r:'poco',slot:'cuello',box:1},
+{id:'cowboy',n:'Gorro de cowboy',d:'De una despedida de soltero ajena.',r:'comun',slot:'cabeza',box:1,c:2500},
+{id:'desatascador',n:'Desatascador',d:'Herramienta multiusos. No preguntes los usos.',r:'comun',slot:'mano',box:1,c:1500},
+{id:'gorrapropa',n:'Gorra de propaganda de neumáticos',d:'Gratis con 4 ruedas.',r:'comun',slot:'cabeza',box:1},
+{id:'calcetin',n:'Calcetín solitario',d:'Su pareja desapareció en 2019.',r:'comun',slot:'mano',box:1}];
+function cosOf(id){return COS.filter(function(c){return c.id===id})[0]}
+function applyWalkerCos(){var wk=$('walker');
+ Array.prototype.slice.call(wk.querySelectorAll('.wcos')).forEach(function(e){e.remove()});
+ for(var k in (S.cq||{})){var id=S.cq[k];if(!id||!S.cos[id])continue;
+  var d=document.createElement('div');d.className='wcos';d.style.backgroundImage='url(sprites/cos-'+id+'.png)';wk.appendChild(d)}}
+function showCos(it,ctx,dup){var r=RAR[it.r];
+ $('cmr').textContent=(ctx?ctx+' · ':'')+r.n;$('cmr').style.color=r.c;
+ $('cmi').src='sprites/cos-'+it.id+'.png';
+ $('cmn').textContent=it.n;
+ $('cmd').textContent=dup?('Repetido. Sádaba te lo recompra por '+eur(r.ref)+'.'):it.d;
+ $('cmeq').hidden=!!dup;
+ $('cmeq').onclick=function(){S.cq=S.cq||{};S.cq[it.slot]=it.id;applyWalkerCos();lastSig='';save();cloudSave();$('cm').hidden=true;render()};
+ $('cmok').onclick=function(){$('cm').hidden=true};
+ $('cm').hidden=false;
+ if(it.r==='leg'){conf(innerWidth/2,innerHeight*0.3,30);conf(innerWidth/2,innerHeight*0.6,30);snd('win');ethMood(2,3000)}else if(!dup)snd('buy')}
+var LBC=7500;
+$('lbgo').onclick=function(){
+ if(S.m<LBC){$('lbstat').textContent='No llega. Sádaba no fía cajas.';snd('no');return}
+ S.m-=LBC;S.lbo=(S.lbo||0)+1;
+ var r=Math.random(),rar=r<.0008?'leg':r<.0158?'epico':r<.0958?'raro':r<.3458?'poco':'comun';
+ var pool=COS.filter(function(c){return c.r===rar&&c.box});
+ var it=pool[Math.floor(Math.random()*pool.length)];
+ if(S.cos[it.id]){S.m+=RAR[rar].ref;showCos(it,'Caja de Sádaba',true)}
+ else{S.cos[it.id]=1;lastSig='';showCos(it,'Caja de Sádaba')}
+ render();save()};
+var WPH=['Las BMW ni tocarlas.','El sarro da carácter.','Sádaba me debe una.','¿Horas extra? Las que hagan falta.','A Jokin ni lo nombres.','Esto con un cable neutro se arregla.','El chándal es de diario y de boda.'];
+var wkx=16,wkd=1;
+setInterval(function(){if(document.hidden)return;var wk=$('walker');
+ wkx+=wkd*1.3;var mx=Math.max(0,innerWidth-100);
+ if(wkx>=mx){wkx=mx;wkd=-1}if(wkx<=0){wkx=0;wkd=1}
+ wk.style.left=wkx+'px';wk.classList.toggle('flip',wkd<0)},50);
+$('walker').onclick=function(){flt('“'+WPH[Math.floor(Math.random()*WPH.length)]+'”',wkx+48,innerHeight-120,'ms');if(!mute)tone(500,0,.06,.05)};
 function nextEv(){
  for(var dt=1;dt<=1344;dt++){var tt=S.t+dt,d=Math.floor(tt/48),wd=d%7,dom=d%30+1,h=tt%48/2;
   for(var i=0;i<EV.length;i++){var e=EV[i];
@@ -597,7 +666,10 @@ MED.forEach(function(m){var d=document.createElement('div');d.className='it';
  d.innerHTML='<div><strong></strong><p></p></div><span></span>';
  mrows.push({d:d,s:d.querySelector('strong'),p:d.querySelector('p'),c:d.querySelector('span'),on:null});med.appendChild(d)});
 function renderMed(){MED.forEach(function(m,i){var v=m.v(),x=mrows[i];
- if(!S.md[m.id]&&v>=m.m){S.md[m.id]=1;ethMood(0,2500);$('log').textContent='Medalla conseguida: '+m.n;snd('win');flt('🏅 '+m.n,innerWidth/2,innerHeight*0.3,'ms');conf(innerWidth/2,innerHeight*0.28,22);save()}
+ if(!S.md[m.id]&&v>=m.m){S.md[m.id]=1;ethMood(0,2500);$('log').textContent='Medalla conseguida: '+m.n;snd('win');flt('🏅 '+m.n,innerWidth/2,innerHeight*0.3,'ms');conf(innerWidth/2,innerHeight*0.28,22);
+  var cu=COS.filter(function(c){return c.med===m.id&&!S.cos[c.id]})[0];
+  if(cu){S.cos[cu.id]=1;lastSig='';setTimeout(function(){showCos(cu,'Medalla: '+m.n)},800)}
+  save()}
  var on=!!S.md[m.id];x.d.style.display=(m.hid&&!on)?'none':'';x.s.textContent=m.n;x.p.textContent=(m.sec&&!on&&v===0)?'Condición secreta':m.d+' ('+Math.min(v,m.m)+' / '+m.m+')';
  if(x.on!==on){x.on=on;x.c.innerHTML=badge(on,40,m.k,m.col)}})}
 var DB=null,myId=null,PL=[],NM={},cloudOk=false,cloudErr='',lastSig='',SK='m';
@@ -623,7 +695,7 @@ async function onSession(ses){
  if(r.data&&r.data.state&&r.data.state.br){best=r.data.state;bts=r.data.ts||0}
  try{var lo=JSON.parse(localStorage.getItem('elt4_'+myId)||'null');if(lo&&lo.br&&lo.lg&&(lo.ts||0)>bts){best=lo;bts=lo.ts||0}}catch(e){}
  if(best){S=fixS(best);dmDay=-1}
- applyTheme();
+ applyTheme();applyWalkerCos();
  NM[myId]=nm;
  if(r.error){cloudErr='No se pudo cargar tu partida: '+r.error.message;cloudOk=false;showAuth();return}
  cloudErr='';cloudOk=true;cloudSave();loadPL();showAuth()}
@@ -635,7 +707,7 @@ function showAuth(){var g=$('gate'),a=$('auth');
  $('ai').onclick=function(){sb.auth.signInWithPassword({email:$('ae').value,password:$('ap').value}).then(function(r){if(r.error)$('am').textContent=r.error.message})};
  $('ac').onclick=function(){sb.auth.signUp({email:$('ae').value,password:$('ap').value,options:{data:{name:$('an').value||'Ethan'}}}).then(function(r){$('am').textContent=r.error?r.error.message:'Cuenta creada. Si pide confirmar el email, mira tu correo.'})}}
 function renderProf(){
- var sig=[PL.map(function(x){return x.id+x.d.done+x.d.m+(x.d.md||[]).length+x.d.av+x.d.fm}).join()+SK,Object.keys(NM).length,Object.keys(S.md).join(),S.done,S.own,cloudOk,cloudErr,S.av,S.fm,mute,S.th,Object.keys(S.tho||{}).join(),THEMES.map(function(t){return S.m>=t.c?1:0}).join('')].join('|');
+ var sig=[PL.map(function(x){return x.id+x.d.done+x.d.m+(x.d.md||[]).length+x.d.av+x.d.fm}).join()+SK,Object.keys(NM).length,Object.keys(S.md).join(),S.done,S.own,cloudOk,cloudErr,S.av,S.fm,mute,S.th,Object.keys(S.tho||{}).join(),THEMES.map(function(t){return S.m>=t.c?1:0}).join(''),Object.keys(S.cos||{}).join(),JSON.stringify(S.cq||{}),COS.map(function(c){return c.c&&S.m>=c.c?1:0}).join('')].join('|');
  if(sig===lastSig)return;lastSig=sig;
  var p=$('prof');p.innerHTML='';
  var h=document.createElement('div');h.style.cssText='display:flex;align-items:center;gap:8px;font-size:22px;font-weight:800';
@@ -658,6 +730,22 @@ function renderProf(){
   bt.textContent=onn?'Puesto':owned?'Poner':'Comprar';bt.disabled=onn||(!owned&&S.m<t.c);
   bt.onclick=function(ev){if(!owned){if(S.m<t.c)return;S.m-=t.c;S.tho[t.id]=1;snd('buy');conf(ev.clientX||innerWidth/2,ev.clientY||innerHeight/2,16)}
    S.th=t.id;applyTheme();lastSig='';save();cloudSave();renderProf();render()};
+  d.appendChild(bt);p.appendChild(d)});
+ var ch=document.createElement('h2');ch.textContent='Cosméticos';ch.style.margin='14px 0 8px';p.appendChild(ch);
+ var csub=document.createElement('p');csub.className='sub';csub.style.margin='0 0 8px';csub.textContent='Para el Ethan que pasea. Se consiguen en la caja de Sádaba, comprando o por medallas.';p.appendChild(csub);
+ COS.forEach(function(c){var owned=S.cos[c.id],eq=S.cq&&S.cq[c.slot]===c.id,r=RAR[c.r];
+  var d=document.createElement('div');d.className='thb';if(eq)d.style.outline='2px solid var(--yel)';
+  var w2=document.createElement('div'),n2=document.createElement('strong');n2.textContent=c.n;n2.style.color=owned?r.c:'';if(!owned)d.style.opacity=.65;
+  w2.appendChild(n2);
+  var q2=document.createElement('p');q2.className='sub';q2.style.margin='0';
+  q2.textContent=(r.n+' · ')+(owned?c.d:(c.med?'Medalla: '+medOf(c.med).n:(c.c?'Compra o caja':'Solo en la caja de Sádaba')));
+  w2.appendChild(q2);d.appendChild(w2);
+  var bt=document.createElement('button');bt.className='sm';bt.style.cssText='width:auto;margin:0;padding:8px 14px;flex:none';
+  if(owned){bt.textContent=eq?'Quitar':'Poner';
+   bt.onclick=function(){S.cq=S.cq||{};if(eq)delete S.cq[c.slot];else S.cq[c.slot]=c.id;applyWalkerCos();lastSig='';save();cloudSave();renderProf()}}
+  else if(c.c){bt.textContent=eur(c.c);bt.disabled=S.m<c.c;
+   bt.onclick=function(ev){if(S.m<c.c)return;S.m-=c.c;S.cos[c.id]=1;lastSig='';conf(ev.clientX||innerWidth/2,ev.clientY||innerHeight/2,14);showCos(c,'Comprado');render();save()}}
+  else{bt.textContent='🔒';bt.disabled=true}
   d.appendChild(bt);p.appendChild(d)});
  var sbn=document.createElement('button');sbn.className='sm';sbn.style.margin='10px 0 0';sbn.textContent='Sonido y vibración: '+(mute?'desactivados':'activados');sbn.onclick=function(){mute=!mute;try{localStorage.setItem('elt_mute',mute?'1':'0')}catch(e){}lastSig='';renderProf()};p.appendChild(sbn);
  var l=$('plist');l.innerHTML='';
@@ -701,6 +789,7 @@ function render(){
   else if(i===S.own){r.s.textContent=it.n;r.p.textContent=it.d;r.b.textContent=eur(it.c);r.b.disabled=S.m<it.c||busy;r.b.classList.toggle('can',S.m>=it.c&&!busy);
    var pc=Math.min(100,S.m/it.c*100);r.d.style.backgroundImage='linear-gradient(90deg,rgba(201,216,86,.22) '+pc+'%,transparent '+pc+'%)'}
   else{r.s.textContent='???';r.p.textContent='Consigue lo anterior primero';r.b.classList.remove('can');r.d.style.backgroundImage=''}});
+ $('lbstat').textContent='Cajas abiertas: '+(S.lbo||0)+' · Cosméticos: '+Object.keys(S.cos||{}).length+'/'+COS.length;
  var bal=(S.gw||0)-(S.gl||0);
  $('bstat').textContent=(S.gwc||S.glc)?('Upgrades ganados: '+(S.gwc||0)+' · Perdidos: '+(S.glc||0)+' · Balance: '+(bal<0?'-':'+')+eur(Math.abs(bal))+(bal<0?' · Luisillo te invita a un vino de pena.':' · Te van a acabar vetando.')):'Aún no has jugado. La banca espera.';
  renderDM();checkMS();renderExtra();renderHUD();renderEth()}
@@ -717,6 +806,6 @@ setInterval(function(){var sp=spd();S.e=Math.min(maxE(),S.e+regen()*0.2*sp);S.m+
 setInterval(save,5000);setInterval(cloudSave,10000);window.addEventListener('pagehide',function(){save();cloudSave()});
 document.addEventListener('visibilitychange',function(){if(document.hidden){save();cloudSave()}});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
-applyTheme();
+applyTheme();applyWalkerCos();
 render();
 </script></body></html>
