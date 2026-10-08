@@ -109,9 +109,11 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 #hud .mi.done{color:var(--mute);text-decoration:line-through}
 #hud .mbar{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:3px}
 #hud .mbar i{display:block;height:100%;background:var(--yel)}
+#eth{width:64px;height:64px;background:url(sprites/ethan-sheet.png) 0 0/384px 64px no-repeat;image-rendering:pixelated;flex:none}
 </style></head><body><main>
-<h1>Ethan life tycoon</h1>
-<p class="sub">Ethan, mecánico. Cada hora extra son euros.</p>
+<div style="display:flex;align-items:center;gap:10px"><div id="eth"></div><div><h1>Ethan life tycoon</h1>
+<p class="sub" style="margin:2px 0 0">Ethan, mecánico. Cada hora extra son euros.</p></div></div>
+<div style="height:10px"></div>
 <div class="stats">
 <div class="st"><b id="m">€0</b><span>Dinero</span></div>
 <div class="st"><b id="per">€1</b><span>Por hora extra</span></div>
@@ -268,6 +270,17 @@ function popM(){var m=$('m');m.classList.remove('pop');void m.offsetWidth;m.clas
 var cmb=0,lastW=0;
 function cmbM(){return 1+Math.min(4,Math.floor(cmb/8))*0.5}
 var CLBL={1.5:'Ethan coge ritmo',2:'El encargado sonríe',2.5:'Modo estajanovista',3:'Ethan ya no siente los brazos'};
+var ethTmp=-1,ethTmpUntil=0,ethIdx=-1,darkMQ=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');
+function ethMood(i,ms){ethTmp=i;ethTmpUntil=Date.now()+(ms||2200)}
+function renderEth(){var i;
+ if(Date.now()<ethTmpUntil)i=ethTmp;
+ else if(S.e<1)i=1;
+ else if(boostOn())i=4;
+ else if(cmb>=8)i=0;
+ else if(S.m>=1000000)i=2;
+ else if(darkMQ&&darkMQ.matches&&(S.th||'taller')==='taller')i=5;
+ else i=3;
+ if(i!==ethIdx){ethIdx=i;$('eth').style.backgroundPosition=(-64*i)+'px 0'}}
 var CRIT=['¡Pago en B!','¡El jefe no mira!','¡Chapuza cobrada dos veces!','¡Factura sin IVA!'];
 var GOLD=[
 {e:'🚐',t:'El chatarrero compra "material sobrante" del taller. Nadie pregunta.',f:function(){return Math.max(per()*15,ps()*45)}},
@@ -278,7 +291,7 @@ function spawnGold(){if(busy||document.hidden||document.getElementById('gold'))r
  b.onclick=function(ev){b.remove();snd('gold');var x=ev.clientX||innerWidth/2,y=ev.clientY||innerHeight/2;
   if(g.b){S.bo=S.t+g.b;flt('⚡ x2 · '+(g.b/2)+'h de juego',x,y,'crit')}
   else{var v=g.f();S.m+=v;flt('+'+eur(v),x,y,'crit');popM()}
-  conf(x,y,18);$('log').textContent=g.t;render();save()};
+  conf(x,y,18);ethMood(2,2200);$('log').textContent=g.t;render();save()};
  document.body.appendChild(b);setTimeout(function(){if(b.parentNode)b.remove()},8200)}
 (function sg(){setTimeout(function(){spawnGold();sg()},110000+Math.random()*130000)})();
 var MS=[[100,'Primeros €100. El jefe dice que no te acostumbres.'],[1000,'€1.000. En Sestao eso ya es ser rico.'],[10000,'€10.000. Hacienda todavía no sabe nada.'],[100000,'€100.000. El taller es tuyo de facto.'],[1000000,'€1.000.000. Hasta Jokin te respeta.']];
@@ -319,10 +332,10 @@ $('bgo').onclick=function(){
  if(a>Math.floor(S.m)){$('bstat').textContent='No tienes tanto. La banca no fía, ni a Ethan.';snd('no');return}
  busy=true;S.m-=a;render();
  roll({q:'¿'+eur(a)+' a x'+gx+'?',p:p,yes:'¡x'+gx+'!',no:'Para la banca',wait:12},function(ok){busy=false;
-  if(ok){var wn=Math.round(a*gx);S.m+=wn;S.gw=(S.gw||0)+wn-a;S.gwc=(S.gwc||0)+1;
+  if(ok){var wn=Math.round(a*gx);S.m+=wn;S.gw=(S.gw||0)+wn-a;S.gwc=(S.gwc||0)+1;ethMood(2,2500);
    $('log').textContent='Upgrade conseguido: la banca llora. +'+eur(wn-a);
    conf(innerWidth/2,innerHeight/2,20);flt('+'+eur(wn-a),innerWidth/2,innerHeight*0.4,'crit');popM()}
-  else{S.gl=(S.gl||0)+a;S.glc=(S.glc||0)+1;
+  else{S.gl=(S.gl||0)+a;S.glc=(S.glc||0)+1;ethMood(1,2500);
    $('log').textContent='Upgrade fallido. La banca gana. Como siempre. -'+eur(a)}
   render();save()})};
 var BAD=[
@@ -341,8 +354,8 @@ function spawnBad(){if(busy||document.hidden||(sb&&!myId)||Math.floor(S.m)<1000)
  else{b=BAD[Math.floor(Math.random()*BAD.length)];loss=Math.max(50,Math.floor(S.m*b.f));esc=.35}
  busy=true;snd('no');
  roll({q:b.n+': -'+eur(loss)+'. ¿Te libras?',p:esc,yes:'¡Te libras!',no:'A pagar',wait:8},function(ok){busy=false;
-  if(ok){$('log').textContent=b.n+': Ethan se escaquea. Esta vez.'}
-  else{S.m=Math.max(0,S.m-loss);$('log').textContent=b.t+' -'+eur(loss);
+  if(ok){ethMood(0,1800);$('log').textContent=b.n+': Ethan se escaquea. Esta vez.'}
+  else{S.m=Math.max(0,S.m-loss);ethMood(1,3000);$('log').textContent=b.t+' -'+eur(loss);
    flt('-'+eur(loss),innerWidth/2,innerHeight*0.35,'bad');shk($('m').parentNode);snd('no')}
   render();save()})}
 (function bl(){setTimeout(function(){spawnBad();bl()},200000+Math.random()*220000)})();
@@ -355,8 +368,8 @@ function nutGame(){if(mgOn||busy||Date.now()-mgLast<90000)return;mgOn=true;busy=
  var to=setTimeout(function(){fin(false,true)},4000);
  function fin(hit,timeout){clearInterval(iv);clearTimeout(to);$('mgb').disabled=true;
   var g=Math.round(per()*10);
-  if(hit){S.m+=g;$('mgr').textContent='¡Clavada! +'+eur(g);snd('win');conf(innerWidth/2,innerHeight/2,16)}
-  else{$('mgr').textContent=timeout?'Ethan se queda mirando la tuerca.':'Pasada de rosca. Ni un duro.';snd('no')}
+  if(hit){S.m+=g;ethMood(2,2200);$('mgr').textContent='¡Clavada! +'+eur(g);snd('win');conf(innerWidth/2,innerHeight/2,16)}
+  else{ethMood(1,2200);$('mgr').textContent=timeout?'Ethan se queda mirando la tuerca.':'Pasada de rosca. Ni un duro.';snd('no')}
   setTimeout(function(){$('mg').hidden=true;mgOn=false;busy=false;render();save()},900)}
  $('mgb').onclick=function(){var cur=parseFloat($('mgcur').style.left)||0,hit=cur>=z&&cur<=z+zw;fin(hit,false)}}
 function circleGame(){if(mgOn||busy||Date.now()-mgLast<90000)return;mgOn=true;busy=true;mgLast=Date.now();
@@ -374,6 +387,7 @@ function circleGame(){if(mgOn||busy||Date.now()-mgLast<90000)return;mgOn=true;bu
  function fin(){var all=hits===total;
   if(all){var bn=Math.round(per()*6);earned+=bn;S.m+=bn}
   $('cgr').textContent=hits+'/'+total+' tuercas · +'+eur(earned)+(all?' · ¡PLENO!':hits===0?' · Reflejos de aita.':'');
+  ethMood(all?2:hits?0:1,2200);
   snd(all?'win':hits?'buy':'no');if(all)conf(innerWidth/2,innerHeight/2,18);
   setTimeout(function(){$('cg').hidden=true;mgOn=false;busy=false;render();save()},1200)}
  next()}
@@ -583,7 +597,7 @@ MED.forEach(function(m){var d=document.createElement('div');d.className='it';
  d.innerHTML='<div><strong></strong><p></p></div><span></span>';
  mrows.push({d:d,s:d.querySelector('strong'),p:d.querySelector('p'),c:d.querySelector('span'),on:null});med.appendChild(d)});
 function renderMed(){MED.forEach(function(m,i){var v=m.v(),x=mrows[i];
- if(!S.md[m.id]&&v>=m.m){S.md[m.id]=1;$('log').textContent='Medalla conseguida: '+m.n;snd('win');flt('🏅 '+m.n,innerWidth/2,innerHeight*0.3,'ms');conf(innerWidth/2,innerHeight*0.28,22);save()}
+ if(!S.md[m.id]&&v>=m.m){S.md[m.id]=1;ethMood(0,2500);$('log').textContent='Medalla conseguida: '+m.n;snd('win');flt('🏅 '+m.n,innerWidth/2,innerHeight*0.3,'ms');conf(innerWidth/2,innerHeight*0.28,22);save()}
  var on=!!S.md[m.id];x.d.style.display=(m.hid&&!on)?'none':'';x.s.textContent=m.n;x.p.textContent=(m.sec&&!on&&v===0)?'Condición secreta':m.d+' ('+Math.min(v,m.m)+' / '+m.m+')';
  if(x.on!==on){x.on=on;x.c.innerHTML=badge(on,40,m.k,m.col)}})}
 var DB=null,myId=null,PL=[],NM={},cloudOk=false,cloudErr='',lastSig='',SK='m';
@@ -668,7 +682,7 @@ $('work').onclick=function(ev){
  S.e-=1;S.m+=gain;S.done++;
  var x=ev.clientX||innerWidth/2,y=ev.clientY||innerHeight/2;
  flt('+'+eur(gain),x,y-14,crit?'crit':'');popM();
- if(crit){S.crc=(S.crc||0)+1;$('log').textContent=CRIT[Math.floor(Math.random()*CRIT.length)]+' x5: +'+eur(gain);conf(x,y,12);snd('crit');shk($('work'))}
+ if(crit){S.crc=(S.crc||0)+1;ethMood(2);$('log').textContent=CRIT[Math.floor(Math.random()*CRIT.length)]+' x5: +'+eur(gain);conf(x,y,12);snd('crit');shk($('work'))}
  else{$('log').textContent=JOBS[Math.floor(Math.random()*JOBS.length)]+': +'+eur(gain);if(!mute)tone(440+Math.min(cmb,40)*15,0,.04,.045)}
  if(M>1){$('cmbw').textContent='🔥 Racha x'+M+(CLBL[M]?' · '+CLBL[M]:'')}else $('cmbw').textContent='';
  render();
@@ -689,7 +703,7 @@ function render(){
   else{r.s.textContent='???';r.p.textContent='Consigue lo anterior primero';r.b.classList.remove('can');r.d.style.backgroundImage=''}});
  var bal=(S.gw||0)-(S.gl||0);
  $('bstat').textContent=(S.gwc||S.glc)?('Upgrades ganados: '+(S.gwc||0)+' · Perdidos: '+(S.glc||0)+' · Balance: '+(bal<0?'-':'+')+eur(Math.abs(bal))+(bal<0?' · Luisillo te invita a un vino de pena.':' · Te van a acabar vetando.')):'Aún no has jugado. La banca espera.';
- renderDM();checkMS();renderExtra();renderHUD()}
+ renderDM();checkMS();renderExtra();renderHUD();renderEth()}
 function save(){S.ts=Date.now();if(sb){if(myId){try{localStorage.setItem('elt4_'+myId,JSON.stringify(S))}catch(e){}}return}try{localStorage.setItem('elt3',JSON.stringify(S))}catch(e){}}
 var aacc=0;
 setInterval(function(){var sp=spd();S.e=Math.min(maxE(),S.e+regen()*0.2*sp);S.m+=ps()*0.2*sp;
