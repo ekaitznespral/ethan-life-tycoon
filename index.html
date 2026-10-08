@@ -86,6 +86,14 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 #spd button.on{background:var(--yel);border-color:var(--yel);color:#1f2f25}
 #evw{margin:10px 0 0}
 #evf{height:100%;width:0;background:var(--blue);transition:width .2s linear}
+.fl.bad{font-size:24px;color:#e05548}
+#mg{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:28;padding:16px}
+#mgc{background:var(--card);border-radius:16px;padding:20px;text-align:center;width:min(300px,100%)}
+#mgbar{position:relative;height:26px;border-radius:13px;background:var(--line);margin:14px 0;overflow:hidden}
+#mgz{position:absolute;top:0;bottom:0;background:#4caf50;opacity:.85;border-radius:13px}
+#mgcur{position:absolute;top:0;bottom:0;width:4px;background:var(--ink)}
+#mgb{padding:12px 32px;font:800 18px 'Bricolage Grotesque',system-ui,sans-serif;background:var(--yel);color:#1f2f25;border:0;border-radius:10px;cursor:pointer}
+.thb{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--card);border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--edge)}
 </style></head><body><main>
 <h1>Ethan life tycoon</h1>
 <p class="sub">Ethan, mecánico. Cada hora extra son euros.</p>
@@ -97,14 +105,17 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 <div id="clk" class="sub" style="margin:12px 0 0"></div>
 <div id="spd"></div>
 <div id="evw" hidden><div class="en" style="margin:0 0 4px"><span id="evn"></span><span id="evt2"></span></div><div class="bar" style="height:6px"><div id="evf"></div></div></div>
-<nav id="tabs"><button class="on" data-t="t1">Taller</button><button data-t="t2">Sestao</button><button data-t="t5">Timba</button><button data-t="t3">Logros</button><button data-t="t4">Perfil</button></nav>
+<nav id="tabs"><button class="on" data-t="t1">Taller</button><button data-t="t2">Sestao</button><button data-t="t5">Upgrader</button><button data-t="t3">Logros</button><button data-t="t4">Perfil</button></nav>
 <section id="t1">
 <div class="en"><span>Energía</span><span id="et"></span></div>
 <div class="bar"><div id="fill"></div></div>
 <button id="work">Echar hora extra</button>
 <div id="cmbw"></div>
 <div id="log" aria-live="polite">Ethan ficha en el taller.</div>
-<h2>Mejoras</h2>
+<h2>Encargos del día</h2>
+<p class="sub" id="dstr" style="margin:0 0 8px"></p>
+<div id="dms"></div>
+<h2 style="margin-top:16px">Mejoras</h2>
 <div id="ups"></div>
 <h2 style="margin-top:16px">Tienda</h2>
 <div id="shop"></div>
@@ -121,11 +132,12 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 <div id="gar"></div>
 </section>
 <section id="t5" hidden>
-<p class="sub" style="margin-top:12px">La timba del bar del Naval. Elige apuesta y multiplicador, coloca la zona buena de la ruleta donde quieras y gira la flecha. La banca siempre gana, como Hacienda.</p>
-<input class="in" id="bamt" type="number" min="1" inputmode="numeric" placeholder="¿Cuánto te juegas?">
+<p class="sub" style="margin-top:12px">El Upgrader del bar del Naval. Mete dinero, elige el multiplicador que quieras, coloca la zona buena de la ruleta y gira la flecha. El porcentaje siempre es un pelín menos del justo: la banca vive de esto.</p>
+<input class="in" id="bamt" type="number" min="1" inputmode="numeric" placeholder="¿Cuánto metes?">
 <div id="bqk" style="display:flex;gap:6px;margin:4px 0 8px"></div>
-<div id="bmul" style="display:flex;gap:6px;margin:0 0 10px"></div>
-<button id="bgo" class="sm" style="margin:0 0 8px">Jugar</button>
+<div id="bmul" style="display:flex;gap:6px;margin:0 0 8px"></div>
+<div style="display:flex;gap:8px;align-items:center;margin:0 0 10px"><span class="sub" style="margin:0;flex:none">Multiplicador libre:</span><input class="in" id="bx" type="number" min="1.1" max="100" step="0.1" value="2" style="margin:0"></div>
+<button id="bgo" class="sm" style="margin:0 0 8px">Upgradear</button>
 <p class="sub" id="bstat" style="margin:0"></p>
 </section>
 <section id="t3" hidden>
@@ -143,6 +155,9 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 <div id="wr"><div id="wh"></div><div id="pr"><div id="ptr"></div></div></div>
 <div id="lg" class="sub" style="margin:0"></div><button id="spin">Girar la flecha</button><div id="res"></div></div></div>
 <div id="gate" hidden><div id="gatec"><h1 style="font-size:28px;margin:0 0 4px">Ethan life tycoon</h1><p class="sub" style="margin:0 0 10px">Entra para jugar. Tu partida se guarda en tu cuenta.</p><div id="auth"></div></div></div>
+<div id="mg" hidden><div id="mgc"><h3 style="margin:0">¡Aprieta la tuerca!</h3><p class="sub" style="margin:4px 0 0">Para el cursor en la zona verde.</p>
+<div id="mgbar"><div id="mgz"></div><div id="mgcur"></div></div>
+<button id="mgb">¡AHORA!</button><div id="mgr" style="font-weight:800;min-height:24px;margin-top:8px"></div></div></div>
 <div id="cv" hidden><div id="cvc"><button id="cvx" aria-label="Cerrar">&#10005;</button>
 <h3 id="cvt" style="margin:0;font-size:22px"></h3><div class="sub" id="cvp" style="margin:4px 0 0"></div>
 <button id="cvo">Vale</button></div></div>
@@ -186,7 +201,14 @@ var EV=[
 {id:'jokin',n:'Ojito con Jokin',d:'Una vez cada 2 semanas, a cualquier hora',jk:1,p:.03,msg:'Empalado por Jokin'},
 {id:'itv',n:'Pasar la ITV a la primera',d:'Día 15 a las 10:00',dom:15,h:10,p:.1},
 {id:'bajera',n:'Fiesta en la bajera',d:'Sábados a las 23:30',days:[5],h:23.5,p:.3},
-{id:'alikebab',n:'Kebab caducado gratis de Ali',d:'Domingos a las 14:00',days:[6],h:14,p:.12,msg:'Ali invita al kebab. El pollo llevaba tres días fuera. Ethan sobrevive de milagro.'}];
+{id:'alikebab',n:'Kebab caducado gratis de Ali',d:'Domingos a las 14:00',days:[6],h:14,p:.12,msg:'Ali invita al kebab. El pollo llevaba tres días fuera. Ethan sobrevive de milagro.'},
+{id:'uxune',n:'Desamor con Uxune',d:'Martes a las 23:00',days:[1],h:23,p:.05,msg:'Uxune le deja en doble check azul para siempre. Ethan mete tres horas extra para olvidar.'},
+{id:'itsasne',n:'Desamor con Itsasne',d:'Jueves a las 23:00',days:[3],h:23,p:.05,msg:'Itsasne vuelve con su ex. Ethan finge que no le importa delante del C4.'},
+{id:'nomo',n:'El percance de la Nomo',d:'Miércoles a las 22:00, rarísimo',days:[2],h:22,p:.02,msg:'La novia de un colega se le insinúa. Era una trampa para ver cómo reaccionaba. Ethan da la peor reacción posible. Histórico de Sestao.'},
+{id:'gasolinera',n:'Lío en la gasolinera con la hermanastra',d:'Madrugadas de sábado a las 03:30 (a partir del día 30)',days:[5],h:3.5,p:.04,minD:30,msg:'Tocamientos mutuos en la gasolinera. Lo que pasa en el Repsol se queda en el Repsol.'},
+{id:'novia9',n:'Ethan se echa novia buenorra',d:'Domingos a las 17:00, cuando Ethan ya es adulto (a partir del día 60)',days:[6],h:17,p:.06,minD:60,msg:'Ethan vuelve del Max Center con novia buenorra. Nadie sabe cómo. Ni él.'},
+{id:'cable',n:'El aita con cable neutro de cinturón',d:'Día 1 a las 12:00',dom:1,h:12,p:.25,msg:'El aita aparece con un cable neutro de cinturón. Dice que aguanta más que el cuero.'},
+{id:'funeral',n:'El funeral del aita',d:'Día 20 a las 11:00, cuando Ethan ya es muy adulto (a partir del día 120)',dom:20,h:11,p:.08,minD:120,after:'cable',msg:'Funeral del aita. Lo entierran con el cable neutro puesto. DEP.'}];
 var UP=[
 {id:'a1',n:'Becario sin contrato',d:'Echa 1 hora extra por segundo él solo (si hay energía). Cobra en experiencia.',c:4000},
 {id:'a2',n:'Cuadrilla de becarios',d:'3 horas extra por segundo automáticas. La Inspección de Trabajo no sube a Sestao.',c:80000,req:'a1'},
@@ -195,8 +217,8 @@ var UP=[
 {id:'s10',n:'Velocidad x10 · Pacto con Jokin',d:'Desbloquea el botón x10. El precio no se paga en euros.',c:3000000,sp:10,req:'s4'}];
 var JOBS=['Hora extra','Otra hora extra','Hora extra sin cobrar el café','Hora extra de viernes','Hora extra de última hora'];
 var DN=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],MN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-function freshS(){return {m:0,e:20,done:0,own:0,br:{},sn:0,ga:{},lg:{},td:{},t:16,acc:0,md:{},bo:0,ms:0,up:{},sp:1}}
-function fixS(s){if(!s.md)s.md={};s.bo=s.bo||0;if(!s.up)s.up={};if([1,2,4,10].indexOf(s.sp)<0)s.sp=1;if(s.ms===undefined){s.ms=0;var th=[100,1000,10000,100000,1000000];while(s.ms<th.length&&s.m>=th[s.ms])s.ms++}return s}
+function freshS(){return {m:0,e:20,done:0,own:0,br:{},sn:0,ga:{},lg:{},td:{},t:16,acc:0,md:{},bo:0,ms:0,up:{},sp:1,tho:{},th:'taller',dstr:0,crc:0}}
+function fixS(s){if(!s.md)s.md={};s.bo=s.bo||0;if(!s.up)s.up={};if([1,2,4,10].indexOf(s.sp)<0)s.sp=1;if(!s.tho)s.tho={};if(!s.th)s.th='taller';s.dstr=s.dstr||0;s.crc=s.crc||0;if(s.ms===undefined){s.ms=0;var th=[100,1000,10000,100000,1000000];while(s.ms<th.length&&s.m>=th[s.ms])s.ms++}return s}
 var S=freshS();
 try{var raw=localStorage.getItem('elt3');if(raw){var p=JSON.parse(raw);if(p&&p.br&&p.lg){S=p}}}catch(e){}
 fixS(S);
@@ -265,30 +287,110 @@ SPDS.forEach(function(s){var b=document.createElement('button');spb.push(b);
  b.onclick=function(){if(s.k&&!S.up[s.k]){$('log').textContent='Desbloquea la velocidad x'+s.v+' en Mejoras.';snd('no');return}
   S.sp=s.v;if(!mute)tone(600,0,.06,.06);render();save()};
  spw.appendChild(b)});
-var GMB=[{x:1.5,p:.6},{x:2,p:.45},{x:5,p:.17},{x:10,p:.08}],gmi=1,bmw=$('bmul');
-GMB.forEach(function(g,i){var b=document.createElement('button');b.textContent='x'+g.x+' · '+pct(g.p);
- b.className=i===gmi?'on':'';b.onclick=function(){gmi=i;Array.prototype.forEach.call(bmw.children,function(x,j){x.className=j===gmi?'on':''});renderBet()};bmw.appendChild(b)});
+var UPX=[1.5,2,5,10],gx=2,bmw=$('bmul');
+function gpx(x){return Math.min(.85,.9/x)}
+function setGX(x){gx=Math.round(Math.max(1.1,Math.min(100,x))*10)/10;
+ Array.prototype.forEach.call(bmw.children,function(b,j){b.className=UPX[j]===gx?'on':''});
+ $('bx').value=gx;renderBet()}
+UPX.forEach(function(x){var b=document.createElement('button');b.textContent='x'+x+' · '+pct(gpx(x));
+ b.className=x===gx?'on':'';b.onclick=function(){setGX(x)};bmw.appendChild(b)});
 [10,25,50,100].forEach(function(pc){var b=document.createElement('button');b.textContent=pc===100?'Todo':pc+'%';
  b.onclick=function(){$('bamt').value=Math.max(1,Math.floor(S.m*pc/100));renderBet()};$('bqk').appendChild(b)});
-function renderBet(){var g=GMB[gmi],a=Math.floor(+$('bamt').value||0);
- $('bgo').textContent='Jugar'+(a>0?' '+eur(a):'')+' a x'+g.x+' ('+pct(g.p)+' de ganar)'}
-$('bamt').oninput=renderBet;renderBet();
+function renderBet(){var a=Math.floor(+$('bamt').value||0),p=gpx(gx);
+ $('bgo').textContent='Upgradear'+(a>0?' '+eur(a):'')+' a x'+gx+(a>0?' → '+eur(Math.round(a*gx)):'')+' ('+pct(p)+')'}
+$('bamt').oninput=renderBet;
+$('bx').onchange=function(){var v=parseFloat($('bx').value);if(v)setGX(v)};
+renderBet();
 $('bgo').onclick=function(){
  if(busy)return;
- var g=GMB[gmi],a=Math.floor(+$('bamt').value||0);
+ var a=Math.floor(+$('bamt').value||0),p=gpx(gx);
  if(a<1){$('bstat').textContent='Pon una cantidad. La banca no acepta calderilla imaginaria.';snd('no');return}
  if(a>Math.floor(S.m)){$('bstat').textContent='No tienes tanto. La banca no fía, ni a Ethan.';snd('no');return}
  busy=true;S.m-=a;render();
- roll({q:'¿'+eur(a)+' a x'+g.x+'?',p:g.p,yes:'¡x'+g.x+'!',no:'Para la banca',wait:12},function(ok){busy=false;
-  if(ok){var wn=Math.round(a*g.x);S.m+=wn;S.gw=(S.gw||0)+wn-a;S.gwc=(S.gwc||0)+1;
-   $('log').textContent='Timba ganada: la banca llora. +'+eur(wn-a);
+ roll({q:'¿'+eur(a)+' a x'+gx+'?',p:p,yes:'¡x'+gx+'!',no:'Para la banca',wait:12},function(ok){busy=false;
+  if(ok){var wn=Math.round(a*gx);S.m+=wn;S.gw=(S.gw||0)+wn-a;S.gwc=(S.gwc||0)+1;
+   $('log').textContent='Upgrade conseguido: la banca llora. +'+eur(wn-a);
    conf(innerWidth/2,innerHeight/2,20);flt('+'+eur(wn-a),innerWidth/2,innerHeight*0.4,'crit');popM()}
   else{S.gl=(S.gl||0)+a;S.glc=(S.glc||0)+1;
-   $('log').textContent='La banca gana. Como siempre. -'+eur(a)}
+   $('log').textContent='Upgrade fallido. La banca gana. Como siempre. -'+eur(a)}
   render();save()})};
+var BAD=[
+{n:'Sádaba te estafa',t:'Sádaba te coloca una "inversión segura". Era una estampita firmada.',f:.08},
+{n:'Jokin te da por culo',t:'Jokin aparece por detrás sin avisar. Como siempre.',f:.1},
+{n:'Multa de la OTA',t:'La OTA multa al C4. En Sestao. Sin pintura azul ni nada.',f:.05},
+{n:'Hacienda husmea',t:'Hacienda pregunta por los sobres del jefe. Toca regularizar.',f:.12}];
+function spawnBad(){if(busy||document.hidden||(sb&&!myId)||Math.floor(S.m)<1000)return;
+ var b=BAD[Math.random()*BAD.length|0],loss=Math.max(50,Math.floor(S.m*b.f));
+ busy=true;snd('no');
+ roll({q:b.n+': -'+eur(loss)+'. ¿Te libras?',p:.35,yes:'¡Te libras!',no:'A pagar',wait:8},function(ok){busy=false;
+  if(ok){$('log').textContent=b.n+': Ethan se escaquea. Esta vez.'}
+  else{S.m=Math.max(0,S.m-loss);$('log').textContent=b.t+' -'+eur(loss);
+   flt('-'+eur(loss),innerWidth/2,innerHeight*0.35,'bad');shk($('m').parentNode);snd('no')}
+  render();save()})}
+(function bl(){setTimeout(function(){spawnBad();bl()},100000+Math.random()*120000)})();
+var mgOn=false;
+function nutGame(){if(mgOn||busy)return;mgOn=true;busy=true;
+ var z=10+Math.random()*60,zw=18;
+ $('mgz').style.left=z+'%';$('mgz').style.width=zw+'%';
+ $('mgr').textContent='';$('mgb').disabled=false;$('mg').hidden=false;
+ var t0=Date.now(),iv=setInterval(function(){var ph=(Date.now()-t0)/900%2,pos=ph<1?ph:2-ph;$('mgcur').style.left=(pos*96+2)+'%'},16);
+ var to=setTimeout(function(){fin(false,true)},4000);
+ function fin(hit,timeout){clearInterval(iv);clearTimeout(to);$('mgb').disabled=true;
+  var g=Math.round(per()*10);
+  if(hit){S.m+=g;$('mgr').textContent='¡Clavada! +'+eur(g);snd('win');conf(innerWidth/2,innerHeight/2,16)}
+  else{$('mgr').textContent=timeout?'Ethan se queda mirando la tuerca.':'Pasada de rosca. Ni un duro.';snd('no')}
+  setTimeout(function(){$('mg').hidden=true;mgOn=false;busy=false;render();save()},900)}
+ $('mgb').onclick=function(){var cur=parseFloat($('mgcur').style.left)||0,hit=cur>=z&&cur<=z+zw;fin(hit,false)}}
+function totLg(){var t=0;for(var k in S.lg)t+=S.lg[k];return t}
+var DMP=[
+{k:'work',tx:'El jefe lo pide por huevos: mete {t} horas extra',t:function(){return 30+10*Math.floor(Math.random()*5)},v:function(){return S.done}},
+{k:'upg',tx:'Recupera lo del finde: gana {t} upgrades',t:function(){return 2+Math.floor(Math.random()*2)},v:function(){return S.gwc||0}},
+{k:'crit',tx:'Chapuzas finas: clava {t} críticos',t:function(){return 3+Math.floor(Math.random()*3)},v:function(){return S.crc||0}},
+{k:'buy',tx:'Sádaba insiste: compra {t} objeto de la tienda',t:function(){return 1},v:function(){return S.own}},
+{k:'gar',tx:'Ladrillo seguro: compra {t} garaje',t:function(){return 1},v:function(){return Object.keys(S.ga).length}},
+{k:'ev',tx:'Que la vida pase: presencia {t} sucesos',t:function(){return 2},v:function(){return totLg()}}];
+function dmDef(k){return DMP.filter(function(p){return p.k===k})[0]}
+function genDM(day){
+ if(S.dsd!==undefined&&S.dsd<day-1)S.dstr=0;
+ var pool=DMP.filter(function(p){return !(p.k==='buy'&&S.own>=ITEMS.length)&&!(p.k==='gar'&&Object.keys(S.ga).length>=GAR.length)}).slice();
+ var list=[];
+ while(list.length<3&&pool.length){var p=pool.splice(Math.floor(Math.random()*pool.length),1)[0];
+  list.push({k:p.k,t:p.t(),b:p.v(),c:0})}
+ S.dm={d:day,l:list};save()}
+function dmReward(){return Math.floor(Math.max(300,per()*60+ps()*90)*(1+0.1*Math.min(10,S.dstr||0)))}
+var dmDay=-1,dmRows=[];
+function renderDM(){
+ if(!S.dm)return;
+ if(S.dm.d!==dmDay){dmDay=S.dm.d;var w=$('dms');w.innerHTML='';dmRows=[];
+  S.dm.l.forEach(function(ms){var d=document.createElement('div');d.className='it';
+   d.innerHTML='<div><strong></strong><p></p></div><button></button>';
+   dmRows.push({s:d.querySelector('strong'),p:d.querySelector('p'),b:d.querySelector('button')});w.appendChild(d)})}
+ S.dm.l.forEach(function(ms,i){var def=dmDef(ms.k),r=dmRows[i];if(!def||!r)return;
+  var prog=Math.min(ms.t,Math.max(0,def.v()-ms.b));
+  r.s.textContent=def.tx.replace('{t}',ms.t);
+  r.p.textContent=ms.c?'Cobrado':prog+' / '+ms.t+' · Recompensa: '+eur(dmReward());
+  r.b.textContent=ms.c?'✔':prog>=ms.t?'Cobrar':eur(dmReward());
+  r.b.disabled=!!ms.c||prog<ms.t;r.b.classList.toggle('can',!ms.c&&prog>=ms.t);
+  r.b.onclick=function(ev){if(ms.c||def.v()-ms.b<ms.t)return;ms.c=1;var R=dmReward();S.m+=R;
+   flt('+'+eur(R),ev.clientX||innerWidth/2,ev.clientY||innerHeight/2,'crit');conf(ev.clientX||innerWidth/2,ev.clientY||innerHeight/2,16);snd('win');popM();
+   if(S.dm.l.every(function(x){return x.c})){S.dstr=(S.dsd===S.dm.d-1)?(S.dstr||0)+1:1;S.dsd=S.dm.d;
+    $('log').textContent='Encargos del día cumplidos. El jefe empieza a sospechar.';conf(innerWidth/2,innerHeight*0.3,24)}
+   render();save()}});
+ $('dstr').textContent=S.dstr?('Racha: '+S.dstr+' día'+(S.dstr>1?'s':'')+' cumpliendo · +'+Math.min(100,S.dstr*10)+'% de recompensa'):'Cumple los 3 encargos para empezar racha.'}
+var THEMES=[
+{id:'taller',n:'Taller de siempre',c:0},
+{id:'kebab',n:'Kebab Ali',c:90000,v:{'--bg':'#f3ecdc','--bg2':'#e7dcc3','--card':'#fbf6e8','--ink':'#2d2412','--mute':'#7a6c4f','--blue':'#1f8a4c','--blue2':'#15693a','--yel':'#e0a83c','--line':'#d8c9a5','--water':'#bcd9c2'}},
+{id:'mcdo',n:"McDonald's",c:150000,v:{'--bg':'#f8e8c8','--bg2':'#f3d9a8','--card':'#fff6e3','--ink':'#3a1c08','--mute':'#8a6240','--blue':'#d02b2b','--blue2':'#a81f1f','--yel':'#ffc72c','--line':'#ecd2a3','--water':'#ffdf8f'}},
+{id:'ria',n:'Ría de noche',c:300000,v:{'--bg':'#0c1622','--bg2':'#0a1018','--card':'#15242f','--ink':'#dcecf2','--mute':'#8aa6b2','--blue':'#2e7fa3','--blue2':'#215e7a','--yel':'#ffd24a','--line':'#24404f','--edge':'rgba(255,255,255,.07)','--sh':'rgba(0,0,0,.4)','--water':'#133646'}}];
+function applyTheme(){var t=THEMES.filter(function(x){return x.id===(S.th||'taller')})[0]||THEMES[0];
+ var r=document.documentElement;
+ ['--bg','--bg2','--card','--ink','--mute','--blue','--blue2','--yel','--line','--edge','--sh','--water'].forEach(function(k){r.style.removeProperty(k)});
+ if(t.v)for(var k in t.v)r.style.setProperty(k,t.v[k])}
 function nextEv(){
  for(var dt=1;dt<=1344;dt++){var tt=S.t+dt,d=Math.floor(tt/48),wd=d%7,dom=d%30+1,h=tt%48/2;
   for(var i=0;i<EV.length;i++){var e=EV[i];
+   if(e.minD&&d<e.minD)continue;
+   if(e.after&&!S.lg[e.after])continue;
    if(e.jk){if(tt===S.jk)return{t:tt,e:e};continue}
    if(e.par&&!S.td[e.par])continue;
    if(e.rd){if(wd===S.rd&&e.h===h)return{t:tt,e:e};continue}
@@ -374,6 +476,8 @@ function tick(){
  if(S.rd===undefined)S.rd=Math.floor(Math.random()*5);
  if(S.t%672===0||S.jk===undefined)S.jk=S.t+Math.floor(Math.random()*(672-S.t%672));
  var list=EV.filter(function(e){
+  if(e.minD&&d<e.minD)return false;
+  if(e.after&&!S.lg[e.after])return false;
   if(e.jk)return S.t===S.jk;
   if(e.rd)return wd===S.rd&&e.h===h;
   return(!e.days||e.days.indexOf(wd)>=0)&&(!e.dom||e.dom===dom)&&e.h===h});
@@ -397,8 +501,8 @@ var MED=[
 {id:'prac',n:'Currante de prácticas',d:'Mete 100 horas extra',k:'llave',col:'#b98b5e',v:function(){return S.done},m:100},
 {id:'exper',n:'Currante experimentado',d:'Mete 1500 horas extra',k:'llave',col:'#b9c6c2',v:function(){return S.done},m:1500},
 {id:'heredero',n:'Heredero de la empresa',d:'Mete 7500 horas extra',k:'llave',col:'#e0b94a',v:function(){return S.done},m:7500},
-{id:'timbero',n:'Ludopatía controlada',d:'Gana 25 timbas en el bar',k:'dado',v:function(){return S.gwc||0},m:25},
-{id:'mecenas',n:'Mecenas de la banca',d:'Pierde 50 timbas',k:'dado',col:'#e05548',v:function(){return S.glc||0},m:50},
+{id:'timbero',n:'Ludopatía controlada',d:'Gana 25 upgrades en el bar',k:'dado',v:function(){return S.gwc||0},m:25},
+{id:'mecenas',n:'Mecenas de la banca',d:'Pierde 50 upgrades',k:'dado',col:'#e05548',v:function(){return S.glc||0},m:50},
 {id:'visto',n:'Lo nunca visto',d:'Que la Cenita del sábado no pase',k:'ojos',sec:1,v:function(){return S.nv?1:0},m:1},
 {id:'lourdes',n:'Lourdes me ha salvado la vida',d:'20 tortillas sorpresa de Lourdes',k:'tortilla',sec:1,v:function(){return S.lg.tortilla||0},m:20},
 {id:'sabia',n:'Esto ya se sabía',d:'Que se cumpla el suceso de Jokin',k:'platano',sec:1,v:function(){return S.lg.jokin||0},m:1}];
@@ -443,7 +547,8 @@ async function onSession(ses){
  var best=null,bts=-1;
  if(r.data&&r.data.state&&r.data.state.br){best=r.data.state;bts=r.data.ts||0}
  try{var lo=JSON.parse(localStorage.getItem('elt4_'+myId)||'null');if(lo&&lo.br&&lo.lg&&(lo.ts||0)>bts){best=lo;bts=lo.ts||0}}catch(e){}
- if(best){S=fixS(best)}
+ if(best){S=fixS(best);dmDay=-1}
+ applyTheme();
  NM[myId]=nm;
  if(r.error){cloudErr='No se pudo cargar tu partida: '+r.error.message;cloudOk=false;showAuth();return}
  cloudErr='';cloudOk=true;offline();cloudSave();loadPL();showAuth()}
@@ -455,7 +560,7 @@ function showAuth(){var g=$('gate'),a=$('auth');
  $('ai').onclick=function(){sb.auth.signInWithPassword({email:$('ae').value,password:$('ap').value}).then(function(r){if(r.error)$('am').textContent=r.error.message})};
  $('ac').onclick=function(){sb.auth.signUp({email:$('ae').value,password:$('ap').value,options:{data:{name:$('an').value||'Ethan'}}}).then(function(r){$('am').textContent=r.error?r.error.message:'Cuenta creada. Si pide confirmar el email, mira tu correo.'})}}
 function renderProf(){
- var sig=[PL.map(function(x){return x.id+x.d.done+x.d.m+(x.d.md||[]).length+x.d.av+x.d.fm}).join()+SK,Object.keys(NM).length,Object.keys(S.md).join(),S.done,S.own,cloudOk,cloudErr,S.av,S.fm,mute].join('|');
+ var sig=[PL.map(function(x){return x.id+x.d.done+x.d.m+(x.d.md||[]).length+x.d.av+x.d.fm}).join()+SK,Object.keys(NM).length,Object.keys(S.md).join(),S.done,S.own,cloudOk,cloudErr,S.av,S.fm,mute,S.th,Object.keys(S.tho||{}).join(),THEMES.map(function(t){return S.m>=t.c?1:0}).join('')].join('|');
  if(sig===lastSig)return;lastSig=sig;
  var p=$('prof');p.innerHTML='';
  var h=document.createElement('div');h.style.cssText='display:flex;align-items:center;gap:8px;font-size:22px;font-weight:800';
@@ -469,6 +574,16 @@ function renderProf(){
  var b=document.createElement('div');b.style.cssText='display:flex;gap:8px;flex-wrap:wrap';
  MED.forEach(function(m){if(S.md[m.id]){var e=document.createElement('button');e.title=m.n;e.style.cssText='background:transparent;border-radius:12px;cursor:pointer;padding:2px;border:2px solid '+(S.fm===m.id?'var(--yel)':'transparent');e.innerHTML=badge(true,48,m.k,m.col);e.onclick=function(){S.fm=S.fm===m.id?'':m.id;lastSig='';save();cloudSave();renderProf()};b.appendChild(e)}});
  if(!b.children.length){b.className='sub';b.textContent='Aún no tienes medallas.'}p.appendChild(b);
+ var th=document.createElement('h2');th.textContent='Temas';th.style.margin='14px 0 8px';p.appendChild(th);
+ THEMES.forEach(function(t){var owned=t.c===0||S.tho[t.id],onn=(S.th||'taller')===t.id;
+  var d=document.createElement('div');d.className='thb';if(onn)d.style.outline='2px solid var(--yel)';
+  var w=document.createElement('div'),n=document.createElement('strong');n.textContent=t.n;w.appendChild(n);
+  var q2=document.createElement('p');q2.className='sub';q2.style.margin='0';q2.textContent=owned?(onn?'En uso':'Desbloqueado'):eur(t.c);w.appendChild(q2);d.appendChild(w);
+  var bt=document.createElement('button');bt.className='sm';bt.style.cssText='width:auto;margin:0;padding:8px 14px';
+  bt.textContent=onn?'Puesto':owned?'Poner':'Comprar';bt.disabled=onn||(!owned&&S.m<t.c);
+  bt.onclick=function(ev){if(!owned){if(S.m<t.c)return;S.m-=t.c;S.tho[t.id]=1;snd('buy');conf(ev.clientX||innerWidth/2,ev.clientY||innerHeight/2,16)}
+   S.th=t.id;applyTheme();lastSig='';save();cloudSave();renderProf();render()};
+  d.appendChild(bt);p.appendChild(d)});
  var sbn=document.createElement('button');sbn.className='sm';sbn.style.margin='10px 0 0';sbn.textContent='Sonido y vibración: '+(mute?'desactivados':'activados');sbn.onclick=function(){mute=!mute;try{localStorage.setItem('elt_mute',mute?'1':'0')}catch(e){}lastSig='';renderProf()};p.appendChild(sbn);
  var l=$('plist');l.innerHTML='';
  var val=function(x){return SK==='m'?x.d.m||0:SK==='own'?x.d.own||0:SK==='md'?(x.d.md||[]).length:x.d.done||0};
@@ -492,10 +607,11 @@ $('work').onclick=function(ev){
  S.e-=1;S.m+=gain;S.done++;
  var x=ev.clientX||innerWidth/2,y=ev.clientY||innerHeight/2;
  flt('+'+eur(gain),x,y-14,crit?'crit':'');popM();
- if(crit){$('log').textContent=CRIT[Math.floor(Math.random()*CRIT.length)]+' x5: +'+eur(gain);conf(x,y,12);snd('crit');shk($('work'))}
+ if(crit){S.crc=(S.crc||0)+1;$('log').textContent=CRIT[Math.floor(Math.random()*CRIT.length)]+' x5: +'+eur(gain);conf(x,y,12);snd('crit');shk($('work'))}
  else{$('log').textContent=JOBS[Math.floor(Math.random()*JOBS.length)]+': +'+eur(gain);if(!mute)tone(440+Math.min(cmb,40)*15,0,.04,.045)}
  if(M>1){$('cmbw').textContent='🔥 Racha x'+M+(CLBL[M]?' · '+CLBL[M]:'')}else $('cmbw').textContent='';
- render()};
+ render();
+ if(!crit&&Math.random()<.08)nutGame()};
 function render(){
  $('m').textContent=eur(S.m);$('per').textContent=eur(per());$('ps').textContent=eur(ps()*spd());
  $('et').textContent=Math.floor(S.e)+' / '+maxE();var f=$('fill');f.style.width=(S.e/maxE()*100)+'%';f.style.background=S.e<1?'#e05548':'';
@@ -511,11 +627,12 @@ function render(){
    var pc=Math.min(100,S.m/it.c*100);r.d.style.backgroundImage='linear-gradient(90deg,rgba(201,216,86,.22) '+pc+'%,transparent '+pc+'%)'}
   else{r.s.textContent='???';r.p.textContent='Consigue lo anterior primero';r.b.classList.remove('can');r.d.style.backgroundImage=''}});
  var bal=(S.gw||0)-(S.gl||0);
- $('bstat').textContent=(S.gwc||S.glc)?('Timbas ganadas: '+(S.gwc||0)+' · Perdidas: '+(S.glc||0)+' · Balance: '+(bal<0?'-':'+')+eur(Math.abs(bal))+(bal<0?' · Luisillo te invita a un vino de pena.':' · Te van a acabar vetando.')):'Aún no has jugado. La banca espera.';
- checkMS();renderExtra()}
+ $('bstat').textContent=(S.gwc||S.glc)?('Upgrades ganados: '+(S.gwc||0)+' · Perdidos: '+(S.glc||0)+' · Balance: '+(bal<0?'-':'+')+eur(Math.abs(bal))+(bal<0?' · Luisillo te invita a un vino de pena.':' · Te van a acabar vetando.')):'Aún no has jugado. La banca espera.';
+ renderDM();checkMS();renderExtra()}
 function save(){S.ts=Date.now();if(sb){if(myId){try{localStorage.setItem('elt4_'+myId,JSON.stringify(S))}catch(e){}}return}try{localStorage.setItem('elt3',JSON.stringify(S))}catch(e){}}
 var aacc=0;
 setInterval(function(){var sp=spd();S.e=Math.min(maxE(),S.e+regen()*0.2*sp);S.m+=ps()*0.2*sp;
+ var today=Math.floor(Date.now()/864e5);if(!S.dm||S.dm.d!==today)genDM(today);
  var ar=autoRate();
  if(ar&&S.e>=1){aacc+=ar*0.2*sp;var n=Math.min(Math.floor(aacc),Math.floor(S.e));
   if(n>0){aacc-=n;S.e-=n;S.m+=per()*n;S.done+=n}}
@@ -525,5 +642,6 @@ setInterval(save,5000);setInterval(cloudSave,10000);window.addEventListener('pag
 document.addEventListener('visibilitychange',function(){if(document.hidden){save();cloudSave()}});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
 if(!sb)offline();
+applyTheme();
 render();
 </script></body></html>
