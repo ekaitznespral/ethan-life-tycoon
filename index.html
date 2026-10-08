@@ -177,7 +177,7 @@ var GAR=[
 {id:'sanpedro',n:'San Pedro',c:300000,ps:600,x:135,y:195}];
 var EV=[
 {id:'diente',n:'Lavarse los dientes',d:'1 vez al mes (día 1, 08:00)',dom:1,h:8,p:.35},
-{id:'aparcar',n:'Encontrar sitio para aparcar',d:'De lunes a viernes a las 19:00',days:[0,1,2,3,4],h:19,p:.05},
+{id:'aparcar',n:'Encontrar sitio para aparcar',d:'De lunes a viernes a las 19:00',days:[0,1,2,3,4],h:19,p:.1},
 {id:'casa',n:'Casa sola el finde',d:'Cada viernes a las 08:00',days:[4],h:8,p:.8},
 {id:'dedear',n:'Dedear a la hermanastra',d:'Sábados a las 22:00, solo si hubo casa sola ese finde',days:[5],h:22,par:'casa',p:.05},
 {id:'cenita',n:'Cenita',d:'Viernes 95% · sábado 99% · domingo 50%, a las 21:30',days:[4,5,6],h:21.5,pd:{4:.95,5:.99,6:.5}},
@@ -367,7 +367,7 @@ function runList(list,i,wd){
  if(i>=list.length){busy=false;return}
  var e=list[i];
  if(e.par&&!S.td[e.par]){runList(list,i+1,wd);return}
- roll({n:e.n,p:e.pd?e.pd[wd]:e.p},function(ok){if(ok)hit(e);runList(list,i+1,wd)})}
+ roll({n:e.n,p:e.pd?e.pd[wd]:e.p},function(ok){if(ok)hit(e);else if(e.id==='cenita'&&wd===5){S.nv=1;save()}runList(list,i+1,wd)})}
 function tick(){
  S.t++;var d=Math.floor(S.t/48),wd=d%7,dom=d%30+1,h=S.t%48/2;
  if(S.t%336===0){S.td={};S.rd=Math.floor(Math.random()*5)}
@@ -398,14 +398,20 @@ var MED=[
 {id:'exper',n:'Currante experimentado',d:'Mete 1500 horas extra',k:'llave',col:'#b9c6c2',v:function(){return S.done},m:1500},
 {id:'heredero',n:'Heredero de la empresa',d:'Mete 7500 horas extra',k:'llave',col:'#e0b94a',v:function(){return S.done},m:7500},
 {id:'timbero',n:'Ludopatía controlada',d:'Gana 25 timbas en el bar',k:'dado',v:function(){return S.gwc||0},m:25},
-{id:'mecenas',n:'Mecenas de la banca',d:'Pierde 50 timbas',k:'dado',col:'#e05548',v:function(){return S.glc||0},m:50}];
+{id:'mecenas',n:'Mecenas de la banca',d:'Pierde 50 timbas',k:'dado',col:'#e05548',v:function(){return S.glc||0},m:50},
+{id:'visto',n:'Lo nunca visto',d:'Que la Cenita del sábado no pase',k:'ojos',sec:1,v:function(){return S.nv?1:0},m:1},
+{id:'lourdes',n:'Lourdes me ha salvado la vida',d:'20 tortillas sorpresa de Lourdes',k:'tortilla',sec:1,v:function(){return S.lg.tortilla||0},m:20},
+{id:'sabia',n:'Esto ya se sabía',d:'Que se cumpla el suceso de Jokin',k:'platano',sec:1,v:function(){return S.lg.jokin||0},m:1}];
 function medOf(id){return MED.filter(function(x){return x.id===id})[0]||MED[0]}
 function kindOf(id){var q=MED.filter(function(x){return x.id===id})[0];return q?q.k:'garaje'}
 var GL={garaje:'<path d="M12 34V21l12-8 12 8v13z" fill="#fff" stroke="#1f2f25" stroke-width="2.5" stroke-linejoin="round"/><rect x="17" y="25" width="14" height="9" fill="#4e7d5b"/>',
 food:'<path d="M12 23a12 9 0 0 1 24 0z" fill="#c8791a" stroke="#1f2f25" stroke-width="2"/><rect x="11" y="25" width="26" height="4" rx="2" fill="#4caf50" stroke="#1f2f25" stroke-width="1.5"/><rect x="12" y="29" width="24" height="5" rx="2" fill="#6b3a1a" stroke="#1f2f25" stroke-width="1.5"/><path d="M12 35h24v1a3 3 0 0 1-3 3H15a3 3 0 0 1-3-3z" fill="#c8791a" stroke="#1f2f25" stroke-width="2"/>',
 llave:'<path d="M14 34L28 20" stroke="#1f2f25" stroke-width="5" stroke-linecap="round"/><circle cx="31" cy="17" r="7" fill="#fff" stroke="#1f2f25" stroke-width="2.5"/>',
-star:'<path d="M24 11l4 9 10 1-7.5 6.5 2.3 9.8L24 32l-8.8 5.3 2.3-9.8L10 21l10-1z" fill="#fff" stroke="#1f2f25" stroke-width="2.5" stroke-linejoin="round"/>',
-dado:'<rect x="13" y="13" width="22" height="22" rx="5" fill="#fff" stroke="#1f2f25" stroke-width="2.5"/><circle cx="19" cy="19" r="2.5" fill="#1f2f25"/><circle cx="24" cy="24" r="2.5" fill="#1f2f25"/><circle cx="29" cy="29" r="2.5" fill="#1f2f25"/>'};
+ojos:'<ellipse cx="16" cy="25" rx="7" ry="9" fill="#fff" stroke="#1f2f25" stroke-width="2.2"/><ellipse cx="32" cy="25" rx="7" ry="9" fill="#fff" stroke="#1f2f25" stroke-width="2.2"/><circle cx="17.5" cy="26" r="3.2" fill="#1f2f25"/><circle cx="30.5" cy="26" r="3.2" fill="#1f2f25"/>',
+tortilla:'<circle cx="24" cy="25" r="13" fill="#e9c24a" stroke="#1f2f25" stroke-width="2.5"/><circle cx="19" cy="21" r="2.2" fill="#f6e3a0"/><circle cx="28" cy="24" r="2.6" fill="#f6e3a0"/><circle cx="22" cy="31" r="2" fill="#f6e3a0"/><circle cx="29" cy="30" r="1.8" fill="#a8741f"/>',
+platano:'<path d="M15 15c0 14 9 22 21 18 2-.7 1.8-2.6.2-3-8 .4-14-5-14.4-14-.1-2.4-3.4-2.8-4.6-1.2z" fill="#f2d640" stroke="#1f2f25" stroke-width="2.2" stroke-linejoin="round"/><path d="M16 12l3-3" stroke="#1f2f25" stroke-width="3" stroke-linecap="round"/>',
+dado:'<rect x="13" y="13" width="22" height="22" rx="5" fill="#fff" stroke="#1f2f25" stroke-width="2.5"/><circle cx="19" cy="19" r="2.5" fill="#1f2f25"/><circle cx="24" cy="24" r="2.5" fill="#1f2f25"/><circle cx="29" cy="29" r="2.5" fill="#1f2f25"/>',
+star:'<path d="M24 11l4 9 10 1-7.5 6.5 2.3 9.8L24 32l-8.8 5.3 2.3-9.8L10 21l10-1z" fill="#fff" stroke="#1f2f25" stroke-width="2.5" stroke-linejoin="round"/>'};
 function badge(on,w,k,c){return '<svg viewBox="0 0 48 48" width="'+w+'" height="'+w+'" style="opacity:'+(on?1:.3)+'"><circle cx="24" cy="24" r="22" fill="'+(c||'#c9d856')+'" stroke="#1f2f25" stroke-width="3"/>'+(GL[k]||GL.garaje)+'</svg>'}
 var med=$('med'),mrows=[];
 MED.forEach(function(m){var d=document.createElement('div');d.className='it';
@@ -413,7 +419,7 @@ MED.forEach(function(m){var d=document.createElement('div');d.className='it';
  mrows.push({d:d,s:d.querySelector('strong'),p:d.querySelector('p'),c:d.querySelector('span'),on:null});med.appendChild(d)});
 function renderMed(){MED.forEach(function(m,i){var v=m.v(),x=mrows[i];
  if(!S.md[m.id]&&v>=m.m){S.md[m.id]=1;$('log').textContent='Medalla conseguida: '+m.n;snd('win');flt('🏅 '+m.n,innerWidth/2,innerHeight*0.3,'ms');conf(innerWidth/2,innerHeight*0.28,22);save()}
- var on=!!S.md[m.id];x.d.style.display=(m.hid&&!on)?'none':'';x.s.textContent=m.n;x.p.textContent=m.d+' ('+Math.min(v,m.m)+' / '+m.m+')';
+ var on=!!S.md[m.id];x.d.style.display=(m.hid&&!on)?'none':'';x.s.textContent=m.n;x.p.textContent=(m.sec&&!on&&v===0)?'Condición secreta':m.d+' ('+Math.min(v,m.m)+' / '+m.m+')';
  if(x.on!==on){x.on=on;x.c.innerHTML=badge(on,40,m.k,m.col)}})}
 var DB=null,myId=null,PL=[],NM={},cloudOk=false,cloudErr='',lastSig='',SK='m';
 var sbar=$('sortb');[['m','Dinero'],['own','Objetos'],['done','Horas extra'],['md','Medallas']].forEach(function(k){
