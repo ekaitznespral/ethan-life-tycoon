@@ -94,6 +94,16 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 #mgcur{position:absolute;top:0;bottom:0;width:4px;background:var(--ink)}
 #mgb{padding:12px 32px;font:800 18px 'Bricolage Grotesque',system-ui,sans-serif;background:var(--yel);color:#1f2f25;border:0;border-radius:10px;cursor:pointer}
 .thb{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--card);border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--edge)}
+#hud{display:none}
+@media (min-width:1050px){#hud{display:block;position:fixed;top:16px;right:16px;width:270px;background:var(--card);border:1px solid var(--edge);box-shadow:0 2px 10px var(--sh);border-radius:12px;padding:14px;z-index:5;max-height:calc(100vh - 32px);overflow:auto}}
+#hud h3{margin:0 0 10px;font-size:16px}
+#hud .hs{margin-bottom:11px}
+#hud .hs b{display:block;font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+#hud .hl{font-size:13px}
+#hud .mi{font-size:13px;margin:2px 0;display:flex;justify-content:space-between;gap:6px}
+#hud .mi.done{color:var(--mute);text-decoration:line-through}
+#hud .mbar{height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:3px}
+#hud .mbar i{display:block;height:100%;background:var(--yel)}
 </style></head><body><main>
 <h1>Ethan life tycoon</h1>
 <p class="sub">Ethan, mecánico. Cada hora extra son euros.</p>
@@ -151,6 +161,7 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 <h2 style="margin-top:16px">Clasificación</h2><div id="sortb"></div><div id="plist"></div>
 </section>
 </main>
+<aside id="hud" aria-label="Progreso"></aside>
 <div id="ov" hidden><div id="ovc"><h3 id="ovt"></h3><div class="sub" id="ovs" style="margin:0"></div>
 <div id="wr"><div id="wh"></div><div id="pr"><div id="ptr"></div></div></div>
 <div id="lg" class="sub" style="margin:0"></div><button id="spin">Girar la flecha</button><div id="res"></div></div></div>
@@ -407,6 +418,32 @@ function renderEv(){
  $('evn').textContent='Siguiente suceso: '+(S.lg[ne.e.id]?ne.e.n:'???');
  $('evt2').textContent=(sec>=60?Math.floor(sec/60)+'m ':'')+(sec%60)+'s';
  spb.forEach(function(b,i){var s=SPDS[i],lk=s.k&&!S.up[s.k];b.textContent='x'+s.v+(lk?' 🔒':'');b.className=spd()===s.v?'on':''})}
+var hudLast='';
+function hbar(p){return '<div class="mbar"><i style="width:'+Math.min(100,Math.max(0,p*100))+'%"></i></div>'}
+function renderHUD(){
+ var h='<h3>Progreso</h3>';
+ if(S.dm&&S.dm.l.length){h+='<div class="hs"><b>Encargos del día</b>';
+  S.dm.l.forEach(function(ms){var def=dmDef(ms.k);if(!def)return;
+   var prog=Math.min(ms.t,Math.max(0,def.v()-ms.b));
+   h+='<div class="mi'+(ms.c?' done':'')+'"><span>'+(ms.c?'✔':prog>=ms.t?'💰':'○')+' '+def.tx.replace('{t}',ms.t)+'</span><span>'+prog+'/'+ms.t+'</span></div>'});
+  h+='</div>'}
+ var ne=getNE();
+ if(ne){var rem=Math.max(0,ne.t-S.t-S.acc/2),sec=Math.max(0,Math.round(rem*2/spd()));
+  var tstr=(sec>=60?Math.floor(sec/60)+'m ':'')+(sec%60)+'s';
+  h+='<div class="hs"><b>Siguiente suceso</b><div class="hl">'+(S.lg[ne.e.id]?ne.e.n:'???')+' · '+tstr+'</div>'+hbar(1-rem/Math.max(1,ne.t-evFrom))+'</div>'}
+ if(S.own<ITEMS.length){var it=ITEMS[S.own],nd=it.c-S.m;
+  h+='<div class="hs"><b>Siguiente objeto</b><div class="hl">'+it.n+' · '+(nd>0?'faltan '+eur(nd):'¡comprable!')+'</div>'+hbar(S.m/it.c)+'</div>'}
+ var u=UP.filter(function(x){return !S.up[x.id]&&(!x.req||S.up[x.req])})[0];
+ if(u){var nu=u.c-S.m;
+  h+='<div class="hs"><b>Siguiente mejora</b><div class="hl">'+u.n+' · '+(nu>0?'faltan '+eur(nu):'¡comprable!')+'</div>'+hbar(S.m/u.c)+'</div>'}
+ var g=GAR.filter(function(x){return !S.ga[x.id]}).sort(function(a,b2){return a.c-b2.c})[0];
+ if(g){var ng=g.c-S.m;
+  h+='<div class="hs"><b>Siguiente garaje</b><div class="hl">'+g.n+' · '+(ng>0?'faltan '+eur(ng):'¡comprable!')+'</div>'+hbar(S.m/g.c)+'</div>'}
+ var best=null,br=-1;
+ MED.forEach(function(m){if(S.md[m.id]||m.hid)return;var r=Math.min(1,m.v()/m.m);if(r>br){br=r;best=m}});
+ if(best){var bv=Math.min(best.v(),best.m);
+  h+='<div class="hs"><b>Medalla más cercana</b><div class="hl">'+best.n+' · '+((best.sec&&bv===0)?'Condición secreta':bv+'/'+best.m)+'</div>'+hbar(br)+'</div>'}
+ if(h!==hudLast){hudLast=h;$('hud').innerHTML=h}}
 function roll(e,cb){
  var p=e.p,w=$('wh'),pr=$('pr'),y=e.yes||'Pasa',n=e.no||'No pasa';
  var off=Math.random()*360,spun=false,tmr=null,cnt=e.wait||6,sp2=$('spin');
@@ -626,7 +663,7 @@ function render(){
   else{r.s.textContent='???';r.p.textContent='Consigue lo anterior primero';r.b.classList.remove('can');r.d.style.backgroundImage=''}});
  var bal=(S.gw||0)-(S.gl||0);
  $('bstat').textContent=(S.gwc||S.glc)?('Upgrades ganados: '+(S.gwc||0)+' · Perdidos: '+(S.glc||0)+' · Balance: '+(bal<0?'-':'+')+eur(Math.abs(bal))+(bal<0?' · Luisillo te invita a un vino de pena.':' · Te van a acabar vetando.')):'Aún no has jugado. La banca espera.';
- renderDM();checkMS();renderExtra()}
+ renderDM();checkMS();renderExtra();renderHUD()}
 function save(){S.ts=Date.now();if(sb){if(myId){try{localStorage.setItem('elt4_'+myId,JSON.stringify(S))}catch(e){}}return}try{localStorage.setItem('elt3',JSON.stringify(S))}catch(e){}}
 var aacc=0;
 setInterval(function(){var sp=spd();S.e=Math.min(maxE(),S.e+regen()*0.2*sp);S.m+=ps()*0.2*sp;
