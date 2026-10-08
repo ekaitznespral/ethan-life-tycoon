@@ -151,7 +151,7 @@ button:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
 <p class="sub" id="bstat" style="margin:0"></p>
 </section>
 <section id="t3" hidden>
-<p class="sub" style="margin-top:12px">Colecciona sucesos raros. Cada día pasan cosas distintas, cada una con su probabilidad. Media hora del juego dura 2 segundos a velocidad x1.</p>
+<p class="sub" style="margin-top:12px">Colecciona sucesos raros. Cada día pasan cosas distintas, cada una con su probabilidad. Media hora del juego dura 3 segundos a velocidad x1.</p>
 <h2>Logros</h2><div id="med"></div>
 <h2 style="margin-top:16px">Sucesos</h2><div id="ach"></div>
 </section>
@@ -228,6 +228,7 @@ var UP=[
 {id:'s10',n:'Velocidad x10 · Pacto con Jokin',d:'Desbloquea el botón x10. El precio no se paga en euros.',c:3000000,sp:10,req:'s4'}];
 var JOBS=['Hora extra','Otra hora extra','Hora extra sin cobrar el café','Hora extra de viernes','Hora extra de última hora'];
 var DN=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],MN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+var TICK=3;
 function freshS(){return {m:0,e:20,done:0,own:0,br:{},sn:0,ga:{},lg:{},td:{},t:16,acc:0,md:{},bo:0,ms:0,up:{},sp:1,tho:{},th:'taller',dstr:0,crc:0}}
 function fixS(s){if(!s.md)s.md={};s.bo=s.bo||0;if(s.bo>1e10)s.bo=0;if(!s.up)s.up={};if([1,2,4,10].indexOf(s.sp)<0)s.sp=1;if(!s.tho)s.tho={};if(!s.th||s.th==='ria')s.th='taller';s.dstr=s.dstr||0;s.crc=s.crc||0;if(s.ms===undefined){s.ms=0;var th=[100,1000,10000,100000,1000000];while(s.ms<th.length&&s.m>=th[s.ms])s.ms++}return s}
 var S=freshS();
@@ -272,7 +273,7 @@ function spawnGold(){if(busy||document.hidden||document.getElementById('gold'))r
   else{var v=g.f();S.m+=v;flt('+'+eur(v),x,y,'crit');popM()}
   conf(x,y,18);$('log').textContent=g.t;render();save()};
  document.body.appendChild(b);setTimeout(function(){if(b.parentNode)b.remove()},8200)}
-(function sg(){setTimeout(function(){spawnGold();sg()},50000+Math.random()*70000)})();
+(function sg(){setTimeout(function(){spawnGold();sg()},110000+Math.random()*130000)})();
 var MS=[[100,'Primeros €100. El jefe dice que no te acostumbres.'],[1000,'€1.000. En Sestao eso ya es ser rico.'],[10000,'€10.000. Hacienda todavía no sabe nada.'],[100000,'€100.000. El taller es tuyo de facto.'],[1000000,'€1.000.000. Hasta Jokin te respeta.']];
 function checkMS(){while(S.ms<MS.length&&S.m>=MS[S.ms][0]){var t=MS[S.ms][1];S.ms++;flt(t,innerWidth/2,innerHeight*0.35,'ms');$('log').textContent=t;conf(innerWidth/2,innerHeight*0.3,22);snd('win');save()}}
 var ups=$('ups'),urows=[];
@@ -337,9 +338,9 @@ function spawnBad(){if(busy||document.hidden||(sb&&!myId)||Math.floor(S.m)<1000)
   else{S.m=Math.max(0,S.m-loss);$('log').textContent=b.t+' -'+eur(loss);
    flt('-'+eur(loss),innerWidth/2,innerHeight*0.35,'bad');shk($('m').parentNode);snd('no')}
   render();save()})}
-(function bl(){setTimeout(function(){spawnBad();bl()},100000+Math.random()*120000)})();
-var mgOn=false;
-function nutGame(){if(mgOn||busy)return;mgOn=true;busy=true;
+(function bl(){setTimeout(function(){spawnBad();bl()},200000+Math.random()*220000)})();
+var mgOn=false,mgLast=0;
+function nutGame(){if(mgOn||busy||Date.now()-mgLast<90000)return;mgOn=true;busy=true;mgLast=Date.now();
  var z=10+Math.random()*60,zw=18;
  $('mgz').style.left=z+'%';$('mgz').style.width=zw+'%';
  $('mgr').textContent='';$('mgb').disabled=false;$('mg').hidden=false;
@@ -412,9 +413,9 @@ function renderEv(){
  if(!ne){ew.hidden=true;return}
  ew.hidden=false;
  if(ne.t!==neTarget){neTarget=ne.t;evFrom=S.t}
- var rem=Math.max(0,ne.t-S.t-S.acc/2),tot=Math.max(1,ne.t-evFrom);
+ var rem=Math.max(0,ne.t-S.t-S.acc/TICK),tot=Math.max(1,ne.t-evFrom);
  $('evf').style.width=Math.min(100,(1-rem/tot)*100)+'%';
- var sec=Math.max(0,Math.round(rem*2/spd()));
+ var sec=Math.max(0,Math.round(rem*TICK/spd()));
  $('evn').textContent='Siguiente suceso: '+(S.lg[ne.e.id]?ne.e.n:'???');
  $('evt2').textContent=(sec>=60?Math.floor(sec/60)+'m ':'')+(sec%60)+'s';
  spb.forEach(function(b,i){var s=SPDS[i],lk=s.k&&!S.up[s.k];b.textContent='x'+s.v+(lk?' 🔒':'');b.className=spd()===s.v?'on':''})}
@@ -428,7 +429,7 @@ function renderHUD(){
    h+='<div class="mi'+(ms.c?' done':'')+'"><span>'+(ms.c?'✔':prog>=ms.t?'💰':'○')+' '+def.tx.replace('{t}',ms.t)+'</span><span>'+prog+'/'+ms.t+'</span></div>'});
   h+='</div>'}
  var ne=getNE();
- if(ne){var rem=Math.max(0,ne.t-S.t-S.acc/2),sec=Math.max(0,Math.round(rem*2/spd()));
+ if(ne){var rem=Math.max(0,ne.t-S.t-S.acc/TICK),sec=Math.max(0,Math.round(rem*TICK/spd()));
   var tstr=(sec>=60?Math.floor(sec/60)+'m ':'')+(sec%60)+'s';
   h+='<div class="hs"><b>Siguiente suceso</b><div class="hl">'+(S.lg[ne.e.id]?ne.e.n:'???')+' · '+tstr+'</div>'+hbar(1-rem/Math.max(1,ne.t-evFrom))+'</div>'}
  if(S.own<ITEMS.length){var it=ITEMS[S.own],nd=it.c-S.m;
@@ -517,7 +518,7 @@ function tick(){
   if(e.rd)return wd===S.rd&&e.h===h;
   return(!e.days||e.days.indexOf(wd)>=0)&&(!e.dom||e.dom===dom)&&e.h===h});
  if(list.length){busy=true;runList(list,0,wd)}}
-setInterval(function(){if(busy||(sb&&!myId))return;S.acc+=0.2*spd();while(S.acc>=2){S.acc-=2;tick();if(busy)break}},200);
+setInterval(function(){if(busy||(sb&&!myId))return;S.acc+=0.2*spd();while(S.acc>=TICK){S.acc-=TICK;tick();if(busy)break}},200);
 function renderExtra(){
  GAR.forEach(function(g,i){var o=S.ga[g.id];grows[i].textContent=o?'Comprado':eur(g.c);grows[i].disabled=o||S.m<g.c;
   grows[i].classList.toggle('can',!o&&S.m>=g.c);
@@ -646,7 +647,7 @@ $('work').onclick=function(ev){
  else{$('log').textContent=JOBS[Math.floor(Math.random()*JOBS.length)]+': +'+eur(gain);if(!mute)tone(440+Math.min(cmb,40)*15,0,.04,.045)}
  if(M>1){$('cmbw').textContent='🔥 Racha x'+M+(CLBL[M]?' · '+CLBL[M]:'')}else $('cmbw').textContent='';
  render();
- if(!crit&&Math.random()<.08)nutGame()};
+ if(!crit&&Math.random()<.045)nutGame()};
 function render(){
  $('m').textContent=eur(S.m);$('per').textContent=eur(per());$('ps').textContent=eur(ps()*spd());
  $('et').textContent=Math.floor(S.e)+' / '+maxE();var f=$('fill');f.style.width=(S.e/maxE()*100)+'%';f.style.background=S.e<1?'#e05548':'';
