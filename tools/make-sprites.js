@@ -1,7 +1,8 @@
 // Generador de sprites pixel art de Ethan (48x48) sin dependencias.
 // Look oficial: camiseta corta azul de deporte + pantalon corto + BMW reventadas. Delgado.
 // Salidas: 6 bustos (ethan-sheet), 4 frames andando (ethan-walk), 1 cuerpo entero frontal
-// (ethan-full) y 16 cosmeticos (cos-*.png) alineados al sprite que anda.
+// (ethan-full), cosmeticos (cos-*.png estatico, cos-*-walk.png tira de 4 fotogramas
+// sincronizada con el paseo, ico-*.png icono recortado) y arte de cajas (caja-*.png).
 // Uso: node tools/make-sprites.js
 var zlib = require('zlib'), fs = require('fs'), path = require('path');
 
@@ -33,7 +34,22 @@ var P = {
   O: [139, 94, 60],     // marron
   o: [104, 68, 42],     // marron oscuro
   L: [128, 130, 138],   // gris cable
-  V: [171, 71, 188]     // morado (epico)
+  V: [171, 71, 188],    // morado (epico)
+  Y: [214, 232, 60],    // amarillo reflectante
+  y: [170, 186, 40],    // reflectante sombra
+  W: [62, 84, 110],     // mono de trabajo
+  w: [44, 62, 84],      // mono sombra
+  X: [120, 24, 48],     // kalimotxo
+  F: [214, 160, 90],    // pan
+  f: [170, 118, 60],    // pan sombra
+  J: [240, 204, 80],    // tortilla
+  A: [120, 200, 60],    // aura de sarro
+  a: [186, 236, 110],   // aura brillo
+  D: [70, 72, 80],      // gris oscuro
+  g: [78, 125, 91],     // verde taller
+  k: [52, 88, 64],      // verde taller sombra
+  r: [130, 30, 26],     // rojo oscuro
+  c: [150, 104, 64]     // carton
 };
 
 function newFB(w, h) {
@@ -443,6 +459,212 @@ var COSMETIC_DRAWS = {
 };
 
 // ============================================================
+// COSMETICOS NUEVOS (v2). Reciben ctx = {pose, by, armF, base}
+// base = fotograma del Ethan andando (para recolorear ropa o
+// sacar contornos). Se dibujan ya en su sitio para cada fotograma.
+// ============================================================
+function recolor(fb, base, map, region) {
+  for (var y = 0; y < base.length; y++) for (var x = 0; x < base[0].length; x++) {
+    var c = base[y][x];
+    if (map[c] && (!region || region(x, y))) px(fb, x, y, map[c]);
+  }
+}
+var COSMETIC_DRAWS_V2 = {
+  // --- cuerpo (recoloreados, siempre cuadran con el fotograma) ---
+  chandaloro: function (fb, k) {
+    recolor(fb, k.base, { Z: 'Q', z: 'q', N: 'q', n: 'Q' });
+  },
+  mono: function (fb, k) {
+    recolor(fb, k.base, { Z: 'W', z: 'w', N: 'W', n: 'w', E: 'W' }, function (x, y) { return y >= 18 + k.by && y <= 34 + k.by; });
+    rect(fb, 23, 21 + k.by, 3, 2, 'w'); px(fb, 24, 21 + k.by, 'L'); // bolsillo con boli
+    px(fb, 22, 26 + k.by, 'Q'); px(fb, 29, 26 + k.by, 'Q'); // botones
+  },
+  chaleco: function (fb, k) {
+    recolor(fb, k.base, { Z: 'Y', z: 'y' }, function (x, y) { return x >= 21 && x <= 30 && y >= 19 + k.by && y <= 27 + k.by && !(x >= 26 && y <= 23 + k.by); });
+    hline(fb, 21, 25, 25 + k.by, 'L'); hline(fb, 21, 25, 22 + k.by, 'L');
+  },
+  elastica: function (fb, k) {
+    recolor(fb, k.base, { Z: 'R', z: 'r' });
+    for (var x = 22; x <= 30; x += 3) vline(fb, x, 19 + k.by, 27 + k.by, 'E');
+  },
+  aura: function (fb, k) { // contorno verde de sarro alrededor de todo Ethan
+    var b = k.base, h = b.length, w = b[0].length;
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+      if (b[y][x] !== '_') continue;
+      var n = 0;
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) { var yy = y + d[1], xx = x + d[0]; if (yy >= 0 && yy < h && xx >= 0 && xx < w && b[yy][xx] !== '_') n++; });
+      if (n) px(fb, x, y, ((x + y + k.pose) % 3) ? 'A' : 'a');
+    }
+  },
+  bmw: function (fb, k) { // BMW sin reventar: las mismas zapas, intactas y relucientes
+    var S = k.pose === 0 ? [[13, 41, -1], [30, 41, 1]] : k.pose === 2 ? [[28, 41, 1], [17, 41, -1]] : [[21, 42, -1], [25, 41, 1]];
+    S.forEach(function (s) {
+      var x = s[0], y = s[1], fwd = s[2];
+      rect(fb, x, y, 8, 3, 'E'); hline(fb, x, x + 7, y + 3, 'D');
+      px(fb, x + (fwd > 0 ? 6 : 1), y + 1, 'Z'); px(fb, x + (fwd > 0 ? 5 : 2), y + 1, 'R');
+      px(fb, x + (fwd > 0 ? 4 : 3), y + 1, 'Z');
+      px(fb, x + (fwd > 0 ? 7 : 0), y, 'E'); px(fb, x + (fwd > 0 ? 7 : 0), y + 1, 'E'); // sin agujero
+    });
+    px(fb, S[0][0] + 2, S[0][1] - 2, 'Q'); px(fb, S[1][0] + 5, S[1][1] - 3, 'Q'); // destellos
+  },
+  dientes: function (fb, k) { // dientes limpios: brillan en la sonrisa
+    hline(fb, 27, 29, 14 + k.by, 'E'); px(fb, 29, 13 + k.by, 'E');
+    px(fb, 32, 13 + k.by, 'a'); px(fb, 33, 12 + k.by, 'E'); px(fb, 33, 14 + k.by, 'E'); px(fb, 34, 13 + k.by, 'E');
+  },
+  // --- cabeza / cara / cuello (se mueven con el bote del paso) ---
+  txapela: function (fb, k) {
+    var b = k.by;
+    hline(fb, 15, 30, 3 + b, 'B'); hline(fb, 14, 31, 2 + b, 'B'); hline(fb, 16, 29, 1 + b, 'B');
+    hline(fb, 18, 26, 0 + b, 'B'); px(fb, 22, -1 + b, 'B');
+    hline(fb, 17, 22, 1 + b, 'D'); // brillo
+  },
+  casco: function (fb, k) {
+    var b = k.by;
+    hline(fb, 17, 28, 0 + b, 'Y'); rect(fb, 15, 1 + b, 16, 5, 'Y'); hline(fb, 15, 30, 5 + b, 'y');
+    hline(fb, 18, 23, 1 + b, 'E'); px(fb, 25, 3 + b, 'B'); px(fb, 27, 3 + b, 'B'); // rejillas
+    vline(fb, 22, 6 + b, 15 + b, 'B'); // correa
+    hline(fb, 15, 30, -1 + b, '_');
+  },
+  auriculares: function (fb, k) {
+    var b = k.by;
+    hline(fb, 16, 27, 0 + b, 'D'); px(fb, 15, 1 + b, 'D'); px(fb, 28, 1 + b, 'D');
+    vline(fb, 15, 2 + b, 9 + b, 'D'); vline(fb, 28, 2 + b, 4 + b, 'D'); px(fb, 29, 5 + b, 'D');
+    rect(fb, 18, 9 + b, 4, 5, 'B'); rect(fb, 19, 10 + b, 2, 3, 'R'); // un solo lado
+  },
+  corona: function (fb, k) {
+    var b = k.by;
+    rect(fb, 16, -1 + b + 3, 14, 3, 'Q'); hline(fb, 16, 29, 4 + b, 'q');
+    px(fb, 16, 1 + b, 'Q'); px(fb, 20, 0 + b, 'Q'); px(fb, 20, 1 + b, 'Q'); px(fb, 25, 0 + b, 'Q'); px(fb, 25, 1 + b, 'Q'); px(fb, 29, 1 + b, 'Q');
+    px(fb, 20, -1 + b, 'Q'); px(fb, 25, -1 + b, 'Q');
+    px(fb, 18, 3 + b, 'R'); px(fb, 23, 3 + b, 'Z'); px(fb, 27, 3 + b, 'R');
+  },
+  bigote: function (fb, k) {
+    var b = k.by;
+    hline(fb, 26, 31, 13 + b, 'H'); px(fb, 25, 14 + b, 'H'); px(fb, 31, 14 + b, 'H'); px(fb, 28, 12 + b, 'H');
+  },
+  cadena: function (fb, k) {
+    var b = k.by;
+    px(fb, 23, 18 + b, 'Q'); px(fb, 24, 19 + b, 'q'); px(fb, 25, 20 + b, 'Q'); px(fb, 26, 20 + b, 'q'); px(fb, 27, 20 + b, 'Q'); px(fb, 28, 19 + b, 'q'); px(fb, 29, 18 + b, 'Q');
+    rect(fb, 26, 21 + b, 2, 2, 'Q'); px(fb, 26, 22 + b, 'q'); // medallon
+  },
+  // --- mano (siguen el balanceo del brazo) ---
+  kalimotxo: function (fb, k) {
+    var x = 29 + k.armF, y = 24 + k.by;
+    rect(fb, x, y, 4, 6, 'E'); hline(fb, x, x + 3, y, 'X'); hline(fb, x, x + 3, y + 1, 'X');
+    vline(fb, x + 3, y + 1, y + 5, 'e'); hline(fb, x, x + 3, y + 6, 'K');
+  },
+  pintxo: function (fb, k) {
+    var x = 29 + k.armF, y = 23 + k.by;
+    rect(fb, x, y + 3, 6, 2, 'F'); hline(fb, x, x + 5, y + 5, 'f'); // pan
+    rect(fb, x + 1, y + 1, 4, 2, 'J'); px(fb, x + 2, y + 1, 'q'); // tortilla
+    vline(fb, x + 3, y - 2, y + 4, 'O'); // palillo
+  },
+  llavec4: function (fb, k) {
+    var x = 29 + k.armF, y = 27 + k.by;
+    hline(fb, x, x + 4, y, 'L'); px(fb, x + 2, y + 1, 'L'); px(fb, x + 4, y + 1, 'L');
+    rect(fb, x - 2, y - 1, 2, 3, 'D'); // cabeza de la llave
+    rect(fb, x - 3, y + 2, 3, 3, 'R'); px(fb, x - 2, y + 3, 'E'); // llavero del Eroski
+  },
+  bocata: function (fb, k) {
+    var x = 28 + k.armF, y = 25 + k.by;
+    rect(fb, x, y, 9, 4, 'F'); hline(fb, x, x + 8, y + 4, 'f'); hline(fb, x + 1, x + 7, y - 1, 'F');
+    hline(fb, x, x + 8, y + 2, 'J'); px(fb, x + 3, y + 2, 'q'); px(fb, x + 6, y + 2, 'q');
+    px(fb, x + 2, y, 'f'); px(fb, x + 5, y + 1, 'f');
+  }
+};
+
+// En que hueco va cada cosmetico antiguo (para moverlo en cada fotograma)
+var OLD_SLOT = { cepillo: 'mano', cable: 'cintura', tresds: 'mano', llaveoro: 'mano', kebabali: 'mano', gorrathletic: 'cabeza',
+  rinonera: 'cintura', gafas: 'cara', movil: 'mano', gorrolana: 'cabeza', destor: 'mano', bufanda: 'cuello', cowboy: 'cabeza',
+  desatascador: 'mano', gorrapropa: 'cabeza', calcetin: 'mano' };
+var POSES = [0, 1, 2, 3];
+function poseCtx(p) { return { pose: p, by: (p === 1 || p === 3) ? -1 : 0, armF: p === 0 ? 4 : p === 2 ? -4 : p === 1 ? 1 : -2 }; }
+function shifted(src, dx, dy) {
+  var fb = newFB();
+  for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) if (src[y][x] !== '_') px(fb, x + dx, y + dy, src[y][x]);
+  return fb;
+}
+function cosFrame(id, p) {
+  var k = poseCtx(p); k.base = walkFrame(p);
+  if (COSMETIC_DRAWS_V2[id]) { var fb = newFB(); COSMETIC_DRAWS_V2[id](fb, k); return fb; }
+  var st = newFB(); COSMETIC_DRAWS[id](st);
+  var slot = OLD_SLOT[id];
+  return slot === 'mano' ? shifted(st, Math.round((k.armF - 4) * 0.75), k.by) : shifted(st, 0, k.by);
+}
+
+// Iconos recortados para la interfaz (cajas, inventario)
+var ICON_DRAWS = {
+  dientes: function () {
+    var fb = newFB(20, 20);
+    rect(fb, 4, 5, 12, 9, 'E'); rect(fb, 5, 14, 3, 3, 'E'); rect(fb, 12, 14, 3, 3, 'E');
+    hline(fb, 5, 14, 4, 'K'); vline(fb, 3, 5, 13, 'K'); vline(fb, 16, 5, 13, 'K'); px(fb, 4, 4, '_');
+    vline(fb, 4, 14, 16, 'K'); vline(fb, 8, 14, 16, 'K'); vline(fb, 11, 14, 16, 'K'); vline(fb, 15, 14, 16, 'K');
+    hline(fb, 5, 7, 17, 'K'); hline(fb, 12, 14, 17, 'K'); hline(fb, 9, 10, 14, 'K');
+    rect(fb, 6, 6, 2, 3, 'a'); px(fb, 17, 2, 'Q'); px(fb, 16, 1, 'Q'); px(fb, 18, 1, 'Q'); px(fb, 17, 0, 'Q'); px(fb, 17, 3, 'Q');
+    return fb;
+  },
+  bmw: function () {
+    var fb = newFB(20, 20);
+    rect(fb, 2, 9, 15, 5, 'E'); rect(fb, 4, 7, 7, 2, 'E'); hline(fb, 2, 17, 14, 'D'); hline(fb, 1, 18, 15, 'K');
+    hline(fb, 4, 10, 6, 'K'); vline(fb, 3, 7, 8, 'K'); px(fb, 11, 7, 'K'); hline(fb, 12, 16, 8, 'K'); px(fb, 17, 9, 'K'); vline(fb, 18, 10, 14, 'K'); vline(fb, 1, 9, 14, 'K');
+    px(fb, 7, 11, 'Z'); px(fb, 8, 11, 'R'); px(fb, 9, 11, 'Z'); px(fb, 8, 10, 'R'); px(fb, 10, 10, 'Z');
+    px(fb, 15, 4, 'Q'); px(fb, 14, 3, 'Q'); px(fb, 16, 3, 'Q'); px(fb, 15, 2, 'Q'); px(fb, 15, 5, 'Q');
+    return fb;
+  }
+};
+function cropIcon(fb) {
+  var x0 = W, y0 = H, x1 = -1, y1 = -1;
+  for (var y = 0; y < fb.length; y++) for (var x = 0; x < fb[0].length; x++) if (fb[y][x] !== '_') { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+  var w = x1 - x0 + 1, h = y1 - y0 + 1, s = Math.max(16, Math.max(w, h) + 4);
+  if (s % 2) s++;
+  var out = newFB(s, s), ox = Math.floor((s - w) / 2), oy = Math.floor((s - h) / 2);
+  for (var yy = 0; yy < h; yy++) for (var xx = 0; xx < w; xx++) out[oy + yy][ox + xx] = fb[y0 + yy][x0 + xx];
+  return out;
+}
+
+// ============================================================
+// CAJAS (32x32)
+// ============================================================
+function crateBase(fb, face, side, edge) {
+  rect(fb, 3, 10, 26, 19, face); rect(fb, 3, 6, 26, 4, side);
+  hline(fb, 3, 28, 5, 'K'); hline(fb, 3, 28, 29, 'K'); vline(fb, 2, 6, 28, 'K'); vline(fb, 29, 6, 28, 'K');
+  hline(fb, 3, 28, 10, edge);
+}
+var CASE_DRAWS = {
+  sadaba: function () { // caja de carton con cinta y garabato de Sadaba
+    var fb = newFB(32, 32); crateBase(fb, 'O', 'c', 'o');
+    rect(fb, 14, 6, 4, 23, 'F'); vline(fb, 14, 6, 28, 'f');
+    hline(fb, 5, 11, 15, 'K'); px(fb, 6, 16, 'K'); px(fb, 8, 14, 'K'); hline(fb, 7, 10, 17, 'K'); px(fb, 11, 16, 'K'); // garabato
+    rect(fb, 20, 19, 7, 6, 'E'); hline(fb, 21, 25, 21, 'R'); hline(fb, 21, 24, 23, 'R'); // etiqueta FRAGIL
+    rect(fb, 4, 24, 3, 3, 'o'); px(fb, 26, 12, 'o');
+    return fb;
+  },
+  naval: function () { // caja de madera del astillero con ancla
+    var fb = newFB(32, 32); crateBase(fb, 'F', 'f', 'o');
+    hline(fb, 3, 28, 16, 'f'); hline(fb, 3, 28, 22, 'f'); vline(fb, 6, 11, 28, 'o'); vline(fb, 25, 11, 28, 'o');
+    vline(fb, 15, 12, 25, 'N'); vline(fb, 16, 12, 25, 'N'); hline(fb, 12, 19, 14, 'N'); rect(fb, 14, 11, 4, 2, 'N');
+    hline(fb, 11, 20, 25, 'N'); px(fb, 10, 24, 'N'); px(fb, 21, 24, 'N'); px(fb, 10, 23, 'N'); px(fb, 21, 23, 'N');
+    return fb;
+  },
+  jokin: function () { // caja negra con filo de oro: nadie sabe que hay dentro
+    var fb = newFB(32, 32); crateBase(fb, 'B', 'D', 'Q');
+    vline(fb, 3, 11, 28, 'Q'); vline(fb, 28, 11, 28, 'Q'); hline(fb, 3, 28, 28, 'Q'); hline(fb, 3, 28, 6, 'q');
+    rect(fb, 13, 13, 6, 2, 'R'); rect(fb, 17, 15, 2, 3, 'R'); rect(fb, 15, 18, 2, 3, 'R'); rect(fb, 15, 23, 2, 2, 'R'); // ?
+    px(fb, 13, 15, 'R');
+    return fb;
+  },
+  diaria: function () { // caja de herramientas del taller
+    var fb = newFB(32, 32);
+    rect(fb, 3, 12, 26, 16, 'g'); hline(fb, 3, 28, 17, 'k'); rect(fb, 3, 10, 26, 2, 'k');
+    hline(fb, 11, 20, 5, 'D'); vline(fb, 10, 6, 9, 'D'); vline(fb, 21, 6, 9, 'D'); // asa
+    hline(fb, 3, 28, 9, 'K'); hline(fb, 3, 28, 28, 'K'); vline(fb, 2, 10, 27, 'K'); vline(fb, 29, 10, 27, 'K');
+    rect(fb, 14, 15, 4, 4, 'Q'); px(fb, 15, 17, 'K'); // cierre
+    px(fb, 6, 22, 'a'); px(fb, 25, 22, 'a');
+    return fb;
+  }
+};
+
+// ============================================================
 // escritor PNG
 // ============================================================
 var CRC_T = (function () { var t = [], c, n, k; for (n = 0; n < 256; n++) { c = n; for (k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
@@ -515,11 +737,18 @@ var full = fullFront();
 writePNG(path.join(outDir, 'ethan-full.png'), full);
 writePNG(path.join(outDir, 'ethan-full@8x.png'), scale(full, 8));
 
-// cosmeticos
-Object.keys(COSMETIC_DRAWS).forEach(function (id) {
-  var fb = newFB();
-  COSMETIC_DRAWS[id](fb);
-  writePNG(path.join(outDir, 'cos-' + id + '.png'), fb);
+// cosmeticos: estatico (fotograma 0), tira animada sincronizada con el paseo e icono recortado
+var ALL_COS = Object.keys(COSMETIC_DRAWS).concat(Object.keys(COSMETIC_DRAWS_V2));
+ALL_COS.forEach(function (id) {
+  var frames = POSES.map(function (p) { return cosFrame(id, p); });
+  writePNG(path.join(outDir, 'cos-' + id + '.png'), frames[0]);
+  writePNG(path.join(outDir, 'cos-' + id + '-walk.png'), sheetOf(frames));
+  writePNG(path.join(outDir, 'ico-' + id + '.png'), ICON_DRAWS[id] ? ICON_DRAWS[id]() : cropIcon(frames[0]));
 });
 
-console.log('OK: 6 bustos, 4 frames andar, 1 full, ' + Object.keys(COSMETIC_DRAWS).length + ' cosmeticos en /sprites');
+// cajas
+Object.keys(CASE_DRAWS).forEach(function (id) {
+  writePNG(path.join(outDir, 'caja-' + id + '.png'), CASE_DRAWS[id]());
+});
+
+console.log('OK: 6 bustos, 4 frames andar, 1 full, ' + ALL_COS.length + ' cosmeticos (estatico + paseo + icono), ' + Object.keys(CASE_DRAWS).length + ' cajas en /sprites');

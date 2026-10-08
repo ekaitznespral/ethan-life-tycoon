@@ -153,14 +153,14 @@ el formato de guardado.
 
 ### 2.6 Checklist accionable (resumen)
 
-- [ ] Definir tokens CSS (F1)
-- [ ] `fmtMoney()` con K/M + count-up (F1)
-- [ ] Top bar fija con sprite placeholder (F2)
-- [ ] Bottom nav móvil con 5 iconos SVG + badges de "hay algo comprable/cobrable" (F2)
-- [ ] Set de iconos SVG: 18 objetos, 6 garajes, 5 mejoras, 4 recursos (F3)
-- [ ] Encargar sheet `ethan.png` (estados 1–4, 64×64, paleta del juego) (F4)
-- [ ] CSS `steps()` + mapa de estados + reglas de cambio de estado (F4)
-- [ ] Toasts apilables que sustituyan a `#log` (manteniéndolo como fallback aria-live) (F5)
+- [x] Definir tokens CSS (F1)
+- [x] `fmtMoney()` con K/M + count-up (F1)
+- [x] Top bar fija con sprite placeholder (F2)
+- [x] Bottom nav móvil con 5 iconos SVG + badges de "hay algo comprable/cobrable" (F2)
+- [x] Set de iconos SVG: 18 objetos, 6 garajes, 5 mejoras, 4 recursos (F3)
+- [x] Encargar sheet `ethan.png` (estados 1–4, 64×64, paleta del juego) (F4)
+- [x] CSS `steps()` + mapa de estados + reglas de cambio de estado (F4)
+- [x] Toasts apilables que sustituyan a `#log` (manteniéndolo como fallback aria-live) (F5)
 
 ---
 
@@ -174,3 +174,34 @@ el formato de guardado.
 - **Peso total objetivo de la PWA**: < 150 KB (hoy ~30 KB de HTML). Margen de sobra.
 - **Accesibilidad**: mantener `aria-live` para resultados, `prefers-reduced-motion`, y
   contraste AA en todos los temas (revisar amarillo sobre crema en tema McDonald's).
+
+---
+
+## 4. Estado tras la versión 2.0 (8 de octubre de 2026)
+
+Todo el checklist anterior está hecho. Además:
+
+- **Navegación por secciones**: Taller, Sestao (Garajes / Mejoras), Bar Naval (Cajas / Upgrader),
+  Vitrina (Medallas / Sucesos / Cosméticos) y Ethan (Ranking / Jubilación / Perfil). Barra inferior
+  en móvil y lateral en PC, con avisos.
+- **Barra superior fija** con dinero animado, €/s, €/hora extra, energía y sarro. Debajo, el ticker
+  **Radio Sestao** con titulares que cambian según el progreso.
+- **Garajes con niveles** (x1 / x10 / x100 / MAX), hitos x2 a nivel 25, 50, 100… y bonus global
+  cuando todos llegan a cierto nivel. Cuatro garajes nuevos: Markonzaga, Rebonza, La Naval y
+  Altos Hornos.
+- **Mejoras nuevas** de herramientas, energía y garajes, y **jubilación** (prestigio): el sarro da
+  +2% a todo y se gasta en un árbol de mejoras permanentes.
+- **Cajas tipo Counter-Strike**: cuatro cajas (incluida una gratis al día), ruleta horizontal con
+  desaceleración, ticks y casi-premios, y un revelado por rareza. Hay rareza nueva, **Mítico**
+  (0,02% en la caja de Jokin).
+- **Upgrader nuevo**: medidor circular arrastrable, cantidades con atajos y slider, ocho
+  multiplicadores, historial, estadísticas y modo turbo.
+- **17 cosméticos nuevos**. Ahora cada cosmético se anima con el paso de Ethan
+  (`cos-*-walk.png`) y tiene icono recortado para la interfaz (`ico-*.png`). Todo sale de
+  `tools/make-sprites.js`.
+- Rangos de Ethan por horas extra, bocadillos de diálogo, frenesí, Ethan dorado y medallas pensadas
+  para jugar muchas horas.
+
+El ranking guarda en `profiles.m` el **total ganado**. A partir de 2.000 millones se guarda
+comprimido (2e9 + log10 × 1e6) para que quepa aunque la columna sea `int4`. El juego lo decodifica
+al mostrarlo.
