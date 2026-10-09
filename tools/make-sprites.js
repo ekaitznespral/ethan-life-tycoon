@@ -571,6 +571,12 @@ var COSMETIC_DRAWS_V2 = {
     px(fb, 23, 18 + b, 'Q'); px(fb, 24, 19 + b, 'q'); px(fb, 25, 20 + b, 'Q'); px(fb, 26, 20 + b, 'q'); px(fb, 27, 20 + b, 'Q'); px(fb, 28, 19 + b, 'q'); px(fb, 29, 18 + b, 'Q');
     rect(fb, 26, 21 + b, 2, 2, 'Q'); px(fb, 26, 22 + b, 'q'); // medallon
   },
+  carnet: function (fb, k) { // carnet de tonto colgado del cuello con cordon rojo
+    var b = k.by;
+    px(fb, 24, 18 + b, 'R'); px(fb, 25, 19 + b, 'R'); px(fb, 26, 20 + b, 'R'); px(fb, 27, 21 + b, 'R');
+    rect(fb, 26, 22 + b, 5, 5, 'E'); hline(fb, 26, 30, 22 + b, 'R'); px(fb, 27, 24 + b, 'S'); px(fb, 27, 25 + b, 'H'); hline(fb, 29, 30, 24 + b, 'K'); hline(fb, 29, 30, 25 + b, 'K');
+    vline(fb, 31, 22 + b, 26 + b, 'K'); hline(fb, 26, 31, 27 + b, 'K');
+  },
   // --- mano (siguen el balanceo del brazo) ---
   kalimotxo: function (fb, k) {
     var x = 29 + k.armF, y = 24 + k.by;
@@ -618,6 +624,15 @@ function cosFrame(id, p) {
 
 // Iconos recortados para la interfaz (cajas, inventario)
 var ICON_DRAWS = {
+  carnet: function () { // carnet de tonto: foto, nombre y TONTO en rojo
+    var fb = newFB(20, 20);
+    rect(fb, 2, 5, 16, 11, 'E'); hline(fb, 2, 17, 5, 'R'); hline(fb, 2, 17, 6, 'R');
+    hline(fb, 1, 18, 4, 'K'); hline(fb, 1, 18, 16, 'K'); vline(fb, 1, 4, 16, 'K'); vline(fb, 18, 4, 16, 'K');
+    rect(fb, 3, 8, 5, 6, 'S'); hline(fb, 3, 7, 8, 'H'); hline(fb, 3, 7, 9, 'H'); px(fb, 4, 11, 'K'); px(fb, 6, 11, 'K'); hline(fb, 4, 6, 13, 'T');
+    hline(fb, 9, 16, 9, 'K'); hline(fb, 9, 14, 11, 'K'); hline(fb, 9, 16, 13, 'R'); hline(fb, 9, 16, 14, 'R');
+    rect(fb, 8, 2, 4, 2, 'L'); hline(fb, 8, 11, 1, 'K'); vline(fb, 7, 2, 3, 'K'); vline(fb, 12, 2, 3, 'K'); hline(fb, 7, 8, 0, 'R'); hline(fb, 11, 12, 0, 'R');
+    return fb;
+  },
   dientes: function () {
     var fb = newFB(20, 20);
     rect(fb, 4, 5, 12, 9, 'E'); rect(fb, 5, 14, 3, 3, 'E'); rect(fb, 12, 14, 3, 3, 'E');
@@ -848,6 +863,12 @@ var COS_BUST = {
   gafas: function (fb) { rect(fb, 15, 15, 7, 4, 'B'); rect(fb, 26, 15, 7, 4, 'B'); hline(fb, 22, 25, 16, 'K'); hline(fb, 13, 14, 16, 'K'); hline(fb, 33, 34, 16, 'K'); px(fb, 16, 16, 'L'); px(fb, 27, 16, 'L'); px(fb, 17, 15, 'L'); px(fb, 28, 15, 'L'); },
   bigote: function (fb) { hline(fb, 17, 30, 24, 'H'); hline(fb, 18, 29, 25, 'H'); px(fb, 16, 25, 'H'); px(fb, 31, 25, 'H'); px(fb, 16, 26, 'H'); px(fb, 31, 26, 'H'); hline(fb, 20, 22, 24, 'h'); },
   dientes: function (fb, k) { recolor(fb, k.base, { T: 'E', t: 'E' }); px(fb, 33, 24, 'E'); px(fb, 32, 25, 'E'); px(fb, 34, 25, 'E'); px(fb, 33, 26, 'E'); px(fb, 33, 25, 'a'); },
+  carnet: function (fb) { // cordon en V y carnet sobre el pecho
+    [[19, 35], [20, 36], [21, 37], [22, 38], [28, 35], [27, 36], [26, 37], [25, 38]].forEach(function (p) { px(fb, p[0], p[1], 'R'); });
+    rect(fb, 19, 39, 10, 8, 'E'); hline(fb, 19, 28, 39, 'R'); hline(fb, 19, 28, 40, 'R');
+    rect(fb, 20, 42, 3, 3, 'S'); hline(fb, 20, 22, 41, 'H'); hline(fb, 24, 27, 42, 'K'); hline(fb, 24, 26, 44, 'K');
+    vline(fb, 18, 39, 46, 'K'); vline(fb, 29, 39, 46, 'K'); hline(fb, 19, 28, 47, 'K'); px(fb, 23, 39, 'Q'); px(fb, 24, 39, 'Q');
+  },
   bufanda: function (fb) { rect(fb, 17, 32, 14, 4, 'R'); px(fb, 19, 33, 'E'); px(fb, 23, 34, 'E'); px(fb, 27, 33, 'E'); rect(fb, 26, 36, 4, 9, 'R'); hline(fb, 26, 29, 39, 'E'); hline(fb, 26, 29, 42, 'E'); hline(fb, 26, 29, 45, 'r'); vline(fb, 16, 32, 35, 'K'); vline(fb, 31, 32, 35, 'K'); },
   cadena: function (fb) { [[19, 36], [20, 37], [21, 38], [22, 39], [23, 40], [24, 40], [25, 39], [26, 38], [27, 37], [28, 36]].forEach(function (p, i) { px(fb, p[0], p[1], i % 2 ? 'q' : 'Q'); }); rect(fb, 23, 41, 2, 3, 'Q'); px(fb, 24, 42, 'q'); px(fb, 22, 42, 'Q'); px(fb, 25, 42, 'Q'); },
   // ---- cuerpo ----
@@ -875,6 +896,8 @@ var COS_FRONT = {
   gafas: function (fb, k) { var d = k.dy; rect(fb, 18, 11 + d, 4, 2, 'B'); rect(fb, 25, 11 + d, 4, 2, 'B'); hline(fb, 22, 24, 11 + d, 'K'); px(fb, 17, 11 + d, 'K'); px(fb, 29, 11 + d, 'K'); px(fb, 19, 11 + d, 'L'); px(fb, 26, 11 + d, 'L'); },
   bigote: function (fb, k) { var d = k.dy; hline(fb, 20, 27, 14 + d, 'H'); px(fb, 19, 15 + d, 'H'); px(fb, 28, 15 + d, 'H'); },
   dientes: function (fb, k) { recolor(fb, k.base, { T: 'E', t: 'E' }); var d = k.dy; px(fb, 30, 14 + d, 'E'); px(fb, 29, 15 + d, 'a'); px(fb, 31, 15 + d, 'E'); px(fb, 30, 16 + d, 'E'); },
+  carnet: function (fb, k) { var d = k.dy + 1; px(fb, 21, 18 + d, 'R'); px(fb, 22, 19 + d, 'R'); px(fb, 26, 18 + d, 'R'); px(fb, 25, 19 + d, 'R');
+    rect(fb, 21, 20 + d, 6, 5, 'E'); hline(fb, 21, 26, 20 + d, 'R'); px(fb, 22, 22 + d, 'S'); px(fb, 22, 23 + d, 'H'); hline(fb, 24, 25, 22 + d, 'K'); hline(fb, 24, 25, 23 + d, 'K'); hline(fb, 21, 26, 25 + d, 'K'); },
   bufanda: function (fb, k) { var d = k.dy; rect(fb, 18, 17 + d, 12, 2, 'R'); px(fb, 20, 17 + d, 'E'); px(fb, 24, 18 + d, 'E'); px(fb, 27, 17 + d, 'E'); rect(fb, 26, 19 + d, 3, 6, 'R'); hline(fb, 26, 28, 21 + d, 'E'); hline(fb, 26, 28, 24 + d, 'r'); },
   cadena: function (fb, k) { var d = k.dy + 1; [[20, 19], [21, 20], [22, 21], [23, 21], [24, 21], [25, 21], [26, 20], [27, 19]].forEach(function (p, i) { px(fb, p[0], p[1] + d, i % 2 ? 'q' : 'Q'); }); rect(fb, 23, 22 + d, 2, 2, 'Q'); },
   chandaloro: function (fb, k) { recolor(fb, k.base, { Z: 'Q', z: 'q', N: 'q', n: 'Q' }); },
@@ -912,7 +935,7 @@ function frontCosFrames(id) {
   });
 }
 
-// caja del Bar Ekintza (sustituye a la del Naval): caja de birras roja con botellines
+// Caja Taita del Bar Ekintza (sustituye a la del Naval): caja de birras roja con botellines
 CASE_DRAWS.naval = function () {
   var fb = newFB(32, 32);
   // botellines asomando
@@ -925,7 +948,7 @@ CASE_DRAWS.naval = function () {
   rect(fb, 12, 14, 8, 3, 'K'); // asa
   vline(fb, 9, 13, 27, 'r'); vline(fb, 22, 13, 27, 'r');
   // "E" de Ekintza
-  rect(fb, 13, 21, 2, 6, 'E'); hline(fb, 13, 18, 21, 'E'); hline(fb, 13, 17, 23, 'E'); hline(fb, 13, 18, 26, 'E');
+  hline(fb, 12, 19, 21, 'E'); hline(fb, 12, 19, 22, 'E'); rect(fb, 15, 23, 2, 4, 'E');
   hline(fb, 2, 29, 29, 'K'); vline(fb, 1, 12, 28, 'K'); vline(fb, 30, 12, 28, 'K'); hline(fb, 2, 29, 11, 'K');
   return fb;
 };

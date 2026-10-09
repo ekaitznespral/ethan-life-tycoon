@@ -21,13 +21,15 @@ Lista para revisar. Todo sale de `index.html` (arrays `EV` y `RANKS`).
 | 13 | Desamor con Itsasne ⚠️ | Jueves a las 23:00 | 5% | Fingir que no importa: horas extra x1,5 12 h · Llorando en el C4: energía −30% 12 h | nada |
 | 14 | El percance de la Nomo ⚠️ | Miércoles a las 22:00, rarísimo | 2% | Vergüenza histórica: −40% a todo 24 h | nada |
 | 15 | Lío en la gasolinera con la hermanastra | Madrugadas de sábado a las 03:30 (a partir del día 30) | 4% | Lo del Repsol: energía x1,3 12 h | nada |
-| 16 | Ethan se echa novia buenorra | Domingos a las 17:00, cuando Ethan ya es adulto (a partir del día 60) | 6% | Novia de finde: x2 a todo 24 h | nada |
-| 17 | El aita con cable neutro de cinturón | Día 1 a las 12:00 | 25% | Cinturón de cable neutro: horas extra x1,3 24 h | nada |
-| 18 | El funeral del aita ⚠️ | Día 20 a las 11:00, cuando Ethan ya es muy adulto (a partir del día 120) | 8% | Herencia del aita: +15 min de ganancias · Luto: energía −40% 24 h | nada |
-| 19 | Ethan se va a dormir | De lunes a viernes a las 22:00. Si se duerme, no hay horas extra hasta las 08:00 | 60% | sin horas extra hasta las 08:00, energía x3 y a tope al despertar | Ojeras: energía −40% 10 h |
-| 20 | Face to face | Sábados y domingos a las 22:00. Duelo cara a cara: el primero que reacciona gana | 40% | Duelo: si ganas, x2 a todo 24 h | nada |
+| 16 | El aita con cable neutro de cinturón | Día 1 a las 12:00 | 25% | Cinturón de cable neutro: horas extra x1,3 24 h | nada |
+| 17 | Directo de Hernández | Lunes y miércoles a las 20:00. En YouTube y Twitch a la vez, por si acaso | 40% | Viendo el directo de Hernández: −20% por hora extra 6 h | nada |
+| 18 | Hernández se saca la ESO | Día 10 a las 10:00. Lo intenta todos los meses | 3% | Milagro en Sestao: x2 a todo 24 h | Hernández suspende otra vez y lo cuenta en directo |
+| 19 | Visita del primo con carnet de tonto | Domingos a las 12:00 | 35% | Le invitas a todo: −2% del dinero · Risas con el primo: x1,2 a todo 12 h | nada |
+| 20 | Te roban buscando aparcamiento ⚠️ | Solo cuando no encuentras sitio para aparcar, y como mucho una vez cada 2 semanas | 5% | Te lo roban todo: −100% del dinero | nada |
+| 21 | Ethan se va a dormir | De domingo a jueves a las 22:00 (las noches antes de currar). Si se duerme, no hay horas extra hasta las 08:00 | 60% | sin horas extra hasta las 08:00, energía x3 y a tope al despertar | Ojeras: energía −40% 10 h |
+| 22 | Face to face | Viernes y sábados a las 22:00: noche de GTA V con los amigos | 40% | Se levanta tarde: sin horas extra hasta las 13:00 y se levanta con la mitad de energía · Cansancio de GTA: energía −30% 12 h al levantarse | nada |
 
-⚠️ = suceso malo (que pase es lo malo).
+⚠️ = suceso malo (que pase es lo malo). El robo solo puede salir cuando falla lo de aparcar.
 
 ## Cargos de Ethan (rangos por horas extra, cuentan las de los becarios)
 

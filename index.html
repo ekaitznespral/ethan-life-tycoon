@@ -543,15 +543,6 @@ input[type=range]{width:100%;accent-color:var(--yel);margin:10px 0 2px}
 .rvr{position:absolute;left:50%;top:50%;width:96px;height:96px;margin:-48px;border-radius:50%;border:4px solid #3ce6d2;box-shadow:0 0 12px #3ce6d2;pointer-events:none;will-change:transform,opacity}
 #rvs{position:absolute;left:0;right:0;top:12px;text-align:center;font-weight:800;font-size:15px;color:#ffd6ec}
 #rvj{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-weight:800;font-size:22px;font-stretch:80%;color:#fff;text-shadow:0 0 10px #ff5ca0}
-/* face to face */
-.ffrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 6px}
-.ffrow .ethm{width:84px;height:84px;background-size:672px 84px}
-.ffriv{width:84px;height:84px;border-radius:16px;background:var(--hud);display:grid;place-items:center;font-size:48px}
-.ffvs{font-size:26px;font-weight:800;font-stretch:72%;color:var(--bad)}
-.ffn{display:flex;justify-content:space-between;font-size:12.5px;font-weight:800;color:var(--mute)}
-#ffz{position:relative;height:120px;margin-top:10px;border-radius:16px;background:var(--hud);color:var(--hudink);display:grid;place-items:center;font-size:26px;font-weight:800;font-stretch:80%;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;transition:background .1s}
-#ffz.go{background:var(--ok);color:#fff}
-#ffz.early{background:var(--bad);color:#fff}
 /* saco de golpes */
 .bxbox{width:min(560px,100%);padding:14px}
 #bxa{position:relative;height:min(52vh,380px);margin-top:10px;border-radius:16px;overflow:hidden;background:linear-gradient(180deg,#2b4636,#1f3328 78%,#3a2a1a 78%,#2a1d10);touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
@@ -658,7 +649,7 @@ input[type=range]{width:100%;accent-color:var(--yel);margin:10px 0 2px}
 <nav id="nav" aria-label="Secciones">
  <button data-t="t1" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3.5 17.5a2.1 2.1 0 0 0 3 3l5.8-5.8a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg><span>Taller</span><i class="bd dot"></i></button>
  <button data-t="t2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V9l6-4v16M11 21V10l8 3v8M8 12v.01M8 16v.01M15 15v.01M15 18v.01"/></svg><span>Sestao</span><i class="bd dot"></i></button>
- <button data-t="t5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="16" cy="16" r="1.2" fill="currentColor"/></svg><span>Bar Naval</span><i class="bd dot"></i></button>
+ <button data-t="t5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="16" cy="16" r="1.2" fill="currentColor"/></svg><span>Bar Ekintza</span><i class="bd dot"></i></button>
  <button data-t="t3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M9 17h6v4H9z"/></svg><span>Vitrina</span><i class="bd"></i></button>
  <button data-t="t4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Ethan</span><i class="bd dot"></i></button>
 </nav>
@@ -708,9 +699,9 @@ input[type=range]{width:100%;accent-color:var(--yel);margin:10px 0 2px}
  </div>
  <div id="su" hidden><div id="ups" class="ugrid"></div><div id="uown" class="uown"></div></div>
 </section>
-<!-- ================= BAR NAVAL ================= -->
+<!-- ================= BAR EKINTZA ================= -->
 <section id="t5" class="sec" hidden>
- <div class="nh"><div class="haz"></div><span class="neon">🎰</span><h2>Bar del Naval</h2><p>La banca siempre gana. Sádaba también.</p></div>
+ <div class="nh"><div class="haz"></div><span class="neon">🎰</span><h2>Bar Ekintza</h2><p>La banca siempre gana. Sádaba también.</p></div>
  <div class="seg" id="s5seg"><button data-p="nc" class="on">Cajas<i class="bd dot"></i></button><button data-p="nu">Upgrader</button></div>
  <div id="nc">
   <div id="cases" class="cgrid"></div>
@@ -812,11 +803,6 @@ input[type=range]{width:100%;accent-color:var(--yel);margin:10px 0 2px}
 <div id="rv" class="ovl" hidden><div class="mbox rvbox"><h3>🎧 Rave en Altos Hornos</h3><p class="sub">Toca el círculo justo cuando el anillo llegue a él. Al ritmo, Ethan.</p>
  <div id="rva"><div id="rvl"></div><div id="rvs"></div><div id="rvp">🔊</div><div id="rvj"></div><div id="rvcd" class="cdn" hidden></div></div>
  <div id="rvr" style="font-weight:800;min-height:24px;margin-top:10px"></div></div></div>
-<!-- face to face -->
-<div id="ff" class="ovl" hidden><div class="mbox"><h3 id="fft">Face to face</h3><p class="sub" id="ffs">Cuando salga ¡YA!, toca lo más rápido que puedas. Si te adelantas, pierdes.</p>
- <div class="ffrow"><div class="ethm" id="ffe"></div><span class="ffvs">VS</span><div class="ffriv" id="ffr">😠</div></div>
- <div class="ffn"><span>Ethan</span><span id="ffrn"></span></div>
- <div id="ffz">Prepárate…</div><div id="ffo" style="font-weight:800;min-height:24px;margin-top:10px"></div></div></div>
 <!-- saco de golpes -->
 <div id="saco" class="ovl" hidden><div class="mbox bxbox"><div class="chd" style="padding:0"><div style="text-align:left"><h3>🥊 Aporrea a Ethan</h3><p class="sub" style="margin:2px 0 0">Tócale para darle, arrástrale y lánzale contra las paredes.</p></div><button id="bxx" class="x" style="background:var(--bg);color:var(--ink)" aria-label="Cerrar">✕</button></div>
  <div id="bxa"><div id="bxe"></div><div id="bxb" hidden></div></div>
@@ -827,7 +813,7 @@ input[type=range]{width:100%;accent-color:var(--yel);margin:10px 0 2px}
 <div id="fin" class="ovl" hidden><div class="mbox fin"><div class="ethm" style="background-position:0 0"></div><h3>💍 Ethan tiene novia buenorra</h3><p class="sub" id="fint"></p><button class="btn gold wide" id="finok" style="margin-top:14px">Seguir currando</button></div></div>
 <!-- novedades -->
 <div id="nov" class="ovl" hidden><div class="mbox nov"><div class="ethm" style="margin:0 auto 10px;background-position:0 0"></div><h3>Ethan life tycoon 2.1</h3><p class="sub">Ethan duerme (a veces), le puedes aporrear y la vida le dura mucho más.</p>
- <ul><li><b>📅 Sucesos con premio o castigo</b> Cada suceso trae un boost si sale bien y una cosa mala si sale mal. Entre semana a las 22:00 Ethan puede dormirse y los findes hay face to face.</li><li><b>🎧 Rave en Altos Hornos</b> La fiesta de la bajera ahora es una rave con minijuego de ritmo. Y resaca.</li><li><b>🥊 Aporrea a Ethan</b> Botón 🥊 en el taller. Y al Ethan que pasea puedes tocarle, agarrarle y soltarle.</li><li><b>🍺 Bar Ekintza y garaje de Kueto</b> Nueva caja, nuevo garaje, abre hasta 10 cajas a la vez y la vida de Ethan tiene 13 pasos nuevos hasta la novia buenorra.</li></ul>
+ <ul><li><b>📅 Sucesos con premio o castigo</b> Cada suceso trae un boost si sale bien y una cosa mala si sale mal. Las noches antes de currar Ethan puede dormirse, los findes hay face to face (GTA V hasta las tantas) y si no encuentras sitio para aparcar te pueden robar.</li><li><b>🎧 Rave en Altos Hornos</b> La fiesta de la bajera ahora es una rave con minijuego de ritmo. Y resaca.</li><li><b>🥊 Aporrea a Ethan</b> Botón 🥊 en el taller. Y al Ethan que pasea puedes tocarle, agarrarle y soltarle.</li><li><b>🍺 Bar Ekintza</b> El bar ahora es el Ekintza, con la Caja Taita, y abres hasta 10 cajas a la vez. Garaje de Kueto y 13 pasos nuevos hasta la novia buenorra.</li><li><b>🪪 El primo y Hernández</b> El primo con carnet de tonto viene de visita (su carnet es un cosmético legendario) y Hernández hace directos que no ve nadie.</li></ul>
  <button class="btn wide" id="novok">A currar</button></div></div>
 <!-- login -->
 <div id="gate" hidden><div id="gatec"><div class="ethm"></div><h1 style="font-size:30px;margin:0 0 4px;font-stretch:80%">Ethan life tycoon</h1><p class="mute" style="margin:0 0 12px">Entra para jugar. Tu partida se guarda en tu cuenta.</p><div id="auth"></div></div></div>
@@ -897,11 +883,13 @@ var EV=[
 {id:'itsasne',n:'Desamor con Itsasne',d:'Jueves a las 23:00',days:[3],h:23,p:.05,bad:1,msg:'Itsasne vuelve con su ex. Ethan finge que no le importa delante del C4.',ok:[{k:'work',x:1.5,h:12,n:'Fingir que no importa',ic:'💔'},{k:'regen',x:.7,h:12,n:'Llorando en el C4',ic:'🥀'}],ko:[]},
 {id:'nomo',n:'El percance de la Nomo',d:'Miércoles a las 22:00, rarísimo',days:[2],h:22,p:.02,bad:1,msg:'La novia de un colega se le insinúa. Era una trampa para ver cómo reaccionaba. Ethan da la peor reacción posible. Histórico de Sestao.',ok:[{k:'buff',x:.6,h:24,n:'Vergüenza histórica',ic:'🙈'}],ko:[]},
 {id:'gasolinera',n:'Lío en la gasolinera con la hermanastra',d:'Madrugadas de sábado a las 03:30 (a partir del día 30)',days:[5],h:3.5,p:.04,minD:30,msg:'Tocamientos mutuos en la gasolinera. Lo que pasa en el Repsol se queda en el Repsol.',ok:[{k:'regen',x:1.3,h:12,n:'Lo del Repsol',ic:'⛽'}],ko:[]},
-{id:'novia9',n:'Ethan se echa novia buenorra',d:'Domingos a las 17:00, cuando Ethan ya es adulto (a partir del día 60)',days:[6],h:17,p:.06,minD:60,msg:'Ethan vuelve del Max Center con novia buenorra. Nadie sabe cómo. Ni él.',ok:[{k:'buff',x:2,h:24,n:'Novia de finde',ic:'💘'}],ko:[]},
 {id:'cable',n:'El aita con cable neutro de cinturón',d:'Día 1 a las 12:00',dom:1,h:12,p:.25,msg:'El aita aparece con un cable neutro de cinturón. Dice que aguanta más que el cuero.',ok:[{k:'work',x:1.3,h:24,n:'Cinturón de cable neutro',ic:'🔌'}],ko:[]},
-{id:'funeral',n:'El funeral del aita',d:'Día 20 a las 11:00, cuando Ethan ya es muy adulto (a partir del día 120)',dom:20,h:11,p:.08,minD:120,after:'cable',bad:1,msg:'Funeral del aita. Lo entierran con el cable neutro puesto. DEP.',ok:[{k:'cash',s:900,n:'Herencia del aita'},{k:'regen',x:.6,h:24,n:'Luto',ic:'🖤'}],ko:[]},
-{id:'dormir',n:'Ethan se va a dormir',d:'De lunes a viernes a las 22:00. Si se duerme, no hay horas extra hasta las 08:00',days:[0,1,2,3,4],h:22,p:.6,ok:[{k:'sleep'}],ko:[{k:'regen',x:.6,h:10,n:'Ojeras',ic:'🥱'}]},
-{id:'f2f',n:'Face to face',d:'Sábados y domingos a las 22:00. Duelo cara a cara: el primero que reacciona gana',days:[5,6],h:22,p:.4,mg:'f2f',ok:[{k:'txt',t:'Duelo: si ganas, x2 a todo 24 h',ic:'😤'}],ko:[]}];
+{id:'hernandez',n:'Directo de Hernández',d:'Lunes y miércoles a las 20:00. En YouTube y Twitch a la vez, por si acaso',days:[0,2],h:20,p:.4,msg:'Hernández abre directo desde el sofá: mando de la play en una mano y bolsa de Doritos en la otra. Espectadores: 0. Ethan entra por pena y se queda un rato.',ok:[{k:'work',x:.8,h:6,n:'Viendo el directo de Hernández',ic:'📺'}],ko:[]},
+{id:'hereso',n:'Hernández se saca la ESO',d:'Día 10 a las 10:00. Lo intenta todos los meses',dom:10,h:10,p:.03,msg:'Milagro en Sestao: Hernández aprueba la ESO. Lo celebra con un directo y lo ven 3 personas. Récord absoluto.',ok:[{k:'buff',x:2,h:24,n:'Milagro en Sestao',ic:'🎓'}],ko:[{k:'txt',t:'Hernández suspende otra vez y lo cuenta en directo'}]},
+{id:'primo',n:'Visita del primo con carnet de tonto',d:'Domingos a las 12:00',days:[6],h:12,p:.35,msg:'Llega el primo de Ethan enseñando su carnet de tonto a todo el que pasa. Dice que con él no paga en el Ekintza. No es verdad: paga Ethan.',ok:[{k:'loss',f:.02,n:'Le invitas a todo'},{k:'buff',x:1.2,h:12,n:'Risas con el primo',ic:'🪪'}],ko:[]},
+{id:'robo',n:'Te roban buscando aparcamiento',d:'Solo cuando no encuentras sitio para aparcar, y como mucho una vez cada 2 semanas',onFail:'aparcar',p:.05,bad:1,ui:1,q:'¿Te roban mientras buscas aparcamiento?',msg:'Mientras Ethan da vueltas buscando sitio, unos chorizos le revientan el C4 y se llevan la cartera, el móvil y hasta las Ruffles. Todo el dinero, fuera.',ok:[{k:'loss',f:1,n:'Te lo roban todo'}],ko:[]},
+{id:'dormir',n:'Ethan se va a dormir',d:'De domingo a jueves a las 22:00 (las noches antes de currar). Si se duerme, no hay horas extra hasta las 08:00',days:[6,0,1,2,3],h:22,p:.6,ok:[{k:'sleep'}],ko:[{k:'regen',x:.6,h:10,n:'Ojeras',ic:'🥱'}]},
+{id:'f2f',n:'Face to face',d:'Viernes y sábados a las 22:00: noche de GTA V con los amigos',days:[4,5],h:22,p:.4,msg:'Noche de face to face: GTA V con Hernández y los amigos hasta las cinco de la mañana. Ethan se lo pasa en grande. Mañana no hay quien le levante.',ok:[{k:'sleep',w:13,e:.5,n:'Se levanta tarde'},{k:'regen',x:.7,h:12,aw:1,n:'Cansancio de GTA',ic:'🎮'}],ko:[]}];
 var UP=[
 {id:'a1',ic:'👷',cat:'Personal',n:'Becario sin contrato',d:'Echa 1 hora extra por segundo él solo, sin cansar a Ethan. Cobra la mitad y en experiencia.',fx:'1 hora extra/s automática',c:4000},
 {id:'s2',ic:'☕',cat:'Velocidad',n:'Café de gasolinera',d:'Desbloquea el botón x2: todo pasa el doble de rápido.',fx:'Velocidad x2',c:50000,sp:2},
@@ -943,7 +931,7 @@ var DMP=[
 {k:'buy',ic:'🛒',tx:'Sádaba insiste: compra {t} objeto de la tienda',t:function(){return 1},v:function(){return S.own}},
 {k:'gar',ic:'🏚️',tx:'Ladrillo seguro: sube {t} niveles de garaje',t:function(){return 5},v:function(){return S.glv||0}},
 {k:'ev',ic:'📅',tx:'Que la vida pase: presencia {t} sucesos',t:function(){return 2},v:function(){return totLg()}},
-{k:'box',ic:'📦',tx:'Pásate por el Naval: abre {t} cajas',t:function(){return 2+Math.floor(Math.random()*3)},v:function(){return S.lbo||0}}];
+{k:'box',ic:'📦',tx:'Pásate por el Ekintza: abre {t} cajas',t:function(){return 2+Math.floor(Math.random()*3)},v:function(){return S.lbo||0}}];
 var THEMES=[
 {id:'taller',n:'Taller de siempre',c:0,sw:['#4e7d5b','#c9d856','#dbe7d9']},
 {id:'kebab',n:'Kebab Ali',c:90000,sw:['#1f8a4c','#e0a83c','#f3ecdc'],v:{'--bg':'#f3ecdc','--bg2':'#e7dcc3','--card':'#fbf6e8','--ink':'#2d2412','--mute':'#7a6c4f','--blue':'#1f8a4c','--blue2':'#15693a','--yel':'#e0a83c','--line':'#d8c9a5','--water':'#bcd9c2','--hud':'#173d27','--hud2':'#215236','--hudink':'#fbf3df','--hudmute':'#c8d7b9','--edge':'rgba(255,255,255,.6)','--sh':'rgba(80,60,20,.16)'}},
@@ -955,8 +943,9 @@ var RORD=['comun','poco','raro','epico','leg','mitico'];
 var SLOTS=[['cabeza','Cabeza'],['cara','Cara'],['boca','Boca'],['cuello','Cuello'],['cuerpo','Cuerpo'],['cintura','Cintura'],['mano','Mano'],['pies','Pies'],['aura','Aura']];
 var COS=[
 {id:'cepillo',n:'Cepillo de dientes de Ethan',d:'Sin usar, pero sucio. Nadie sabe cómo.',r:'leg',slot:'mano',box:'sadaba'},
-{id:'cable',n:'Cable neutro de cinturón',d:'Herencia del aita. Aguanta más que el cuero.',r:'leg',slot:'cintura',box:'sadaba'},
+{id:'cable',n:'Cable neutro de cinturón',d:'Regalo del aita. Aguanta más que el cuero.',r:'leg',slot:'cintura',box:'sadaba'},
 {id:'tresds',n:'3DS Hyrule Edition',d:'Trofeo nacional. Ni se vende ni se presta.',r:'leg',slot:'mano',box:'sadaba'},
+{id:'carnet',n:'Carnet de tonto del primo',d:'Expedido sin examen. No caduca nunca. Lo lleva colgado del cuello con orgullo.',r:'leg',slot:'cuello',med:'primo'},
 {id:'llaveoro',n:'Llave inglesa de oro',d:'Solo para herederos de la empresa.',r:'epico',slot:'mano',med:'heredero'},
 {id:'kebabali',n:'Kebab eterno de Ali',d:'Nunca se acaba. Nunca caduca. Bueno, caducado ya venía.',r:'epico',slot:'mano',box:'sadaba'},
 {id:'gorrathletic',n:'Gorra del Athletic',d:'De la final que no se nombra.',r:'epico',slot:'cabeza',box:'sadaba'},
@@ -990,7 +979,7 @@ var COS=[
 var CASES=[
 {id:'diaria',n:'Caja del día',d:'Gratis una vez al día. Sádaba lo llama «fidelización».',c:0,ref:7500,daily:1,odds:{mitico:.00002,leg:.0009,epico:.015,raro:.085,poco:.28,comun:0}},
 {id:'sadaba',n:'Caja de Sádaba',d:'Sádaba jura que no está trucada.',c:7500,odds:{leg:.0008,epico:.015,raro:.08,poco:.25,comun:0}},
-{id:'naval',n:'Caja del Bar Ekintza',d:'Lo que se dejan en el Ekintza. Huele a kalimotxo y a pipas.',c:400000,odds:{leg:.0025,epico:.03,raro:.15,poco:.32,comun:0}},
+{id:'naval',n:'Caja Taita',d:'La caja del taita en el Ekintza. Huele a kalimotxo y a pipas.',c:400000,odds:{leg:.0025,epico:.03,raro:.15,poco:.32,comun:0}},
 {id:'jokin',n:'Caja de Jokin',d:'Nadie sabe qué hay dentro. Jokin tampoco. Ojito.',c:75e6,odds:{mitico:.0002,leg:.008,epico:.09,raro:0}}];
 var REF={comun:.1,poco:.25,raro:.6,epico:1.6,leg:12,mitico:150};
 var SKILLS=[
@@ -1011,13 +1000,13 @@ var GOLD=[
 {e:'🦷',w:4,t:'¡El diente de oro de Ethan! Producción x7 durante 6 horas de juego.',b:12,x:7}];
 var RANKS=[[0,'Becario sin contrato'],[100,'Aprendiz de chapa'],[400,'Ayudante de taller'],[1000,'Oficial de tercera'],[2500,'Oficial de segunda'],[6000,'Oficial de primera'],[15000,'Encargado de turno'],[40000,'Jefe de taller'],[100000,'Gerente del taller'],[250000,'Rey de los garajes'],[600000,'Leyenda de Sestao'],[1500000,'Mito de la Margen Izquierda'],[4000000,'Dios del sarro'],[10000000,'Ethan Supremo']];
 var WPH=['Las BMW ni tocarlas.','Hoy no me lavo los dientes, mañana tampoco.','El Ekintza abre a las siete. Yo a las seis.','A Kueto voy en C4, que es cuesta arriba.','El sarro da carácter.','Sádaba me debe una.','¿Horas extra? Las que hagan falta.','A Jokin ni lo nombres.','Esto con un cable neutro se arregla.','El chándal es de diario y de boda.','El C4 no se vende. Se hereda.','¿Dentista? ¿Eso qué es?','Hoy cierro yo el taller.'];
-var WKP=['¿Qué miras?','Voy al taller, que no llego.','¿Tienes una Aquarius de limón?','Hoy echo doce horas, mínimo.','Las BMW aguantan otro año.','Sádaba dice que esto es una inversión.','Mi C4 corre más que tu coche.','Si me agarras otra vez, llamo al aita.','Ali me guarda un kebab para luego.','No me toques, que tengo sarro.','Esta noche face to face. Prepárate.','¿Rave en Altos Hornos? Ahí estaré.','Jokin me sigue. Lo noto.','Kueto es mi barrio adoptivo.'];
+var WKP=['¿Qué miras?','Hernández, ¿hoy abres directo?','Mi primo tiene carnet de tonto. Y lo enseña.','Esta noche GTA con Hernández.','Voy al taller, que no llego.','¿Tienes una Aquarius de limón?','Hoy echo doce horas, mínimo.','Las BMW aguantan otro año.','Sádaba dice que esto es una inversión.','Mi C4 corre más que tu coche.','Si me agarras otra vez, llamo al aita.','Ali me guarda un kebab para luego.','No me toques, que tengo sarro.','Esta noche face to face. Prepárate.','¿Rave en Altos Hornos? Ahí estaré.','Jokin me sigue. Lo noto.','Kueto es mi barrio adoptivo.','A Hernández le ven más en la ITV que en Twitch.'];
 var GRB=['¡Bájame!','¡Que me caigo!','¡Socorro, Jokin no!','¡Mis BMW!','¡Aaaaah!','¡Tengo vértigo!','¡Que no sé volar!'];
 var LND=['Ay, mi espalda…','Las BMW han sobrevivido.','Eso ha dolido.','Estoy bien. Creo.','¿Quién ha sido?','Esto va a la Inspección de Trabajo.'];
 var PNC=['¡Ay!','¡Eh!','¡Que llamo al aita!','¡En la cara no!','¡Mis dientes, que son de colección!','¡Para ya!','Vale, me lo merecía.','¡Que se lo digo a Lourdes!','Esto no lo cubre el convenio.','¿Esto es por lo de la PS5?'];
 var TK=[
-['Ethan pide un adelanto de nómina. El jefe se ríe durante once minutos.','Vecinos de Txabarri denuncian ruido de llave inglesa a las tantas. Es Ethan, echando horas.','Las BMW de Ethan cumplen otro año sin ver una lavadora.','Estudio de la UPV: el sarro de Ethan podría tener ecosistema propio.','El C4 Picasso de Ethan pasa la ITV. La ITV no se ha recuperado.','Sádaba niega haber vendido una PS5 llena de ladrillos: «Eran ladrillos de calidad».','Ali confirma que el kebab de los domingos «está bien». No precisa de qué domingo.','Se busca calcetín desaparecido en 2019. Responde al nombre de «el otro».','Jokin visto por Urbinaga. Nadie sabe qué trama. Nunca nadie lo sabe.','El chándal de Ethan, declarado prenda oficial para bodas, bautizos y comuniones.','La Aquarius de limón sube 5 céntimos. Ethan valora mudarse a Portugalete.','El encargado confirma que Ethan ficha antes de que abra el taller. Nadie sabe cómo entra.'],
-['Ethan compra un garaje y lo usa de trastero para guardar otro garaje.','El encargado, preocupado: «Ethan ya no ficha, vive aquí».','Sádaba lanza el SádabaCoin. Vale lo que él diga ese día.','Récord en el Bar del Naval: alguien ganó un upgrade. Se investiga.','Lourdes reconoce que no sabe qué lleva la tortilla sorpresa. «Es parte de la sorpresa».','Hacienda abre oficina en Sestao con vistas directas al taller de Ethan.','La patrulla patinete alcanza los 25 km/h. Cuesta abajo y con viento a favor.','Los becarios de Ethan piden un convenio. Les dan un bocata.','Una inmobiliaria pregunta por el garaje de Txabarri. Ethan pide el triple. Y una Aquarius.','Expertos en tráfico: Ethan ha encontrado sitio para aparcar. Sospechan que lo compró.'],
+['Noche de face to face: Ethan y Hernández juegan al GTA V hasta las cinco. Los vecinos denuncian gritos de «¡Que viene la poli!».','Ethan pide un adelanto de nómina. El jefe se ríe durante once minutos.','Vecinos de Txabarri denuncian ruido de llave inglesa a las tantas. Es Ethan, echando horas.','Las BMW de Ethan cumplen otro año sin ver una lavadora.','Hernández bate su récord en Twitch: 2 espectadores. Uno era su madre.','Hernández anuncia que este año se saca la ESO. Lo anunció también en 2019, 2021 y 2023.','El primo de Ethan renueva el carnet de tonto. Se lo dieron sin hacer el examen.','Directo de Hernández: 6 horas jugando a la play. No lo ve nadie. Literalmente nadie.','Estudio de la UPV: el sarro de Ethan podría tener ecosistema propio.','El C4 Picasso de Ethan pasa la ITV. La ITV no se ha recuperado.','Sádaba niega haber vendido una PS5 llena de ladrillos: «Eran ladrillos de calidad».','Ali confirma que el kebab de los domingos «está bien». No precisa de qué domingo.','Se busca calcetín desaparecido en 2019. Responde al nombre de «el otro».','Jokin visto por Urbinaga. Nadie sabe qué trama. Nunca nadie lo sabe.','El chándal de Ethan, declarado prenda oficial para bodas, bautizos y comuniones.','La Aquarius de limón sube 5 céntimos. Ethan valora mudarse a Portugalete.','El encargado confirma que Ethan ficha antes de que abra el taller. Nadie sabe cómo entra.'],
+['Ethan compra un garaje y lo usa de trastero para guardar otro garaje.','El encargado, preocupado: «Ethan ya no ficha, vive aquí».','Sádaba lanza el SádabaCoin. Vale lo que él diga ese día.','Récord en el Bar Ekintza: alguien ganó un upgrade. Se investiga.','Lourdes reconoce que no sabe qué lleva la tortilla sorpresa. «Es parte de la sorpresa».','Hacienda abre oficina en Sestao con vistas directas al taller de Ethan.','La patrulla patinete alcanza los 25 km/h. Cuesta abajo y con viento a favor.','Los becarios de Ethan piden un convenio. Les dan un bocata.','Una inmobiliaria pregunta por el garaje de Txabarri. Ethan pide el triple. Y una Aquarius.','Expertos en tráfico: Ethan ha encontrado sitio para aparcar. Sospechan que lo compró.'],
 ['Forbes Sestao: Ethan, el hombre más rico de la Margen Izquierda. Sigue sin lavarse los dientes.','Ethan compra Altos Hornos y lo pinta de azul camiseta.','La ría cambia de sentido para no molestar a Ethan.','Ethan regala una Aquarius a cada vecino de Sestao. Caducadas, pero el gesto cuenta.','Un multimillonario pide consejo a Ethan sobre horas extra. Ethan le deja en visto.','El Banco de España pide a Ethan que eche menos horas: le descuadra la inflación.','Ethan inaugura el Museo del Sarro. Entrada gratuita, salida bajo tu responsabilidad.','Sádaba intenta venderle a Ethan su propio garaje. Casi cuela.']];
 /* ================= MEDALLAS ================= */
 var MED=[
@@ -1052,7 +1041,10 @@ var MED=[
 {id:'saco',n:'Saco de boxeo',d:'Aporrea a Ethan 250 veces',k:'rayo',col:'#e05548',v:function(){return S.punch||0},m:250},
 {id:'vuelo',n:'Ethan vuela',d:'Lanza a Ethan por los aires 20 veces',k:'rayo',col:'#7fd1ff',sec:1,v:function(){return S.thr||0},m:20},
 {id:'dormilon',n:'Dormilón',d:'Que Ethan se duerma 25 veces',k:'ojos',col:'#8c9bff',v:function(){return S.lg.dormir||0},m:25},
-{id:'mirada',n:'Mirada de hielo',d:'Gana 10 face to face',k:'ojos',col:'#3dd6ff',v:function(){return S.ffw||0},m:10},
+{id:'mirada',n:'Noches de GTA',d:'Que pase el face to face 10 veces',k:'dado',col:'#3dd6ff',v:function(){return S.lg.f2f||0},m:10},
+{id:'primo',n:'Primo con carnet',d:'Que el primo te visite 8 veces',k:'star',col:'#3d8bfd',v:function(){return S.lg.primo||0},m:8},
+{id:'directos',n:'Espectador fiel',d:'Mira 15 directos de Hernández',k:'ojos',col:'#a855f7',v:function(){return S.lg.hernandez||0},m:15},
+{id:'atraco',n:'Atracado en Sestao',d:'Que te roben buscando aparcamiento',k:'billete',col:'#e05548',sec:1,v:function(){return S.lg.robo||0},m:1},
 {id:'pista',n:'Rey de la pista',d:'Haz una rave perfecta en Altos Hornos',k:'star',col:'#ff5ca0',sec:1,v:function(){return S.rvp||0},m:1},
 {id:'final',n:'Final feliz',d:'Consigue la novia buenorra',k:'corona',col:'#ff5ca0',hid:1,v:function(){return S.fin||0},m:1},
 {id:'mitico',n:'Ni Jokin se lo cree',d:'Consigue un cosmético mítico',k:'corona',col:'#ff3b5c',sec:1,v:function(){return cosR('mitico')},m:1}];
@@ -1125,6 +1117,7 @@ function sum(k){var t=0;for(var i=0;i<S.own;i++){var it=ITEMS[i];if(S.br[it.id])
 function imul(k){var t=1;for(var i=0;i<S.own;i++){var it=ITEMS[i];if(!S.br[it.id]&&it[k])t*=it[k]}return t}
 function fxM(k){var t=1,L=S.fx||[];for(var i=0;i<L.length;i++){var f=L[i];if(f.u>S.t&&f[k])t*=f[k]}return t}
 function sleeping(){return (S.slp||0)>S.t}
+function slpH(){var h=Math.floor((S.slp||0)%48/2);return (h<10?'0':'')+h+':00'}
 function skl(id){return S.sk[id]||0}
 function lvl(g){return S.ga[g.id]||0}
 function maxLvl(){var m=0;GAR.forEach(function(g){m=Math.max(m,lvl(g))});return m}
@@ -1204,7 +1197,7 @@ var WK={x:16,d:1,h:0,vx:0,vy:0,st:'walk',until:0,gy:0,maxh:0};
 var ethTmp=-1,ethTmpUntil=0,ethIdx=-1,darkMQ=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)');
 function ethMood(i,ms){ethTmp=i;ethTmpUntil=Date.now()+(ms||2200);renderEth()}
 function moodNow(){if(Date.now()<ethTmpUntil)return ethTmp;if(WK.st==='grab'||WK.st==='fall')return 7;if(sleeping())return 6;if(S.e<1&&!frzOn())return 1;if(boostOn()||frzOn())return 4;if(cmb>=8)return 0;if(S.m>=1000000)return 2;if(darkMQ&&darkMQ.matches&&(S.th||'taller')==='taller')return 5;return 3}
-function renderEth(){var i=moodNow();if(i!==ethIdx){ethIdx=i;$('eth').style.backgroundPosition=(-48*i)+'px 0';$('eth2').style.backgroundPosition=(-144*i)+'px 0';$('eth3').style.backgroundPosition=(-72*i)+'px 0';$('eth4').style.backgroundPosition=(-72*i)+'px 0';$('ffe').style.backgroundPosition=(-84*i)+'px 0'}}
+function renderEth(){var i=moodNow();if(i!==ethIdx){ethIdx=i;$('eth').style.backgroundPosition=(-48*i)+'px 0';$('eth2').style.backgroundPosition=(-144*i)+'px 0';$('eth3').style.backgroundPosition=(-72*i)+'px 0';$('eth4').style.backgroundPosition=(-72*i)+'px 0'}}
 /* capas de cosmeticos: paseo (lateral), busto (cabecera, taller, sucesos) y frontal (agarrado y saco) */
 var NOBUST=['cable','rinonera','bmw'],LAY={walk:'url(sprites/ethan-walk.png)',bust:'url(sprites/ethan-sheet.png)',front:'url(sprites/ethan-front.png)'};
 function cosL(kind){var L=[];SLOT_ORDER.forEach(function(sl){var id=S.cq[sl];if(id&&S.cos[id]&&(kind!=='bust'||NOBUST.indexOf(id)<0))L.push('url(sprites/cos-'+id+'-'+kind+'.png)')});
@@ -1216,7 +1209,7 @@ function tkPush(t){tkQ.push({t:t,hot:1});if(tkQ.length>4)tkQ.shift()}
 function tkNext(){if(tkQ.length)return tkQ.shift();
  var tier=S.lt>=1e9?2:S.lt>=1e5?1:0,pool=[];
  for(var i=0;i<=tier;i++)pool=pool.concat(TK[i]);
- var dyn=['Ethan lleva '+fmt(S.done)+' horas extra. Su colchón ha puesto una denuncia por abandono.',(S.lbo?fmt(S.lbo)+' cajas abiertas en el Naval. Sádaba ya mira Audis de segunda mano.':'Sádaba espera en el Naval con una caja «sin trucar». Palabra de Sádaba.'),'Hora oficial del taller: '+clock()+'. El encargado sigue sin fichar.'];
+ var dyn=['Ethan lleva '+fmt(S.done)+' horas extra. Su colchón ha puesto una denuncia por abandono.',(S.lbo?fmt(S.lbo)+' cajas abiertas en el Ekintza. Sádaba ya mira Audis de segunda mano.':'Sádaba espera en el Ekintza con una caja «sin trucar». Palabra de Sádaba.'),'Hora oficial del taller: '+clock()+'. El encargado sigue sin fichar.'];
  if(S.sar)dyn.push('El sarro acumulado de Ethan ya pesa '+fmt(S.sar)+' gramos. La UPV pide muestras.');
  if(S.pres)dyn.push('Ethan se ha jubilado '+S.pres+(S.pres>1?' veces':' vez')+'. Siempre vuelve a fichar al día siguiente.');
  if(Math.random()<.3)return{t:rnd(dyn)};return{t:rnd(pool)}}
@@ -1255,7 +1248,7 @@ var cmb=0,lastW=0,ccRun=0;
 function cmbM(){return 1+Math.min(4,Math.floor(cmb/8))*0.5}
 function work(ev){
  var free=frzOn();
- if(sleeping()){logq('Ethan está durmiendo. Hasta las 08:00 no hay horas extra.');shk($('work'));if(Math.random()<.6)say(rnd(['Zzz… cinco minutos más, aita.','Zzz… el C4… no… Zzz','Mañana… mañana echo diez…','Zzz… Uxune… Zzz']),2200);return}
+ if(sleeping()){logq('Ethan está durmiendo. Hasta las '+slpH()+' no hay horas extra.');shk($('work'));if(Math.random()<.6)say(rnd(['Zzz… cinco minutos más, aita.','Zzz… el C4… no… Zzz','Mañana… mañana echo diez…','Zzz… Uxune… Zzz']),2200);return}
  if(!free&&S.e<1){logq('Ethan no tiene fuerzas. Espera un poco.');shk($('work'));snd('no');ethMood(1,1200);return}
  var now=Date.now();cmb=now-lastW<2000?cmb+1:1;lastW=now;
  var M=cmbM(),crit=Math.random()<critP(),gain=per()*M*(crit?5:1)*(free?3:1);
@@ -1331,7 +1324,7 @@ function renderTaller(){
  spb.forEach(function(b,i){var s=SPDS[i],lk=s.k&&!S.up[s.k];tg(b,'on',spd()===s.v);tg(b,'lk',lk);st(b,'x'+s.v)});
  renderEv();
  var bb=$('boostb'),bt='',zz=sleeping();
- if(frzOn())bt='🔥 Frenesí: '+Math.ceil((frzUntil-Date.now())/1000)+' s sin gastar energía y x3';else if(zz)bt='💤 Ethan duerme hasta las 08:00 · energía x3 mientras tanto'+(autoRate()?' · los becarios no duermen':'');else if(boostOn())bt=(S.bx>=7?'🦷 Diente de oro x7':'🕊️ Paloma x2')+' · quedan '+((S.bo-S.t)/2)+' h de juego';
+ if(frzOn())bt='🔥 Frenesí: '+Math.ceil((frzUntil-Date.now())/1000)+' s sin gastar energía y x3';else if(zz)bt='💤 Ethan duerme hasta las '+slpH()+' · energía x3 mientras tanto'+(autoRate()?' · los becarios no duermen':'');else if(boostOn())bt=(S.bx>=7?'🦷 Diente de oro x7':'🕊️ Paloma x2')+' · quedan '+((S.bo-S.t)/2)+' h de juego';
  bb.hidden=!bt;if(bt){st(bb,bt);tg(bb,'frz',frzOn());tg(bb,'slp',zz&&!frzOn())}
  renderFx();
  var mx=maxE();st($('et'),(frzOn()?'∞':Math.floor(S.e))+' / '+mx);wd($('fill'),frzOn()?100:S.e/mx*100);tg($('fill'),'low',S.e<1&&!frzOn());
@@ -1343,7 +1336,7 @@ function renderTaller(){
 function nextEv(){
  for(var dt=1;dt<=1344;dt++){var tt=S.t+dt,d=Math.floor(tt/48),wdd=d%7,dom=d%30+1,h=tt%48/2;
   for(var i=0;i<EV.length;i++){var e=EV[i];
-   if(e.minD&&d<e.minD)continue;if(e.after&&!S.lg[e.after])continue;
+   if(e.onFail)continue;if(e.minD&&d<e.minD)continue;if(e.after&&!S.lg[e.after])continue;
    if(e.jk){if(tt===S.jk)return{t:tt,e:e};continue}
    if(e.par&&!S.td[e.par])continue;
    if(e.rd){if(wdd===S.rd&&e.h===h)return{t:tt,e:e};continue}
@@ -1361,24 +1354,24 @@ var cvCb=null;
 function nf(x){return String(Math.round(x*100)/100).replace('.',',')}
 function fxBad(f){return f.k==='loss'||(f.k==='en'&&f.v<0)||((f.k==='buff'||f.k==='work'||f.k==='regen')&&f.x<1)}
 function cashFor(f){return Math.max(50,Math.floor(baseRate()*(f.s||60)))}
-function fxTxt(f){var h=f.h?' '+f.h+' h':'';
+function fxTxt(f){var h=f.h?' '+f.h+' h'+(f.aw?' al levantarse':''):'';
  if(f.k==='buff')return (f.x<1?'−'+Math.round((1-f.x)*100)+'% a todo':'x'+nf(f.x)+' a todo')+h;
  if(f.k==='work')return (f.x<1?'−'+Math.round((1-f.x)*100)+'% por hora extra':'horas extra x'+nf(f.x))+h;
  if(f.k==='regen')return (f.x<1?'energía −'+Math.round((1-f.x)*100)+'%':'energía x'+nf(f.x))+h;
  if(f.k==='cash')return '+'+eur(cashFor(f));
  if(f.k==='loss')return '−'+Math.round(f.f*100)+'% del dinero';
  if(f.k==='en')return f.v>=1?'energía a tope':f.v<=-1?'energía a cero':(f.v>0?'+':'−')+Math.round(Math.abs(f.v)*100)+'% de energía';
- if(f.k==='sleep')return 'sin horas extra hasta las 08:00, energía x3 y a tope al despertar';
+ if(f.k==='sleep')return f.w?'sin horas extra hasta las '+(f.w<10?'0':'')+f.w+':00 y se levanta con '+(f.e<1?'la mitad de energía':'la energía a tope'):'sin horas extra hasta las 08:00, energía x3 y a tope al despertar';
  if(f.k==='txt')return f.t;return ''}
 function fxLine(L){return L&&L.length?L.map(function(f){return (f.n&&f.k!=='txt'?f.n+': ':'')+fxTxt(f)}).join(' · '):'Nada'}
-function addBuff(f,mult){var L=S.fx||(S.fx=[]),u=S.t+Math.round(f.h*2),o={n:f.n||'Efecto',ic:f.ic||'✨',u:u,s:S.t};o[mult]=f.x;
+function addBuff(f,mult){var L=S.fx||(S.fx=[]),u=(f.aw&&S.slp>S.t?S.slp:S.t)+Math.round(f.h*2),o={n:f.n||'Efecto',ic:f.ic||'✨',u:u,s:S.t};o[mult]=f.x;
  for(var i=0;i<L.length;i++){if(L[i].n===o.n){L[i]=o;return}}L.push(o);if(L.length>8)L.shift()}
 function applyFx(L,src){var out=[];(L||[]).forEach(function(f){
   if(f.k==='buff')addBuff(f,'x');else if(f.k==='work')addBuff(f,'w');else if(f.k==='regen')addBuff(f,'r');
   else if(f.k==='cash'){var v=cashFor(f);earn(v);out.push((f.n?f.n+' ':'')+'+'+eur(v))}
   else if(f.k==='loss'){var l=Math.floor(S.m*f.f);if(l>0){S.m-=l;hurtM();out.push((f.n?f.n+' ':'')+'−'+eur(l))}}
   else if(f.k==='en'){var mx=maxE();S.e=Math.max(0,Math.min(mx,S.e+f.v*mx))}
-  else if(f.k==='sleep'){var d=Math.floor(S.t/48);S.slp=(S.t%48>=16?d+1:d)*48+16;ethMood(6,1500)}
+  else if(f.k==='sleep'){var d=Math.floor(S.t/48),wk=(f.w||8)*2;S.slp=(S.t%48>=wk?d+1:d)*48+wk;S.slpE=f.e||1;ethMood(6,1500)}
   if(f.k!=='cash'&&f.k!=='loss'&&f.k!=='txt')out.push((f.n?f.n+': ':'')+fxTxt(f))});
  return out.join(' · ')}
 var fxSig='';
@@ -1391,31 +1384,31 @@ function hit(e,done,quiet){var first=!S.lg[e.id];S.lg[e.id]=(S.lg[e.id]||0)+1;S.
  if(e.msg&&!quiet){$('cvt').textContent=e.msg;$('cvp').textContent=e.n;ethMood(e.bad?1:2,4000);cvCb=done||null;$('cv').hidden=false}
  else{if(e.msg&&quiet)tkPush(e.msg);if(done)done()}}
 var lastEvUI=0,EVGAP=12000;
-function evResult(e,ok,quiet){var L=ok?e.ok:e.ko,txt=applyFx(L,e);
+function evResult(e,ok,quiet){if(ok&&e.id==='robo')S.robT=S.t;var L=ok?e.ok:e.ko,txt=applyFx(L,e);
  if(txt)toast((quiet?'⏩ ':'')+e.n+(ok?'':' (no pasa)')+': '+txt,(ok!==!!e.bad)?'ok':'bad',quiet?'📅':(ok!==!!e.bad?'✨':'💢'),4200);
  else if(quiet)logq(e.n+(ok?': pasa':': no pasa'));
  save();render()}
+function chainOf(e){var c=EV.filter(function(x){return x.onFail===e.id})[0];if(!c)return null;if(c.id==='robo'&&(S.m<1000||S.t-(S.robT===undefined?-1e9:S.robT)<672))return null;return c}
 function runList(list,i,wd2){if(i>=list.length){busy=false;return}var e=list[i];
  if(e.par&&!S.td[e.par]){runList(list,i+1,wd2);return}
- var next=function(){runList(list,i+1,wd2)},p=e.pd?e.pd[wd2]:e.p;
- if(!e.mg&&!CFG.evall&&Date.now()-lastEvUI<EVGAP){var ok0=Math.random()<p;
+ var next=function(ok){if(ok===false){var c=chainOf(e);if(c)list.splice(i+1,0,c)}runList(list,i+1,wd2)},p=e.pd?e.pd[wd2]:e.p;
+ if(!e.mg&&!e.ui&&!CFG.evall&&Date.now()-lastEvUI<EVGAP){var ok0=Math.random()<p;
   if(!ok0&&e.id==='cenita'&&wd2===5){S.nv=1}
-  if(ok0)hit(e,function(){evResult(e,true,true);next()},true);else{evResult(e,false,true);next()}return}
- roll({n:e.n,p:p,ev:e,invert:e.bad},function(ok){lastEvUI=Date.now();
+  if(ok0)hit(e,function(){evResult(e,true,true);next(true)},true);else{evResult(e,false,true);next(false)}return}
+ roll({n:e.n,q:e.q,p:p,ev:e,invert:e.bad},function(ok){lastEvUI=Date.now();
   if(!ok&&e.id==='cenita'&&wd2===5){S.nv=1;save()}
   if(ok){hit(e,function(){
-    if(e.mg==='rave')runRave(function(){evResult(e,true,false);lastEvUI=Date.now();next()});
-    else if(e.mg==='f2f')runF2F(function(){lastEvUI=Date.now();next()});
-    else{evResult(e,true,false);next()}})}
-  else{evResult(e,false,false);next()}})}
+    if(e.mg==='rave')runRave(function(){evResult(e,true,false);lastEvUI=Date.now();next(true)});
+    else{evResult(e,true,false);next(true)}})}
+  else{evResult(e,false,false);next(false)}})}
 function tick(){
  S.t++;var d=Math.floor(S.t/48),wdd=d%7,dom=d%30+1,h=S.t%48/2;
- if(S.slp&&S.t>=S.slp){S.slp=0;S.e=maxE();toast('☀️ Ethan se despierta con la energía a tope. A currar.','ok','⏰');ethMood(0,2000)}
+ if(S.slp&&S.t>=S.slp){var se=S.slpE||1;S.slp=0;S.slpE=1;S.e=maxE()*se;toast(se<1?'🎮 Ethan se levanta a las tantas y hecho polvo. Pero el GTA mereció la pena.':'☀️ Ethan se despierta con la energía a tope. A currar.',se<1?'':'ok','⏰');ethMood(se<1?1:0,2000)}
  if(S.fx&&S.fx.length&&S.fx.some(function(f){return f.u<=S.t}))S.fx=S.fx.filter(function(f){return f.u>S.t});
  if(S.t%336===0){S.td={};S.rd=Math.floor(Math.random()*5)}
  if(S.rd===undefined)S.rd=Math.floor(Math.random()*5);
  if(S.t%672===0||S.jk===undefined)S.jk=S.t+Math.floor(Math.random()*(672-S.t%672));
- var list=EV.filter(function(e){if(e.minD&&d<e.minD)return false;if(e.after&&!S.lg[e.after])return false;if(e.jk)return S.t===S.jk;if(e.rd)return wdd===S.rd&&e.h===h;return(!e.days||e.days.indexOf(wdd)>=0)&&(!e.dom||e.dom===dom)&&e.h===h});
+ var list=EV.filter(function(e){if(e.onFail)return false;if(e.minD&&d<e.minD)return false;if(e.after&&!S.lg[e.after])return false;if(e.jk)return S.t===S.jk;if(e.rd)return wdd===S.rd&&e.h===h;return(!e.days||e.days.indexOf(wdd)>=0)&&(!e.dom||e.dom===dom)&&e.h===h});
  if(list.length){busy=true;runList(list,0,wdd)}}
 setInterval(function(){if(busy||(sb&&!myId))return;S.acc+=0.2*spd();while(S.acc>=TICK){S.acc-=TICK;tick();if(busy)break}},200);
 
@@ -1424,7 +1417,7 @@ function roll(e,cb){
  var p=e.p,w=$('wh'),pr=$('pr'),y=e.yes||'Pasa',n=e.no||'No pasa',fast=!!CFG.fw,inv=!!e.invert;
  var off=Math.random()*360,spun=false,tmr=null,cnt=fast?1:(e.wait||4),sp2=$('spin');
  tg($('ovc'),'danger',!!e.danger||inv);
- $('ovt').textContent=e.q||e.n+'?';$('ovs').textContent=clock();
+ $('ovt').textContent=e.q||'¿'+e.n+'?';$('ovs').textContent=clock();
  w.style.transition='none';w.style.transform='rotate('+off+'deg)';
  var zc=inv?'#e05548':e.danger?'#46d36b':'var(--yel)';
  w.style.background='conic-gradient('+zc+' 0deg '+(p*360)+'deg,var(--line) '+(p*360)+'deg 360deg)';
@@ -1537,21 +1530,7 @@ function runRave(done){var A=$('rva'),P=$('rvp'),J=$('rvj'),N=12,IV=600,LEAD=115
   applyFx([fx]);$('rvr').textContent=msg+' · Puntos '+sc+'/'+max;tkPush('Rave en Altos Hornos: '+msg.replace(/ x.*$/,'')+'.');
   setTimeout(function(){$('rv').hidden=true;A.querySelectorAll('.rvr').forEach(function(r){r.remove()});done()},2200)}}
 
-/* --- Face to face: duelo de reflejos --- */
-var RIV=[{n:'Jokin',e:'😈',a:215,b:320},{n:'Sádaba',e:'🤑',a:255,b:375},{n:'Ali',e:'🧔',a:270,b:410},{n:'el encargado',e:'😤',a:245,b:360},{n:'Luisillo del Naval',e:'🍷',a:290,b:440},{n:'Xabier Ortega',e:'😎',a:235,b:345}];
-function runF2F(done){var R=rnd(RIV),Z=$('ffz'),st0='cd',tGo=0,rt=R.a+Math.random()*(R.b-R.a),tmA=null,tmB=null,fin=false;
- $('fft').textContent='Face to face con '+R.n;$('ffr').textContent=R.e;$('ffrn').textContent=R.n;$('ffo').textContent='';Z.className='';Z.textContent='3';$('ff').hidden=false;ethMood(4,4000);
- var k=3;(function cd(){if(fin)return;if(k>0){Z.textContent=String(k);if(!mute)tone(600,0,.06,.05);k--;tmA=setTimeout(cd,800);return}
-  st0='wait';Z.textContent='Mirada fija…';tmA=setTimeout(function(){if(fin)return;st0='go';Z.className='go';Z.textContent='¡YA!';tGo=performance.now();if(!mute)tone(1200,0,.12,.09);
-   tmB=setTimeout(function(){end(false,null)},rt)},1200+Math.random()*2200)})();
- Z.onpointerdown=function(ev){ev.preventDefault();if(fin)return;
-  if(st0!=='go'){Z.className='early';Z.textContent='¡Te has adelantado!';end(false,-1);return}
-  var my=performance.now()-tGo;end(my<rt,my)};
- function end(win,my){if(fin)return;fin=true;clearTimeout(tmA);clearTimeout(tmB);Z.onpointerdown=null;var txt;
-  if(win){S.ffw=(S.ffw||0)+1;Z.className='go';Z.textContent=Math.round(my)+' ms';txt='¡Ganas! Tú '+Math.round(my)+' ms · '+R.n+' '+Math.round(rt)+' ms. '+applyFx([{k:'buff',x:2,h:24,n:'Ganador del face to face',ic:'😤'},{k:'cash',s:240}]);snd('win');ethMood(2,2500);conf(innerWidth/2,innerHeight*.4,26);tkPush('Ethan gana el face to face a '+R.n+'. Sestao no habla de otra cosa.')}
-  else{S.ffl=(S.ffl||0)+1;if(my===null){Z.className='early';Z.textContent=R.n+' gana';}txt=(my===-1?'Te adelantas y pierdes. ':my===null?R.n+' reacciona en '+Math.round(rt)+' ms. ':'Pierdes por poco: tú '+Math.round(my)+' ms · '+R.n+' '+Math.round(rt)+' ms. ')+applyFx([{k:'loss',f:.04,n:'Apuesta perdida'},{k:'work',x:.75,h:12,n:'Humillado',ic:'😶'}]);snd('lose');ethMood(1,2500)}
-  $('ffo').textContent=txt;save();
-  setTimeout(function(){$('ff').hidden=true;render();done()},2600)}}
+
 
 /* ================= RANGO Y BOCADILLOS ================= */
 function rankIdx(){var i=0;while(i+1<RANKS.length&&S.done>=RANKS[i+1][0])i++;return i}
@@ -1778,7 +1757,7 @@ function ugGo(){if(ugSpin||busy)return;var a=betAmt(),X=gx,p=gpx(X);
  function fin(){ugSpin=false;busy=false;svg.classList.remove('spin');svg.classList.add(ok?'win':'lose');c.classList.add(ok?'win':'lose');
   if(ok){var wn=Math.round(a*X);S.m+=wn;S.gw=(S.gw||0)+wn-a;S.gwc=(S.gwc||0)+1;if(X>S.gbx)S.gbx=X;if(wn-a>S.gbw)S.gbw=wn-a;ethMood(2,2500);
    st($('ugp'),'+'+eur(wn-a));st($('ugw2'),rnd(BANCA_W));var r=$('ugc').getBoundingClientRect();conf(r.left+r.width/2,r.top+r.height/2,X>=10?40:20);coins(r.left+r.width/2,r.top+r.height/2,X>=10?10:5);snd(X>=10?'r4':'win');if(X>=10)flash('rgba(70,211,107,.45)',900);
-   if(X>=25){var msg='Ethan gana un upgrade de x'+String(X).replace('.',',')+' en el Naval: +'+eur(wn-a)+'.';tkPush(msg);toast(msg,'gold','🎰',5000)}}
+   if(X>=25){var msg='Ethan gana un upgrade de x'+String(X).replace('.',',')+' en el Ekintza: +'+eur(wn-a)+'.';tkPush(msg);toast(msg,'gold','🎰',5000)}}
   else{S.gl=(S.gl||0)+a;S.glc=(S.glc||0)+1;ethMood(1,2500);st($('ugp'),'-'+eur(a));st($('ugw2'),rnd(BANCA_L));snd('lose');hurtM()}
   S.uh.unshift([X,ok?1:0]);if(S.uh.length>14)S.uh.length=14;renderUH(true);
   setTimeout(function(){if(!ugSpin){svg.classList.remove('win','lose');c.classList.remove('win','lose');renderBet()}},fast?900:2200);
@@ -1818,7 +1797,7 @@ function renderInv(){var sig=JSON.stringify(S.cq)+Object.keys(S.cos).join()+JSON
  st($('cosc'),cosCount()+' de '+COS.length+' cosméticos. Salen en las cajas del Naval, por medallas o comprándolos.');
  var w=$('inv');w.innerHTML='';COS.slice().sort(function(a,b){return (S.cos[b.id]?1:0)-(S.cos[a.id]?1:0)||RAR[b.r].k-RAR[a.r].k}).forEach(function(c){var has=S.cos[c.id],r=RAR[c.r],eq=S.cq[c.slot]===c.id;
   var b=el('button','r'+r.k+(has?'':' no')+(eq?' eq':''));b.style.setProperty('--rc',r.c);
-  var src=c.med?'Medalla: '+medOf(c.med).n:c.box?(c.box==='jokin'?'Caja de Jokin':c.box==='naval'?'Caja del Ekintza':'Caja de Sádaba')+(c.c?' o '+eur(c.c):''):'Comprar: '+eur(c.c);
+  var src=c.med?'Medalla: '+medOf(c.med).n:c.box?(c.box==='jokin'?'Caja de Jokin':c.box==='naval'?'Caja Taita':'Caja de Sádaba')+(c.c?' o '+eur(c.c):''):'Comprar: '+eur(c.c);
   var my=!has&&c.r==='mitico';if(my)b.classList.add('myst');
   b.innerHTML=(has&&S.cosn[c.id]>1?'<em>x'+S.cosn[c.id]+'</em>':'')+(my?'<i class="myq">✦</i>':'<img src="'+ico(c.id)+'" alt="">')+'<span>'+(has?esc(c.n):my?'Mítico':'???')+'</span>';
   b.title=has?c.n+' · '+r.n+' · '+c.d:r.n+' · '+src;
@@ -1874,7 +1853,7 @@ function renderRank(){var sig=PL.map(function(x){return x.id+x.d.done+x.d.m+(x.d
  PL.slice().sort(function(a,c){return val(c)-val(a)}).forEach(function(x,i){var d=el('div','prow'+(x.id===myId?' me':''));
   var fm=x.d.fm&&mdl(x).indexOf(x.d.fm)>=0?medOf(x.d.fm):null;
   d.innerHTML='<div class="pos p'+(i+1)+'">'+(i+1)+'</div><div class="rt"><strong>'+esc(x.d.av||'😁')+' '+esc(NM[x.id]||'Jugador')+(fm?badge(true,20,fm.k,fm.col):'')+'</strong><p class="num">'+eur(rkM(x.d.m))+' ganado · Objetos '+fmt(+x.d.own||0)+'/'+ITEMS.length+' · Horas '+fmt(+x.d.done||0)+' · 🏅 '+mdl(x).length+'</p></div><div class="val num">'+(SK==='m'?eur(val(x)):SK==='own'?fmt(val(x))+'/'+ITEMS.length:fmt(val(x)))+'</div>';l.appendChild(d)})}
-function statsHTML(){return [['Ganado en total',eur(S.lt)],['Horas extra',fmt(S.done)],['Críticos',fmt(S.crc||0)],['Mejor cadena de críticos',S.ccb||0],['Jubilaciones',S.pres||0],['Sarro total',fmt(S.sart)],['Cajas abiertas',fmt(S.lbo||0)],['Cosméticos',cosCount()+'/'+COS.length],['Upgrades ganados / perdidos',fmt(S.gwc||0)+' / '+fmt(S.glc||0)],['Sucesos vistos',EV.filter(function(e){return S.lg[e.id]}).length+'/'+EV.length],['Horas de becarios',fmt(S.bh||0)],['Golpes a Ethan',fmt(S.punch||0)],['Face to face ganados / perdidos',fmt(S.ffw||0)+' / '+fmt(S.ffl||0)],['Días de juego',Math.floor(S.t/48)]].map(function(r){return '<span>'+r[0]+'</span><b>'+r[1]+'</b>'}).join('')}
+function statsHTML(){return [['Ganado en total',eur(S.lt)],['Horas extra',fmt(S.done)],['Críticos',fmt(S.crc||0)],['Mejor cadena de críticos',S.ccb||0],['Jubilaciones',S.pres||0],['Sarro total',fmt(S.sart)],['Cajas abiertas',fmt(S.lbo||0)],['Cosméticos',cosCount()+'/'+COS.length],['Upgrades ganados / perdidos',fmt(S.gwc||0)+' / '+fmt(S.glc||0)],['Sucesos vistos',EV.filter(function(e){return S.lg[e.id]}).length+'/'+EV.length],['Horas de becarios',fmt(S.bh||0)],['Golpes a Ethan',fmt(S.punch||0)],['Noches de face to face',fmt(S.lg.f2f||0)],['Días de juego',Math.floor(S.t/48)]].map(function(r){return '<span>'+r[0]+'</span><b>'+r[1]+'</b>'}).join('')}
 function renderProf(){var sig=[Object.keys(S.md).join(),cloudOk,cloudErr,S.av,S.fm,mute,S.th,Object.keys(S.tho||{}).join(),THEMES.map(function(t){return S.m>=t.c?1:0}).join(''),myId,CFG.fw,CFG.evall,!!deferredPrompt].join('|');
  var sk=$('pstats');if(sig===lastSig){if(sk)sh(sk,statsHTML());return}lastSig=sig;var p=$('ep');p.innerHTML='';
  var a=el('div','pn');a.innerHTML='<div class="ph"><h3>Tu Ethan</h3><span class="chip">'+(cloudErr?'⚠ '+esc(cloudErr):cloudOk?'☁️ Guardado en tu cuenta':sb?'Sin conexión con tu cuenta':'💾 Partida en este dispositivo')+'</span></div><p class="hint">Elige cara y medalla para el ranking.</p>';
@@ -2044,7 +2023,7 @@ function renderBadges(){
  var jOk=sarPend()>=Math.max(1,S.sart)||skillAvail();navBadge('t4',jOk);segBadge('ej',jOk)}
 
 /* ================= RENDER Y BUCLES ================= */
-function ovlOpen(){return !$('ov').hidden||!$('mg').hidden||!$('cg').hidden||!$('rv').hidden||!$('ff').hidden||!$('saco').hidden||(!$('case').hidden&&spinning)}
+function ovlOpen(){return !$('ov').hidden||!$('mg').hidden||!$('cg').hidden||!$('rv').hidden||!$('saco').hidden||(!$('case').hidden&&spinning)}
 function render(force){renderTop();renderEth();
  if(ovlOpen()&&!force){checkMS();checkMed();checkRank();return}
  if(cur==='t1')renderTaller();else if(cur==='t2'){if(sub.t2==='sg')renderGar();else renderUps()}
@@ -2091,6 +2070,6 @@ if(innerWidth>=900)$('mapd').open=true;if(!sb)setSub('t4','ep');
 $('ufast').checked=!!CFG.uf;setGX(2);renderUH();sndIcon();
 applyTheme();applyWalkerCos();dm=S.m;minLvlBefore=minLvl();
 render(true);setTimeout(tkRun,600);
-try{if(!localStorage.getItem('elt_v21'))$('nov').hidden=false}catch(e){}
-$('novok').onclick=function(){$('nov').hidden=true;try{localStorage.setItem('elt_v21','1');localStorage.setItem('elt_v2','1')}catch(e){}snd('buy')};
+try{if(!localStorage.getItem('elt_v21b'))$('nov').hidden=false}catch(e){}
+$('novok').onclick=function(){$('nov').hidden=true;try{localStorage.setItem('elt_v21b','1');localStorage.setItem('elt_v21','1');localStorage.setItem('elt_v2','1')}catch(e){}snd('buy')};
 </script></body></html>
