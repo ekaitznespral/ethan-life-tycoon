@@ -912,17 +912,17 @@ var ITEMS=[
 {id:'luna',ic:'🚀',n:'Cohete a la Luna desde Altos Hornos',d:'Para buscar sitio para aparcar. +50% a todo.',c:1e19,xm:1.5},
 {id:'novia',ic:'💍',n:'Novia buenorra',d:'El final de la vida de Ethan: x2 a todo y +30 de energía máxima',c:1e21,xm:2,me:30,fill:1,fin:1}];
 var GAR=[
-{id:'txabarri',n:'Txabarri',ic:'🏚️',f:'Huele a aceite y a bocata.',c:1500,ps:3,r:1.13,T:1.2,x:208,y:110},
-{id:'iberia',n:'La Iberia',ic:'🏠',f:'Con vistas a la ría si te subes al tejado.',c:5000,ps:10,r:1.14,T:1.8,x:190,y:45},
-{id:'urbinaga',n:'Urbinaga',ic:'🏡',f:'La persiana sube a la segunda patada.',c:15000,ps:30,r:1.15,T:2.5,x:50,y:250},
-{id:'galindo',n:'Galindo',ic:'🏪',f:'Aquí duerme el C4 cuando no encuentra sitio.',c:40000,ps:80,r:1.16,T:3.2,x:45,y:150},
+{id:'txabarri',n:'Txabarri',ic:'🏚️',f:'Huele a aceite y a gitano.',c:1500,ps:3,r:1.13,T:1.2,x:208,y:110},
+{id:'iberia',n:'La Iberia',ic:'🏠',f:'Con vistas a la ría pero sigue oliendo a gitano.',c:5000,ps:10,r:1.14,T:1.8,x:190,y:45},
+{id:'urbinaga',n:'Urbinaga',ic:'🏡',f:'Sueles tener que echar a los homeless que duermen en la persiana.',c:15000,ps:30,r:1.15,T:2.5,x:50,y:250},
+{id:'galindo',n:'Galindo',ic:'🏪',f:'Aquí duerme la Picasso cuando no encuentra sitio.',c:40000,ps:80,r:1.16,T:3.2,x:45,y:150},
 {id:'kasko',n:'Kasko',ic:'🏬',f:'En pleno centro. Cobra hasta por mirar.',c:100000,ps:200,r:1.17,T:4,x:135,y:140},
 {id:'sanpedro',n:'San Pedro',ic:'⛪',f:'Bendecido. Las averías rezan.',c:300000,ps:600,r:1.18,T:5,x:135,y:195},
 {id:'kueto',n:'Kueto',ic:'🏘️',f:'El garaje de Kueto. Huele a gasoil y a Kas de limón.',c:1.2e6,ps:1800,r:1.185,T:5.8,x:88,y:212},
-{id:'markonzaga',n:'Markonzaga',ic:'🏗️',f:'Obra nueva. El cemento sigue fresco.',c:5e6,ps:5000,r:1.19,T:6.5,x:100,y:95},
+{id:'markonzaga',n:'Markonzaga',ic:'🏗️',f:'Obra nueva. El lugar de culto de los maricas.',c:5e6,ps:5000,r:1.19,T:6.5,x:100,y:95},
 {id:'rebonza',n:'Rebonza',ic:'🏢',f:'Un bloque entero de garajes. Las llaves van en un cubo.',c:1e8,ps:5e4,r:1.2,T:8,x:200,y:262},
 {id:'naval',n:'La Naval',ic:'⚓',f:'El astillero entero. Los barcos ahora son trasteros.',c:3e9,ps:8e5,r:1.21,T:10,x:226,y:186},
-{id:'ahv',n:'Altos Hornos',ic:'🏭',f:'El humo sale azul camiseta.',c:1e11,ps:1.5e7,r:1.22,T:12,x:38,y:38}];
+{id:'ahv',n:'Altos Hornos',ic:'🏭',f:'El humo es peor que el aliento de Ethan.',c:1e11,ps:1.5e7,r:1.22,T:12,x:38,y:38}];
 var GMS=[25,50,100,200,300,400,500,650,800,1000,1250,1500,2000];
 var GGL=[25,50,100,200,300,500];
 var EV=[
@@ -936,26 +936,26 @@ var EV=[
 {id:'jokin',n:'Ojito con Jokin',d:'Una vez cada 2 semanas, a cualquier hora',jk:1,p:.03,bad:1,msg:'Empalado por Jokin',ok:[{k:'loss',f:.1,n:'Empalado'},{k:'regen',x:.5,h:24,n:'No se puede ni sentar',ic:'🍌'}],ko:[{k:'cash',s:60,n:'Te libras de Jokin'}]},
 {id:'itv',n:'Pasar la ITV a la primera',d:'Día 15 a las 10:00',dom:15,h:10,p:.1,ok:[{k:'cash',s:300,n:'Te ahorras la segunda'}],ko:[{k:'loss',f:.03,n:'Segunda ITV'}]},
 {id:'bajera',n:'Rave en Altos Hornos',d:'Sábados a las 22:30. Si entras, minijuego de ritmo, te acuestas a las 02:30 y te levantas con resaca',days:[5],h:22.5,p:.35,mg:'rave',ok:[{k:'txt',t:'Minijuego: hasta x3 a todo 12 h',ic:'🎧'},{k:'late',n:'Rave hasta las tantas',fn:'Resaca de la rave',ic:'🥴'}],ko:[]},
-{id:'alikebab',n:'Kebab caducado gratis de Ali',d:'Domingos a las 14:00',days:[6],h:14,p:.12,bad:1,msg:'Ali invita al kebab. El pollo llevaba tres días fuera. Ethan sobrevive de milagro.',ok:[{k:'en',v:-1,n:'Vomitona'},{k:'regen',x:.4,h:12,n:'Intoxicación',ic:'🤢'}],ko:[]},
-{id:'uxune',n:'Desamor con Uxune',d:'Martes a las 23:00',days:[1],h:23,p:.05,bad:1,msg:'Uxune le deja en doble check azul para siempre. Ethan mete tres horas extra para olvidar.',ok:[{k:'work',x:1.5,h:12,n:'Currar para olvidar',ic:'💔'},{k:'regen',x:.7,h:12,n:'Corazón roto',ic:'🥀'}],ko:[]},
-{id:'itsasne',n:'Desamor con Itsasne',d:'Jueves a las 23:00',days:[3],h:23,p:.05,bad:1,msg:'Itsasne vuelve con su ex. Ethan finge que no le importa delante del C4.',ok:[{k:'work',x:1.5,h:12,n:'Fingir que no importa',ic:'💔'},{k:'regen',x:.7,h:12,n:'Llorando en el C4',ic:'🥀'}],ko:[]},
-{id:'nomo',n:'El percance de la Nomo',d:'Miércoles a las 22:00, rarísimo',days:[2],h:22,p:.02,bad:1,msg:'La novia de un colega se le insinúa. Era una trampa para ver cómo reaccionaba. Ethan da la peor reacción posible. Histórico de Sestao.',ok:[{k:'buff',x:.6,h:24,n:'Vergüenza histórica',ic:'🙈'}],ko:[]},
-{id:'gasolinera',n:'Lío en la gasolinera con la hermanastra',d:'Madrugadas de sábado a las 03:30 (a partir del día 30)',days:[5],h:3.5,p:.04,minD:30,msg:'Tocamientos mutuos en la gasolinera. Lo que pasa en el Repsol se queda en el Repsol.',ok:[{k:'regen',x:1.3,h:12,n:'Lo del Repsol',ic:'⛽'}],ko:[]},
-{id:'cable',n:'El aita con cable neutro de cinturón',d:'Día 1 a las 12:00',dom:1,h:12,p:.25,msg:'El aita aparece con un cable neutro de cinturón. Dice que aguanta más que el cuero.',ok:[{k:'work',x:1.3,h:24,n:'Cinturón de cable neutro',ic:'🔌'}],ko:[]},
+{id:'alikebab',n:'Kebab caducado gratis de Ali',d:'Domingos a las 14:00',days:[6],h:14,p:.12,bad:1,msg:'Ali invita al kebab. Creo que esto es una uña. Ethan sobrevive de milagro.',ok:[{k:'en',v:-1,n:'Vomitona'},{k:'regen',x:.4,h:12,n:'Intoxicación',ic:'🤢'}],ko:[]},
+{id:'uxune',n:'Desamor con Uxune',d:'Martes a las 23:00',days:[1],h:23,p:.05,bad:1,msg:'Uxune le bloquea y Ethan no se puede pajear más. Ethan mete tres horas extra para olvidar.',ok:[{k:'work',x:1.5,h:12,n:'Currar para olvidar',ic:'💔'},{k:'regen',x:.7,h:12,n:'Corazón roto',ic:'🥀'}],ko:[]},
+{id:'itsasne',n:'Desamor con Itsasne',d:'Jueves a las 23:00',days:[3],h:23,p:.05,bad:1,msg:'Itsasne vuelve con su primo el tonto. Ethan finge que no le importa pero le pegaba un repaso.',ok:[{k:'work',x:1.5,h:12,n:'Fingir que no importa',ic:'💔'},{k:'regen',x:.7,h:12,n:'Llorando en el C4',ic:'🥀'}],ko:[]},
+{id:'nomo',n:'El percance de la Nomo',d:'Miércoles a las 22:00, rarísimo',days:[2],h:22,p:.02,bad:1,msg:'La nomo se le insinua. Era una trampa para ver cómo reaccionaba. Ethan dice que ya se lo olia. Evento historico de Sestao.',ok:[{k:'buff',x:.6,h:24,n:'Vergüenza histórica',ic:'🙈'}],ko:[]},
+{id:'gasolinera',n:'Manualidades en la gasolinera con la hermanastra',d:'Madrugadas de sábado a las 03:30 (a partir del día 30)',days:[5],h:3.5,p:.04,minD:30,msg:'Tocamientos mutuos en la gasolinera. Lo que pasa en el Repsol se queda en el Repsol.',ok:[{k:'regen',x:1.3,h:12,n:'Lo del Repsol',ic:'⛽'}],ko:[]},
+{id:'cable',n:'Su puto padre con cable neutro de cinturón',d:'Día 1 a las 12:00',dom:1,h:12,p:.25,msg:'Aita aparece con un cable neutro de cinturón. Dice que aguanta más que el cuero.',ok:[{k:'work',x:1.3,h:24,n:'Cinturón de cable neutro',ic:'🔌'}],ko:[]},
 {id:'hernandez',n:'Directo de Hernández',d:'Lunes y miércoles a las 20:00. En YouTube y Twitch a la vez, por si acaso',days:[0,2],h:20,p:.4,msg:'Hernández abre directo desde el sofá: mando de la play en una mano y bolsa de Doritos en la otra. Espectadores: 0. Ethan entra por pena y se queda un rato.',ok:[{k:'work',x:.8,h:6,n:'Viendo el directo de Hernández',ic:'📺'}],ko:[]},
-{id:'hereso',n:'Hernández se saca la ESO',d:'Día 10 a las 10:00. Lo intenta todos los meses',dom:10,h:10,p:.03,msg:'Milagro en Sestao: Hernández aprueba la ESO. Lo celebra con un directo y lo ven 3 personas. Récord absoluto.',ok:[{k:'buff',x:2,h:24,n:'Milagro en Sestao',ic:'🎓'}],ko:[{k:'txt',t:'Hernández suspende otra vez y lo cuenta en directo'}]},
-{id:'primo',n:'Visita del primo con carnet de tonto',d:'Domingos a las 12:00',days:[6],h:12,p:.35,msg:'Llega el primo de Ethan enseñando su carnet de tonto a todo el que pasa. Dice que con él no paga en el Ekintza. No es verdad: paga Ethan.',ok:[{k:'loss',f:.02,n:'Le invitas a todo'},{k:'buff',x:1.2,h:12,n:'Risas con el primo',ic:'🪪'}],ko:[]},
-{id:'robo',n:'Te roban buscando aparcamiento',d:'Solo cuando no encuentras sitio para aparcar, y como mucho una vez cada 2 semanas',onFail:'aparcar',p:.05,bad:1,ui:1,q:'¿Te roban mientras buscas aparcamiento?',msg:'Mientras Ethan da vueltas buscando sitio, unos chorizos le revientan el C4 y se llevan la cartera, el móvil y hasta las Ruffles. Todo el dinero, fuera.',ok:[{k:'loss',f:1,n:'Te lo roban todo'}],ko:[]},
+{id:'hereso',n:'Hernández se saca la ESO',d:'Día 10 a las 10:00. Lo intenta todos los meses',dom:10,h:10,p:.03,msg:'Milagro en Sestao: Hernández aprueba la ESO. Lo celebra con un directo y un King Fusion y lo ven 3 personas. Récord absoluto.',ok:[{k:'buff',x:2,h:24,n:'Milagro en Sestao',ic:'🎓'}],ko:[{k:'txt',t:'Hernández suspende otra vez como un barrilete que es y lo cuenta en directo'}]},
+{id:'primo',n:'Visita del primo con carnet de tonto',d:'Domingos a las 12:00',days:[6],h:12,p:.35,msg:'Llega el primo de Ethan enseñando su carnet de tonto a todo el que pasa y con su cara de pato. Dice que con él no paga en el Ekintza y el cine es más barato. No es verdad: paga Ethan.',ok:[{k:'loss',f:.02,n:'Le invitas a todo'},{k:'buff',x:1.2,h:12,n:'Risas con el primo',ic:'🪪'}],ko:[]},
+{id:'robo',n:'Te roban unos moros marrones buscando aparcamiento',d:'Solo cuando no encuentras sitio para aparcar, y como mucho una vez cada 2 semanas',onFail:'aparcar',p:.05,bad:1,ui:1,q:'¿Te roban mientras buscas aparcamiento?',msg:'Mientras Ethan da vueltas buscando sitio, unos marrones le revientan la Picasso y se llevan la cartera, el móvil y hasta las Ruffles. Todo el dinero, fuera.',ok:[{k:'loss',f:1,n:'Te lo roban todo'}],ko:[]},
 {id:'f2f',n:'Face to face',d:'Viernes y sábados a las 22:00: noche de GTA V con los amigos',days:[4,5],h:22,p:.4,msg:'Noche de face to face: GTA V con Hernández y los amigos hasta las dos y media de la mañana. Ethan se lo pasa en grande. Mañana no hay quien le levante.',ok:[{k:'late',n:'Noche de GTA',fn:'Cansancio de GTA',ic:'🎮'}],ko:[]}];
 var UP=[
-{id:'a1',ic:'👷',cat:'Personal',n:'Becario sin contrato',d:'Echa 1 hora extra por segundo él solo, sin cansar a Ethan. Cobra la mitad y en experiencia.',fx:'1 hora extra/s automática',c:4000},
-{id:'s2',ic:'☕',cat:'Velocidad',n:'Café de gasolinera',d:'Desbloquea el botón x2: todo pasa el doble de rápido.',fx:'Velocidad x2',c:50000,sp:2},
-{id:'a2',ic:'👥',cat:'Personal',n:'Cuadrilla de becarios',d:'La Inspección de Trabajo no sube a Sestao.',fx:'3 horas extra/s automáticas',c:80000,req:'a1'},
+{id:'a1',ic:'👷',cat:'Personal',n:'Manolo sin contrato',d:'Echa 1 hora extra por segundo él solo, sin cansar a Ethan. Cobra la mitad y en experiencia.',fx:'1 hora extra/s automática',c:4000},
+{id:'s2',ic:'☕',cat:'Velocidad',n:'Cola cao de gasolinera',d:'Desbloquea el botón x2: todo pasa el doble de rápido.',fx:'Velocidad x2',c:50000,sp:2},
+{id:'a2',ic:'👥',cat:'Personal',n:'Cuadrilla debajo del puente del Costco',d:'La Inspección de Trabajo no sube a Sestao.',fx:'3 horas extra/s automáticas',c:80000,req:'a1'},
 {id:'a3',ic:'🏭',cat:'Personal',n:'ETT de la Margen Izquierda',d:'Un autobús de becarios cada mañana. Nadie firma nada.',fx:'10 horas extra/s automáticas',c:5e8,req:'a2'},
 {id:'k1',ic:'🔧',cat:'Herramientas',n:'Llave de impacto',d:'Hace un ruido que despierta a medio Sestao.',fx:'Horas extra x2',c:150000},
 {id:'s4',ic:'🧃',cat:'Velocidad',n:'Turno con speed',d:'Desbloquea el botón x4. Ethan no pregunta qué lleva el colacao.',fx:'Velocidad x4',c:2e6,sp:4,req:'s2'},
 {id:'e1',ic:'♨️',cat:'Energía',n:'Termo de café del Naval',d:'Sabe a gasoil, pero despierta.',fx:'+50% energía máxima y recuperación',c:400000},
-{id:'s10',ic:'😈',cat:'Velocidad',n:'Pacto con Jokin',d:'Desbloquea el botón x10. El precio no se paga en euros.',fx:'Velocidad x10',c:2.5e8,sp:10,req:'s4'},
+{id:'s10',ic:'😈',cat:'Velocidad',n:'Encuentro con Jokin',d:'Desbloquea el botón x10. El precio no se paga en euros.',fx:'Velocidad x10',c:2.5e8,sp:10,req:'s4'},
 {id:'g1',ic:'💡',cat:'Garajes',n:'Cartel luminoso en los garajes',d:'Le faltan la mitad de las letras. Funciona igual.',fx:'Garajes x2',c:5000000},
 {id:'c1',ic:'🧐',cat:'Herramientas',n:'Ojo clínico',d:'Ethan ve la chapuza antes que el cliente.',fx:'Crítico del 7% al 12%',c:8000000},
 {id:'k2',ic:'🔩',cat:'Herramientas',n:'Elevador hidráulico',d:'Cada hora extra arrastra un poco de lo que dan los garajes.',fx:'+3% de €/s por hora extra',c:20000000,req:'k1'},
@@ -970,12 +970,12 @@ var DN=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],MN=['Ene','Feb','Mar','Abr'
 var TICK=3;
 var CLBL={1.5:'Ethan coge ritmo',2:'El encargado sonríe',2.5:'Modo estajanovista',3:'Ethan ya no siente los brazos'};
 var CRIT=['¡Pago en B!','¡El jefe no mira!','¡Chapuza cobrada dos veces!','¡Factura sin IVA!'];
-var MS=[[100,'Primeros €100. El jefe dice que no te acostumbres.'],[1000,'€1.000. En Sestao eso ya es ser rico.'],[10000,'€10.000. Hacienda todavía no sabe nada.'],[100000,'€100.000. El taller es tuyo de facto.'],[1000000,'€1.000.000. Hasta Jokin te respeta.']];
+var MS=[[100,'Primeros €100. El jefe dice que no te acostumbres.'],[1000,'€1.000. En Sestao eso ya es ser rico.'],[10000,'€10.000. Hacienda todavía no sabe nada.'],[100000,'€100.000. Son muchos Kebabs de Ali.'],[1000000,'€1.000.000. Hasta Jokin te respeta.']];
 var BAD=[
 {n:'Sádaba te estafa',t:'Sádaba te coloca una "inversión segura". Era una estampita firmada.',f:.06},
 {n:'Jokin te da por culo',t:'Jokin aparece por detrás sin avisar. Como siempre.',f:.07},
 {n:'Multa de la OTA',t:'La OTA multa al C4. En Sestao. Sin pintura azul ni nada.',f:.04},
-{n:'Hacienda husmea',t:'Hacienda pregunta por los sobres del jefe. Toca regularizar.',f:.08}];
+{n:'Hacienda husmea',t:'Hacienda pregunta que quien es Sadaba. Toca regularizar.',f:.08}];
 var SCAM=[
 {n:'La estafa de la líquida',t:'Sádaba te vende una refrigeración líquida "nueva, de Wallapop". Era un radiador de Seat Panda con pegatinas.',a:2500},
 {n:'La estafa de la PS5',t:'Sádaba consigue una PS5 "precintada de fábrica". Dentro: dos ladrillos y una PS2 chipeada.',a:4000},
@@ -987,7 +987,7 @@ var DMP=[
 {k:'crit',ic:'💥',tx:'Chapuzas finas: clava {t} críticos',t:function(){return 3+Math.floor(Math.random()*3)},v:function(){return S.crc||0}},
 {k:'buy',ic:'🛒',tx:'Sádaba insiste: compra {t} objeto de la tienda',t:function(){return 1},v:function(){return S.own}},
 {k:'gar',ic:'🏚️',tx:'Ladrillo seguro: sube {t} niveles de garaje',t:function(){return 5},v:function(){return S.glv||0}},
-{k:'ev',ic:'📅',tx:'Que la vida pase: presencia {t} sucesos',t:function(){return 2},v:function(){return totLg()}},
+{k:'ev',ic:'📅',tx:'Que la vida de mierda pase: presencia {t} sucesos',t:function(){return 2},v:function(){return totLg()}},
 {k:'box',ic:'📦',tx:'Pásate por el Ekintza: abre {t} cajas',t:function(){return 2+Math.floor(Math.random()*3)},v:function(){return S.lbo||0}}];
 var THEMES=[
 {id:'taller',n:'Taller de siempre',c:0,sw:['#4e7d5b','#c9d856','#dbe7d9']},
@@ -1000,36 +1000,36 @@ var RORD=['comun','poco','raro','epico','leg','mitico'];
 var SLOTS=[['cabeza','Cabeza'],['cara','Cara'],['boca','Boca'],['cuello','Cuello'],['cuerpo','Cuerpo'],['cintura','Cintura'],['mano','Mano'],['pies','Pies'],['aura','Aura']];
 var COS=[
 {id:'cepillo',n:'Cepillo de dientes de Ethan',d:'Sin usar, pero sucio. Nadie sabe cómo.',r:'leg',slot:'mano',box:'sadaba'},
-{id:'cable',n:'Cable neutro de cinturón',d:'Regalo del aita. Aguanta más que el cuero.',r:'leg',slot:'cintura',box:'sadaba'},
-{id:'tresds',n:'3DS Hyrule Edition',d:'Trofeo nacional. Ni se vende ni se presta.',r:'leg',slot:'mano',box:'sadaba'},
-{id:'jamon',n:'Pata de jamón de bellota',d:'Con una pata de jamón en la mano, nadie se acerca al C4. Ni a Ethan.',r:'epico',slot:'mano',box:'naval',c:2e6},
-{id:'carnet',n:'Carnet de tonto del primo',d:'Expedido sin examen. No caduca nunca. Lo lleva colgado del cuello con orgullo.',r:'leg',slot:'cuello',med:'primo'},
-{id:'llaveoro',n:'Llave inglesa de oro',d:'Solo para herederos de la empresa.',r:'epico',slot:'mano',med:'heredero'},
+{id:'cable',n:'Cable neutro de cinturón',d:'Esencial de su padre. Aguanta más que el cuero.',r:'leg',slot:'cintura',box:'sadaba'},
+{id:'tresds',n:'3DS Hyrule Edition',d:'Más importante que una vitroceramica estropeada',r:'leg',slot:'mano',box:'sadaba'},
+{id:'jamon',n:'Pata de jamón de bellota',d:'Con esto los moros no se acercan. Sadaba suele tener una bajo la almohada',r:'epico',slot:'mano',box:'naval',c:2e6},
+{id:'carnet',n:'Carnet de tonto del primo',d:'Todavia no sabemos si hay que aprobar o suspender el examen. Lo lleva colgado del cuello con orgullo.',r:'leg',slot:'cuello',med:'primo'},
+{id:'llaveoro',n:'Llave inglesa robada de la Maserati',d:'Yo trabajaba ahí.',r:'epico',slot:'mano',med:'heredero'},
 {id:'kebabali',n:'Kebab eterno de Ali',d:'Nunca se acaba. Nunca caduca. Bueno, caducado ya venía.',r:'epico',slot:'mano',box:'sadaba'},
 {id:'gorrathletic',n:'Gorra del Athletic',d:'De la final que no se nombra.',r:'epico',slot:'cabeza',box:'sadaba'},
-{id:'rinonera',n:'Riñonera Rip Curl',d:'Dentro solo hay tornillos y un mechero.',r:'raro',slot:'cintura',box:'sadaba'},
+{id:'rinonera',n:'Riñonera Rip Curl',d:'Dentro solo hay tornillos y un trozo de Whopper.',r:'raro',slot:'cintura',box:'sadaba'},
 {id:'gafas',n:'Gafas de sol de gasolinera',d:'Protección UV sin verificar.',r:'raro',slot:'cara',box:'sadaba',c:8000},
 {id:'movil',n:'Móvil con la pantalla añicos',d:'Funciona el 70% de la pantalla. De sobra.',r:'raro',slot:'mano',c:25000},
-{id:'gorrolana',n:'Gorro de lana del Naval',d:'Pica, pero abriga.',r:'poco',slot:'cabeza',box:'sadaba'},
+{id:'gorrolana',n:'Gorro de lana del Ekintza',d:'Pica, pero abriga. Incluso venia con sorpresa.',r:'poco',slot:'cabeza',box:'sadaba'},
 {id:'destor',n:'Destornillador de confianza',d:'El que nunca falla. Los otros cinco sí.',r:'poco',slot:'mano',box:'sadaba'},
-{id:'bufanda',n:'Bufanda de la amona',d:'Tejida con amor y con sobras.',r:'poco',slot:'cuello',box:'sadaba'},
+{id:'bufanda',n:'Bufanda de la amama',d:'Tejida con amor y con sobras.',r:'poco',slot:'cuello',box:'sadaba'},
 {id:'cowboy',n:'Gorro de cowboy',d:'De una despedida de soltero ajena.',r:'comun',slot:'cabeza',box:'sadaba',c:2500},
 {id:'desatascador',n:'Desatascador',d:'Herramienta multiusos. No preguntes los usos.',r:'comun',slot:'mano',box:'sadaba',c:1500},
 {id:'gorrapropa',n:'Gorra de propaganda de neumáticos',d:'Gratis con 4 ruedas.',r:'comun',slot:'cabeza',box:'sadaba'},
-{id:'calcetin',n:'Calcetín solitario',d:'Su pareja desapareció en 2019.',r:'comun',slot:'mano',box:'sadaba'},
+{id:'calcetin',n:'Calcetín solitario',d:'No sabemos porque esta tan duro.',r:'comun',slot:'mano',box:'sadaba'},
 {id:'chaleco',n:'Chaleco reflectante',d:'Para que le vean desde la A-8. No funciona.',r:'comun',slot:'cuerpo',box:'naval'},
-{id:'kalimotxo',n:'Kalimotxo en vaso de plástico',d:'Mitad vino, mitad cola, mitad hielo.',r:'comun',slot:'mano',box:'naval'},
+{id:'kalimotxo',n:'Kalimotxo en vaso de plástico',d:'90 vino, 10 cola, mitad hielo.',r:'comun',slot:'mano',box:'naval'},
 {id:'bocata',n:'Bocata de tortilla',d:'Del almuerzo de las 10. Son las 18.',r:'comun',slot:'mano',box:'naval'},
 {id:'casco',n:'Casco de la patrulla patinete',d:'Homologado por nadie.',r:'poco',slot:'cabeza',box:'naval'},
 {id:'pintxo',n:'Pintxo de tortilla de Lourdes',d:'Sorpresa incluida. No preguntes cuál.',r:'poco',slot:'mano',box:'naval'},
 {id:'txapela',n:'Txapela del aitona',d:'Talla única: la del aitona.',r:'raro',slot:'cabeza',box:'naval'},
 {id:'auriculares',n:'Cascos con un solo lado',d:'El izquierdo dejó de ir en 2021. El derecho, a ratos.',r:'raro',slot:'cabeza',box:'naval'},
-{id:'bigote',n:'Bigote de mecánico de los 80',d:'Concede +10 de autoridad en el taller.',r:'raro',slot:'boca',box:'naval'},
+{id:'bigote',n:'Bigote de mecánico de los 80',d:'Pareces un pajas.',r:'raro',slot:'boca',box:'naval'},
 {id:'llavec4',n:'Llave del C4 Picasso',d:'Con llavero del Eroski. Abre también el Golf.',r:'raro',slot:'mano',box:'naval'},
 {id:'elastica',n:'Elástica del Athletic',d:'Lavada a 90 grados. Ya es rosa y blanca.',r:'raro',slot:'cuerpo',box:'naval'},
 {id:'mono',n:'Mono de trabajo',d:'Con boli Bic en el bolsillo desde 2016.',r:'epico',slot:'cuerpo',box:'naval'},
 {id:'cadena',n:'Cadena de oro de feria',d:'Oro de 0 quilates. Brilla como el de verdad.',r:'epico',slot:'cuello',box:'naval'},
-{id:'corona',n:'Corona del Rey de Sestao',d:'Coronado en la bajera. Nadie votó.',r:'leg',slot:'cabeza',box:'naval'},
+{id:'corona',n:'Corona del Rey de Sestao',d:'Antes la tenian los gitanos.',r:'leg',slot:'cabeza',box:'naval'},
 {id:'aura',n:'Aura de sarro',d:'Años de no lavarse los dientes, convertidos en poder.',r:'leg',slot:'aura',box:'naval'},
 {id:'chandaloro',n:'Chándal de oro',d:'Para bodas, bautizos y funerales. Sobre todo funerales.',r:'leg',slot:'cuerpo',box:'jokin'},
 {id:'bmw',n:'BMW sin reventar',d:'Nadie las había visto nunca así. Hasta hoy.',r:'mitico',slot:'pies',box:'jokin'},
@@ -1068,15 +1068,15 @@ var GOLD=[
 {e:'🔥',w:14,t:'¡Frenesí de horas extra! 15 segundos sin gastar energía y cobrando el triple.',fr:15},
 {e:'🦷',w:4,t:'¡El diente de oro de Ethan! Producción x7 durante 6 horas de juego.',b:12,x:7}];
 var RANKS=[[0,'Becario sin contrato'],[100,'Aprendiz de chapa'],[400,'Ayudante de taller'],[1000,'Oficial de tercera'],[2500,'Oficial de segunda'],[6000,'Oficial de primera'],[15000,'Encargado de turno'],[40000,'Jefe de taller'],[100000,'Gerente del taller'],[250000,'Rey de los garajes'],[600000,'Leyenda de Sestao'],[1500000,'Mito de la Margen Izquierda'],[4000000,'Dios del sarro'],[10000000,'Ethan Supremo']];
-var WPH=['Las BMW ni tocarlas.','Hoy no me lavo los dientes, mañana tampoco.','El Ekintza abre a las siete. Yo a las seis.','A Kueto voy en C4, que es cuesta arriba.','El sarro da carácter.','Sádaba me debe una.','¿Horas extra? Las que hagan falta.','A Jokin ni lo nombres.','Esto con un cable neutro se arregla.','El chándal es de diario y de boda.','El C4 no se vende. Se hereda.','¿Dentista? ¿Eso qué es?','Hoy cierro yo el taller.'];
-var WKP=['¿Qué miras?','Hernández, ¿hoy abres directo?','Mi primo tiene carnet de tonto. Y lo enseña.','Esta noche GTA con Hernández.','Voy al taller, que no llego.','¿Tienes una Aquarius de limón?','Hoy echo doce horas, mínimo.','Las BMW aguantan otro año.','Sádaba dice que esto es una inversión.','Mi C4 corre más que tu coche.','Si me agarras otra vez, llamo al aita.','Ali me guarda un kebab para luego.','No me toques, que tengo sarro.','Esta noche face to face. Prepárate.','¿Rave en Altos Hornos? Ahí estaré.','Jokin me sigue. Lo noto.','Kueto es mi barrio adoptivo.','A Hernández le ven más en la ITV que en Twitch.'];
-var GRB=['¡Bájame!','¡Que me caigo!','¡Socorro, Jokin no!','¡Mis BMW!','¡Aaaaah!','¡Tengo vértigo!','¡Que no sé volar!'];
-var LND=['Ay, mi espalda…','Las BMW han sobrevivido.','Eso ha dolido.','Estoy bien. Creo.','¿Quién ha sido?','Esto va a la Inspección de Trabajo.'];
-var PNC=['¡Ay!','¡Eh!','¡Que llamo al aita!','¡En la cara no!','¡Mis dientes, que son de colección!','¡Para ya!','Vale, me lo merecía.','¡Que se lo digo a Lourdes!','Esto no lo cubre el convenio.','¿Esto es por lo de la PS5?'];
+var WPH=['Las BMW estan perfectamente.','Hoy no me lavo los dientes, mañana tampoco.','El Ekintza abre a las siete. Yo a las seis.','A Kueto voy en C4, que es cuesta arriba.','El sarro da carácter.','Sádaba me debe una.','¿Horas extra? Las que hagan falta.','A Jokin ni lo nombres.','Esto con un cable neutro se arregla.','El chándal es de diario y de boda.','El C4 no se vende. Se hereda.','¿Dentista? ¿Eso qué es?','Hoy cierro yo el taller.'];
+var WKP=['¿Qué miras?','Hernández, ¿hoy abres directo?','Mi primo tiene carnet de tonto. Y lo enseña.','Esta noche GTA con Hernández.','¿Tienes un Aquarius de limón?','Hoy echo doce horas, mínimo.','Las BMW aguantan otro año.','Sádaba dice que esto es una inversión.','Mi C4 corre más que tu coche.','Si me agarras otra vez, llamo a Manolo.','Ali me guarda un kebab para luego.','No me toques, que tengo sarro.','Esta noche face to face.','¿Rave en Altos Hornos? Ahí estaré.','Jokin me sigue. Lo noto.','Kueto es mi barrio adoptivo.','A Hernández le ven más en el Burger que en Twitch.'];
+var GRB=['¡Bájame!','¡Que me caigo!','¡Socorro, Jokin no!','¡Mis BMW!','¡Aaaaah!','¡Soy marica!','¡Que no sé volar!'];
+var LND=['Ay, mi espalda…','Las BMW han sobrevivido.','Que pereza.','Quiero dormir.','¿Quién ha sido?','Esto va a la Inspección de Trabajo.'];
+var PNC=['¡Ay!','¡Eh!','¡Que llamo al aita!','Sadaba puto gordo','¡Mis dientes, que son de colección!','¡Para ya!','Vale, me lo merecía.','¡Que se lo digo a Lourdes!','Esto no lo cubre el convenio.','¿Esto es por lo de la PS5?'];
 var TK=[
-['Noche de face to face: Ethan y Hernández juegan al GTA V hasta las cinco. Los vecinos denuncian gritos de «¡Que viene la poli!».','Ethan pide un adelanto de nómina. El jefe se ríe durante once minutos.','Vecinos de Txabarri denuncian ruido de llave inglesa a las tantas. Es Ethan, echando horas.','Las BMW de Ethan cumplen otro año sin ver una lavadora.','Hernández bate su récord en Twitch: 2 espectadores. Uno era su madre.','Hernández anuncia que este año se saca la ESO. Lo anunció también en 2019, 2021 y 2023.','El primo de Ethan renueva el carnet de tonto. Se lo dieron sin hacer el examen.','Directo de Hernández: 6 horas jugando a la play. No lo ve nadie. Literalmente nadie.','Estudio de la UPV: el sarro de Ethan podría tener ecosistema propio.','El C4 Picasso de Ethan pasa la ITV. La ITV no se ha recuperado.','Sádaba niega haber vendido una PS5 llena de ladrillos: «Eran ladrillos de calidad».','Ali confirma que el kebab de los domingos «está bien». No precisa de qué domingo.','Se busca calcetín desaparecido en 2019. Responde al nombre de «el otro».','Jokin visto por Urbinaga. Nadie sabe qué trama. Nunca nadie lo sabe.','El chándal de Ethan, declarado prenda oficial para bodas, bautizos y comuniones.','La Aquarius de limón sube 5 céntimos. Ethan valora mudarse a Portugalete.','El encargado confirma que Ethan ficha antes de que abra el taller. Nadie sabe cómo entra.'],
-['Ethan compra un garaje y lo usa de trastero para guardar otro garaje.','El encargado, preocupado: «Ethan ya no ficha, vive aquí».','Sádaba lanza el SádabaCoin. Vale lo que él diga ese día.','Récord en el Bar Ekintza: alguien ganó un upgrade. Se investiga.','Lourdes reconoce que no sabe qué lleva la tortilla sorpresa. «Es parte de la sorpresa».','Hacienda abre oficina en Sestao con vistas directas al taller de Ethan.','La patrulla patinete alcanza los 25 km/h. Cuesta abajo y con viento a favor.','Los becarios de Ethan piden un convenio. Les dan un bocata.','Una inmobiliaria pregunta por el garaje de Txabarri. Ethan pide el triple. Y una Aquarius.','Expertos en tráfico: Ethan ha encontrado sitio para aparcar. Sospechan que lo compró.'],
-['Forbes Sestao: Ethan, el hombre más rico de la Margen Izquierda. Sigue sin lavarse los dientes.','Ethan compra Altos Hornos y lo pinta de azul camiseta.','La ría cambia de sentido para no molestar a Ethan.','Ethan regala una Aquarius a cada vecino de Sestao. Caducadas, pero el gesto cuenta.','Un multimillonario pide consejo a Ethan sobre horas extra. Ethan le deja en visto.','El Banco de España pide a Ethan que eche menos horas: le descuadra la inflación.','Ethan inaugura el Museo del Sarro. Entrada gratuita, salida bajo tu responsabilidad.','Sádaba intenta venderle a Ethan su propio garaje. Casi cuela.']];
+['Noche de face to face: Ethan y Hernández juegan al GTA V hasta las cinco. Los vecinos denuncian gritos de «¡Que viene la poli!».','Ethan pide un adelanto de nómina. El jefe se ríe durante once minutos.','Vecinos de Txabarri denuncian ruido de llave inglesa a las tantas. Es Ethan, echando horas.','Las BMW de Ethan cumplen otro año sin ver una lavadora.','Hernández bate su récord en Twitch: 2 espectadores. Uno era su madre.','Hernández anuncia que este año se saca la ESO. Lo anunció también en 2019, 2021 y 2023.','El primo de Ethan renueva el carnet de tonto. Se lo dieron sin hacer el examen.','Directo de Hernández: 6 horas jugando a la play. No lo ve nadie.','Estudio de la UPV: el sarro de Ethan podría tener ecosistema propio.','El C4 Picasso de Ethan pasa la ITV. La ITV no se ha recuperado.','Sádaba niega haber vendido una PS5 llena de ladrillos: «Eran ladrillos de calidad».','Ali confirma que el kebab de los domingos «está bien». No precisa de qué domingo.','Nigga','Jokin visto por Urbinaga. Nadie sabe qué trama. Nunca nadie lo sabe.','El chándal de Ethan, declarado prenda oficial para bodas, bautizos y comuniones.','La Aquarius de limón sube 5 céntimos. Ethan valora mudarse a Portugalete.','El encargado confirma que Ethan ficha antes de que abra el taller. Nadie sabe cómo entra.'],
+['Ethan compra un garaje y lo usa de trastero para guardar otro garaje.','El encargado, preocupado: «Ethan ya no ficha, vive aquí».','Sádaba lanza el SádabaCoin. Vale lo que él diga ese día.','Récord en el Bar Ekintza: alguien ganó un upgrade. Se investiga.','Lourdes reconoce que no sabe qué lleva la tortilla sorpresa. «Es parte de la sorpresa».','Hacienda abre oficina en Sestao con vistas directas al taller de Ethan.','La patrulla patinete alcanza los 25 km/h. Cuesta abajo y con viento a favor.','Sadaba sigue siendo gordo','Una inmobiliaria pregunta por el garaje de Txabarri. Ethan pide el triple. Y una Aquarius.','Expertos en tráfico: Ethan ha encontrado sitio para aparcar. Sospechan que lo compró.'],
+['Forbes Sestao: Ethan, el hombre más rico de la Margen Izquierda. Sigue sin lavarse los dientes.','Ethan compra Altos Hornos y lo estrena con una pajilla.','Hay un poco de semen en el mando de la PS5','Ethan regala una Aquarius a cada vecino de Sestao. Caducadas, pero el gesto cuenta.','Un multimillonario pide consejo a Ethan sobre horas extra. Ethan le deja en visto.','El Banco de España pide a Ethan que eche menos horas: le descuadra la inflación.','Ethan inaugura el Museo del Sarro. Entrada gratuita, salida bajo tu responsabilidad.','Sádaba intenta venderle a Ethan su propio garaje. Casi cuela.']];
 /* ================= MEDALLAS ================= */
 var MED=[
 {id:'garaje',n:'¿Te has comprado un garaje?',d:'Encuentra sitio para aparcar 10 veces',k:'garaje',v:function(){return S.lg.aparcar||0},m:10},
@@ -1118,7 +1118,7 @@ var MED=[
 {id:'final',n:'Final feliz',d:'Consigue la novia buenorra',k:'corona',col:'#ff5ca0',hid:1,v:function(){return S.fin||0},m:1},
 {id:'finde',n:'Finde perfecto',d:'Casa sola, las tres cenitas y rave en el mismo finde',k:'star',col:'#ff5ca0',v:function(){return mk('finde')},m:1},
 {id:'gamer',n:'Finde gamer',d:'Face to face el viernes y el sábado del mismo finde',k:'dado',col:'#3dd6ff',v:function(){return mk('gamer')},m:1},
-{id:'lourdes2',n:'Lourdes en racha',d:'Tortilla sorpresa el martes y el jueves de la misma semana',k:'tortilla',col:'#e9c24a',v:function(){return mk('lourdes2')},m:1},
+{id:'lourdes2',n:'Que seria de estos despojos sin Lourdes',d:'Tortilla sorpresa el martes y el jueves de la misma semana',k:'tortilla',col:'#e9c24a',v:function(){return mk('lourdes2')},m:1},
 {id:'familia',n:'Familia y amigos',d:'Visita del primo y directo de Hernández en la misma semana',k:'star',col:'#3d8bfd',v:function(){return mk('familia')},m:1},
 {id:'movida',n:'Semana movida',d:'Patrullazo y rave en la misma semana',k:'rayo',col:'#ffd84a',v:function(){return mk('movida')},m:1},
 {id:'redondo',n:'Día redondo',d:'8 sucesos seguidos que salen bien',k:'star',col:'#4fb85a',v:function(){return mk('redondo')},m:1},
@@ -1126,12 +1126,12 @@ var MED=[
 {id:'punta',n:'De punta en blanco',d:'Lleva 9 cosméticos puestos a la vez',k:'corona',col:'#a855f7',v:function(){return mk('punta')},m:1},
 {id:'gafe',n:'Gafe de Sestao',d:'8 sucesos seguidos que salen mal',k:'ojos',col:'#5b6f61',sec:1,v:function(){return mk('gafe')},m:1},
 {id:'desamor2',n:'Corazón de piedra',d:'Uxune e Itsasne te dejan la misma semana',k:'ojos',col:'#e05548',sec:1,v:function(){return mk('desamor2')},m:1},
-{id:'sincena',n:'Ayuno forzoso',d:'Dos cenitas fallidas en el mismo finde',k:'food',col:'#9aa7ad',sec:1,v:function(){return mk('sincena')},m:1},
+{id:'sincena',n:'Finde inexplicable',d:'Dos cenitas fallidas en el mismo finde',k:'food',col:'#9aa7ad',sec:1,v:function(){return mk('sincena')},m:1},
 {id:'negra',n:'Semana negra',d:'Dos desgracias en la misma semana',k:'platano',col:'#1f2f25',sec:1,v:function(){return mk('negra')},m:1},
 {id:'malapata',n:'Mala pata',d:'Te roban y te pilla Jokin en la misma semana',k:'platano',col:'#e05548',sec:1,v:function(){return mk('malapata')},m:1},
 {id:'aparca2',n:'Aparcacoches',d:'Encuentra sitio para aparcar dos veces seguidas',k:'garaje',col:'#4fb85a',sec:1,v:function(){return mk('aparca2')},m:1},
 {id:'suerte',n:'Día de suerte',d:'ITV a la primera y sitio para aparcar el mismo día',k:'star',col:'#f2c94c',sec:1,v:function(){return mk('suerte')},m:1},
-{id:'jamonsalva',n:'Salvado por el jamón',d:'Que la pata de jamón te libre de un robo',k:'food',col:'#c8791a',sec:1,v:function(){return mk('jamon')},m:1},
+{id:'jamonsalva',n:'Anti marrones',d:'Que la pata de jamón te libre de un robo',k:'food',col:'#c8791a',sec:1,v:function(){return mk('jamon')},m:1},
 {id:'ruina',n:'Ruina total',d:'Que te roben más de €1M de golpe',k:'billete',col:'#e05548',sec:1,v:function(){return mk('ruina')},m:1},
 {id:'hereso',n:'Milagro académico',d:'Que Hernández se saque la ESO',k:'star',col:'#3dd6ff',sec:1,v:function(){return S.lg.hereso||0},m:1},
 {id:'madruga',n:'Madrugador',d:'Echa una hora extra nada más levantarte un día entre semana',k:'llave',col:'#ffd84a',sec:1,v:function(){return mk('madruga')},m:1},
