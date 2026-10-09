@@ -2068,7 +2068,7 @@ function renderProf(){var sig=[Object.keys(S.md).join(),cloudOk,cloudErr,S.av,S.
  var c=el('div','pn');c.innerHTML='<div class="ph"><h3>Ajustes</h3></div>';
  [['Sonido y vibración',!mute,function(v){mute=!v;try{localStorage.setItem('elt_mute',mute?'1':'0')}catch(e){}sndIcon()}],['Ruleta de sucesos rápida (gira sola)',!!CFG.fw,function(v){CFG.fw=v?1:0;saveCfg()}],['Ver todas las ruletas aunque vayan seguidas',!!CFG.evall,function(v){CFG.evall=v?1:0;saveCfg()}]].forEach(function(o){var d=el('div','setl');d.innerHTML='<span>'+o[0]+'</span>';var lb=el('label','tog'),i=el('input');i.type='checkbox';i.checked=o[1];i.onchange=function(){o[2](i.checked);lastSig=''};lb.appendChild(i);d.appendChild(lb);c.appendChild(d)});
  if(!isStandalone()){var ib=el('button','btn g wide');ib.style.marginTop='10px';ib.textContent='📲 Añadir a la pantalla de inicio';ib.onclick=installApp;c.appendChild(ib)}
- if(sb&&myId){var o=el('button','btn ghost wide');o.style.marginTop='10px';o.textContent='Cerrar sesión';o.onclick=function(){sb.auth.signOut()};c.appendChild(o)}
+ if(sb&&myId){var o=el('button','btn ghost wide');o.style.marginTop='10px';o.textContent='Cerrar sesión';o.onclick=function(){o.disabled=true;o.textContent='Guardando…';save();Promise.race([Promise.resolve(cloudSave()).catch(function(){}),new Promise(function(f){setTimeout(f,4000)})]).then(function(){sb.auth.signOut()})};c.appendChild(o)}
  p.appendChild(c)}
 function renderEthan(){st($('pname'),(S.av||'😁')+' '+((myId&&NM[myId])||'Ethan'));st($('psub'),RANKS[rankIdx()][1]+' · Ganado en total '+eur(S.lt)+' · '+fmt(S.done)+' horas extra · ⏱ '+fmtPT(S.play||0)+(S.pres?' · '+S.pres+' jubilaci'+(S.pres>1?'ones':'ón'):''));
  if(sub.t4==='er')renderRank();else if(sub.t4==='ej')renderJub();else renderProf()}
@@ -2081,10 +2081,49 @@ function applyTheme(){var t=THEMES.filter(function(x){return x.id===(S.th||'tall
 
 /* ================= NUBE (Supabase) ================= */
 var sb=null,noAv=false,clampM=false,noEx=false,noPk=false;
-try{if(window.supabase&&SB_URL.indexOf('http')===0)sb=supabase.createClient(SB_URL,SB_KEY)}catch(e){}
+/* lo que se envia con la pestaña oculta (cerrar, cambiar de app) sale con keepalive para que llegue aunque se cierre */
+function kaFetch(u,o){try{if(o&&typeof o.body==='string'&&o.body.length<60000&&document.visibilityState==='hidden')o=Object.assign({},o,{keepalive:true})}catch(e){}return fetch(u,o)}
+try{if(window.supabase&&SB_URL.indexOf('http')===0)sb=supabase.createClient(SB_URL,SB_KEY,{global:{fetch:kaFetch}})}catch(e){}
 if(sb)S=fixS(freshS());
-function cloudSave(){if(!cloudOk||!sb)return;S.ts=Date.now();
- sb.from('saves').upsert({id:myId,state:S,ts:S.ts}).then(function(r){cloudErr=r.error?('No se pudo guardar: '+r.error.message):''});pUp()}
+/* Sincronizacion entre dispositivos:
+   - el juego no arranca ni guarda nada hasta haber cargado tu partida (antes podia guardar una partida vacia encima de la buena)
+   - de dos copias gana la que lleva mas progreso (tiempo jugado, luego dinero total), no la de fecha mas nueva
+   - cada guardado solo pisa la nube si nadie la ha tocado desde tu ultima lectura (ts hace de version);
+     si otro dispositivo guardo entre medias, se comparan las dos y se queda la mas avanzada */
+var ready=false,loading=false,cHas=false,cloudTs=null,cBusy=null,cAgain=false,cConf=0;
+function okSt(s){return !!(s&&s.br&&s.lg)}
+function ahead(a,b){if(!okSt(a))return false;if(!okSt(b))return true;
+ var pa=+a.play||0,pb=+b.play||0;if(Math.abs(pa-pb)>30)return pa>pb;
+ var la=+a.lt||0,lb=+b.lt||0;if(la!==lb)return la>lb;
+ return (+a.done||0)>(+b.done||0)}
+function useState(st){S=fixS(st);dmDay=-1;shopSig='';jubSig='';lastSig='';invSig='';dm=S.m;minLvlBefore=minLvl();applyTheme();applyWalkerCos();sortUps()}
+function netErr(m){return /fetch|network|timeout|abort|load failed/i.test(String(m||''))}
+function offMsg(){cloudErr='Sin conexión: se guarda en este dispositivo y se subirá al volver'}
+function syncCloud(){if(!sb||!myId||!ready)return Promise.resolve();if(cBusy)return cBusy;
+ var me=myId;
+ cBusy=sb.from('saves').select('state,ts').eq('id',me).maybeSingle().then(function(r){cBusy=null;if(me!==myId||!ready)return;
+  if(r.error){cloudOk=false;if(netErr(r.error.message))offMsg();else cloudErr='No se pudo leer tu partida: '+r.error.message;return}
+  cloudOk=true;var cs=r.data&&r.data.state,up=ahead(cs,S);
+  if(up&&(busy||spinning||ugSpin))return; /* en mitad de algo: se reintenta en el siguiente guardado */
+  cHas=!!r.data;cloudTs=r.data?r.data.ts:null;
+  if(up){useState(cs);save();cloudErr='';cConf=0;render(true);toast('Partida sincronizada con tu otro dispositivo.','ok','☁️');return}
+  return cloudSave()},function(){cBusy=null;cloudOk=false;offMsg()});
+ return cBusy}
+function cloudSave(){if(!sb||!myId||!ready)return Promise.resolve();
+ if(!cloudOk)return syncCloud();
+ if(cBusy){cAgain=true;return cBusy}
+ var me=myId,ts=Date.now();if(cloudTs!=null&&+cloudTs>=ts)ts=+cloudTs+1;S.ts=ts;
+ var q;if(!cHas)q=sb.from('saves').insert({id:me,state:S,ts:ts});
+ else{q=sb.from('saves').update({state:S,ts:ts}).eq('id',me);q=cloudTs==null?q.is('ts',null):q.eq('ts',cloudTs)}
+ cBusy=q.select('ts').then(function(r){cBusy=null;if(me!==myId||!ready)return;
+  var e=r.error;
+  if(e&&e.code!=='23505'){if(netErr(e.message))offMsg();else cloudErr='No se pudo guardar: '+e.message;return}
+  if(e||!r.data||!r.data.length){ /* otro dispositivo guardo entre medias: comparar y quedarse con la mas avanzada */
+   if(++cConf>4){cConf=0;cloudErr='No se pudo sincronizar tu partida con la nube';return}
+   return syncCloud()}
+  cHas=true;cloudTs=ts;cloudErr='';cConf=0;
+  if(cAgain){cAgain=false;return cloudSave()}},function(){cBusy=null;offMsg()});
+ pUp();return cBusy}
 function pUp(){var mv=rkEnc(S.lt);if(clampM)mv=Math.min(mv,2147483647);
  var pt=Math.floor(S.play||0),cq=myCq(),cs=Object.keys(S.cos),md=Object.keys(S.md);
  var o={id:myId,name:NM[myId]||'Ethan',m:mv,md:md,done:Math.min(S.done,2147483647),own:S.own,ts:S.ts};if(!noAv){o.av=S.av||'';o.fm=S.fm||''}
@@ -2099,19 +2138,28 @@ function pUp(){var mv=rkEnc(S.lt);if(clampM)mv=Math.min(mv,2147483647);
   cloudErr='No se pudo guardar el perfil: '+msg})}
 function loadPL(){if(!sb||!myId)return;sb.from('profiles').select('*').then(function(r){if(!r.data)return;PL=r.data.map(function(x){return{id:x.id,d:x,p:pData(x)}});r.data.forEach(function(x){NM[x.id]=x.name||''})})}
 async function onSession(ses){
- if(!ses){cloudOk=false;myId=null;PL=[];S=fixS(freshS());dm=0;showAuth();return}
- myId=ses.user.id;var nm=(ses.user.user_metadata&&ses.user.user_metadata.name)||'Ethan';
- var r=await sb.from('saves').select('state,ts').eq('id',myId).maybeSingle();
- var best=null,bts=-1;
- if(r.data&&r.data.state&&r.data.state.br){best=r.data.state;bts=r.data.ts||0}
- try{var lo=JSON.parse(localStorage.getItem('elt4_'+myId)||'null');if(lo&&lo.br&&lo.lg&&(lo.ts||0)>bts){best=lo;bts=lo.ts||0}}catch(e){}
- if(best){S=fixS(best);dmDay=-1;shopSig='';jubSig='';lastSig='';invSig='';dm=S.m;minLvlBefore=minLvl()}
- applyTheme();applyWalkerCos();sortUps();NM[myId]=nm;
- if(r.error){cloudErr='No se pudo cargar tu partida: '+r.error.message;cloudOk=false;showAuth();return}
- cloudErr='';cloudOk=true;cloudSave();loadPL();showAuth();render(true)}
+ if(!ses){ready=false;loading=false;cloudOk=false;myId=null;cHas=false;cloudTs=null;PL=[];S=fixS(freshS());dm=0;showAuth();return}
+ var uid=ses.user.id,nm=(ses.user.user_metadata&&ses.user.user_metadata.name)||'Ethan';
+ if(uid===myId&&(ready||loading)){if(ready)syncCloud();return} /* Supabase repite SIGNED_IN al volver a la pestaña: solo sincroniza */
+ loading=true;ready=false;myId=uid;NM[uid]=nm;cloudOk=false;cHas=false;cloudTs=null;cConf=0;cAgain=false;
+ $('gate').hidden=false;$('auth').innerHTML='<p class="mute">Cargando tu partida…</p>';
+ var r;try{r=await sb.from('saves').select('state,ts').eq('id',uid).maybeSingle()}catch(e){r={error:e}}
+ if(myId!==uid)return;
+ var lo=null;try{lo=JSON.parse(localStorage.getItem('elt4_'+uid)||'null')}catch(e){}if(!okSt(lo))lo=null;
+ if(r.error&&!lo){ /* sin nube y sin copia en este dispositivo: no arrancar de 0, dejar reintentar */
+  loading=false;myId=null;$('gate').hidden=false;
+  $('auth').innerHTML='<p style="margin:0 0 6px">No se pudo cargar tu partida.</p><p class="mute" style="margin:0 0 10px;font-size:13.5px">'+esc(String(r.error.message||r.error))+'</p><button class="btn wide" id="ar">Reintentar</button><button class="btn ghost wide" id="ao" style="margin-top:8px">Cerrar sesión</button>';
+  $('ar').onclick=function(){$('auth').innerHTML='<p class="mute">Cargando tu partida…</p>';sb.auth.getSession().then(function(x){onSession(x.data&&x.data.session)})};
+  $('ao').onclick=function(){sb.auth.signOut()};return}
+ var cs=r.error?null:(r.data&&r.data.state);
+ useState(ahead(lo,cs)?lo:(okSt(cs)?cs:freshS()));
+ if(r.error){cloudOk=false;if(netErr(r.error.message))offMsg();else cloudErr='No se pudo cargar tu partida de la nube: '+r.error.message}
+ else{cloudOk=true;cHas=!!r.data;cloudTs=r.data?r.data.ts:null;cloudErr=''}
+ ready=true;loading=false;
+ save();cloudSave();loadPL();showAuth();render(true)}
 function showAuth(){var g=$('gate'),a=$('auth');
  if(!sb){g.hidden=true;return}
- if(myId){g.hidden=true;return}
+ if(myId){if(ready)g.hidden=true;return}
  g.hidden=false;
  a.innerHTML='<input class="in" id="ae" type="email" placeholder="Email" autocomplete="email"><input class="in" id="ap" type="password" placeholder="Contraseña (mínimo 6)" autocomplete="current-password"><input class="in" id="an" placeholder="Nombre (solo al crear cuenta)"><div style="display:flex;gap:8px;margin-top:6px"><button class="btn wide" id="ai">Entrar</button><button class="btn ghost wide" id="ac">Crear cuenta</button></div><p class="mute" id="am" style="margin:8px 0 0;font-size:13.5px"></p>';
  $('ai').onclick=function(){sb.auth.signInWithPassword({email:$('ae').value,password:$('ap').value}).then(function(r){if(r.error)$('am').textContent=r.error.message})};
@@ -2237,10 +2285,10 @@ function render(force){renderTop();renderEth();
  else if(cur==='t3')renderVit();else if(cur==='t4')renderEthan();
  if(cOpen&&!spinning)updCaseBtn();
  checkMS();checkMed();checkRank();renderBadges();renderHUD()}
-function save(){S.ts=Date.now();if(sb){if(myId){try{localStorage.setItem('elt4_'+myId,JSON.stringify(S))}catch(e){}}return}try{localStorage.setItem('elt3',JSON.stringify(S))}catch(e){}}
+function save(){if(sb){if(myId&&ready){S.ts=Date.now();try{localStorage.setItem('elt4_'+myId,JSON.stringify(S))}catch(e){}}return}S.ts=Date.now();try{localStorage.setItem('elt3',JSON.stringify(S))}catch(e){}}
 var aacc=0,lastT=Date.now(),lastIn=Date.now();
 ['pointerdown','pointermove','keydown','wheel','touchstart'].forEach(function(t){window.addEventListener(t,function(){lastIn=Date.now()},{capture:true,passive:true})});
-setInterval(function(){var now=Date.now(),dt=Math.min(1,(now-lastT)/1000);lastT=now;if(sb&&!myId)return;var sp=spd();
+setInterval(function(){var now=Date.now(),dt=Math.min(1,(now-lastT)/1000);lastT=now;if(sb&&!ready)return;var sp=spd();
  if(!document.hidden&&now-lastIn<6e5)S.play=(S.play||0)+dt;
  S.e=Math.min(maxE(),S.e+regen()*dt*sp);earn(ps()*dt*sp);
  var td=today();if(!S.dm||S.dm.d!==td)genDM(td);
@@ -2250,7 +2298,7 @@ setInterval(function(){var now=Date.now(),dt=Math.min(1,(now-lastT)/1000);lastT=
  render()},200);
 (function raf(ts){moneyLoop();cycLoop(ts||0);wkStep(ts||0);requestAnimationFrame(raf)})();
 setInterval(save,5000);setInterval(cloudSave,10000);window.addEventListener('pagehide',function(){save();cloudSave()});
-document.addEventListener('visibilitychange',function(){if(document.hidden){save();cloudSave()}else lastT=Date.now()});
+document.addEventListener('visibilitychange',function(){if(document.hidden){save();cloudSave()}else{lastT=Date.now();if(sb&&ready)syncCloud()}});
 window.addEventListener('keydown',function(ev){var tgt=ev.target&&ev.target.tagName;
  if((ev.key===' '||ev.key==='Enter')&&cur==='t1'&&!ev.repeat&&tgt!=='INPUT'&&tgt!=='BUTTON'&&tgt!=='TEXTAREA'&&!busy&&$('nov').hidden&&$('fin').hidden){ev.preventDefault();work(null);return}
  if(ev.key==='Escape'){if(!$('pv').hidden)closePV();else if(!$('saco').hidden)closeBox();else if(!$('case').hidden)closeCase();else if(!$('cm').hidden)$('cm').hidden=true;else if(!$('pc').hidden)$('pc').hidden=true;else if(!$('inst').hidden)$('inst').hidden=true;else if(!$('fin').hidden)$('fin').hidden=true}});
