@@ -15,7 +15,7 @@ Lista para revisar. Todo sale de `index.html` (arrays `EV` y `RANKS`).
 | 7 | Patrullazo | Ethan se va con la patrulla patinete: un día aleatorio de lunes a viernes, solo 1 por semana (17:00) | 15% | +4 min de ganancias · Subidón de patinete: horas extra x1,5 8 h | nada |
 | 8 | Ojito con Jokin ⚠️ | Una vez cada 2 semanas, a cualquier hora | 3% | Empalado: −10% del dinero · No se puede ni sentar: energía −50% 24 h | Te libras de Jokin: +1 min de ganancias |
 | 9 | Pasar la ITV a la primera | Día 15 a las 10:00 | 10% | Te ahorras la segunda: +5 min de ganancias | Segunda ITV: −3% del dinero |
-| 10 | Rave en Altos Hornos | Sábados a las 23:30. Si entras, minijuego de ritmo y resaca al día siguiente | 35% | Minijuego: hasta x3 a todo 12 h · Resaca: energía −40% 12 h | nada |
+| 10 | Rave en Altos Hornos | Sábados a las 22:30. Si entras, minijuego de ritmo, te acuestas a las 02:30 y te levantas con resaca | 35% | Minijuego: hasta x3 a todo 12 h · Rave hasta las tantas:  | nada |
 | 11 | Kebab caducado gratis de Ali ⚠️ | Domingos a las 14:00 | 12% | Vomitona: energía a cero · Intoxicación: energía −60% 12 h | nada |
 | 12 | Desamor con Uxune ⚠️ | Martes a las 23:00 | 5% | Currar para olvidar: horas extra x1,5 12 h · Corazón roto: energía −30% 12 h | nada |
 | 13 | Desamor con Itsasne ⚠️ | Jueves a las 23:00 | 5% | Fingir que no importa: horas extra x1,5 12 h · Llorando en el C4: energía −30% 12 h | nada |
@@ -26,8 +26,7 @@ Lista para revisar. Todo sale de `index.html` (arrays `EV` y `RANKS`).
 | 18 | Hernández se saca la ESO | Día 10 a las 10:00. Lo intenta todos los meses | 3% | Milagro en Sestao: x2 a todo 24 h | Hernández suspende otra vez y lo cuenta en directo |
 | 19 | Visita del primo con carnet de tonto | Domingos a las 12:00 | 35% | Le invitas a todo: −2% del dinero · Risas con el primo: x1,2 a todo 12 h | nada |
 | 20 | Te roban buscando aparcamiento ⚠️ | Solo cuando no encuentras sitio para aparcar, y como mucho una vez cada 2 semanas | 5% | Te lo roban todo: −100% del dinero | nada |
-| 21 | Ethan se va a dormir | De domingo a jueves a las 22:00 (las noches antes de currar). Si se duerme, no hay horas extra hasta las 08:00 | 60% | sin horas extra hasta las 08:00, energía x3 y a tope al despertar | Ojeras: energía −40% 10 h |
-| 22 | Face to face | Viernes y sábados a las 22:00: noche de GTA V con los amigos | 40% | Se levanta tarde: sin horas extra hasta las 13:00 y se levanta con la mitad de energía · Cansancio de GTA: energía −30% 12 h al levantarse | nada |
+| 21 | Face to face | Viernes y sábados a las 22:00: noche de GTA V con los amigos | 40% | Noche de GTA:  | nada |
 
 ⚠️ = suceso malo (que pase es lo malo). El robo solo puede salir cuando falla lo de aparcar.
 
@@ -85,3 +84,43 @@ Lista para revisar. Todo sale de `index.html` (arrays `EV` y `RANKS`).
 | 29 | 🎖️ Ethan, alcalde de Sestao | €100Qa | Primera medida: aparcamiento gratis en todos sus garajes. Garajes x2. |
 | 30 | 🚀 Cohete a la Luna desde Altos Hornos | €10Qi | Para buscar sitio para aparcar. +50% a todo. |
 | 31 | 💍 Novia buenorra | €1Sx | El final de la vida de Ethan: x2 a todo y +30 de energía máxima |
+
+## Cosméticos y sus efectos (solo cuentan los que lleva puestos, uno por hueco)
+
+| Cosmético | Rareza | Hueco | Efecto | Cómo se consigue |
+|---|---|---|---|---|
+| BMW sin reventar | Mítico | Pies | +40% a todo · +50% recuperación de energía | Caja de Jokin |
+| Dientes limpios | Mítico | Boca | +50% a todo · «Lavarse los dientes» pasa siempre | Caja de Jokin |
+| Cepillo de dientes de Ethan | Legendario | Mano | +20% a todo · +40% a «Lavarse los dientes» | Caja de Sádaba |
+| Cable neutro de cinturón | Legendario | Cintura | +25% energía máxima · +25% recuperación de energía | Caja de Sádaba |
+| 3DS Hyrule Edition | Legendario | Mano | +30% por hora extra · +20% becarios | Caja de Sádaba |
+| Carnet de tonto del primo | Legendario | Cuello | +15% a todo · estafas −50% | Medalla Primo con carnet |
+| Corona del Rey de Sestao | Legendario | Cabeza | +30% a todo | Caja Taita |
+| Aura de sarro | Legendario | Aura | +25% a todo · +15% garajes | Caja Taita |
+| Chándal de oro | Legendario | Cuerpo | +10% a todo · +30% garajes | Caja de Jokin |
+| Pata de jamón de bellota | Épico | Mano | +12% energía máxima · no te pueden robar | Caja Taita o comprar €2M |
+| Llave inglesa de oro | Épico | Mano | +25% por hora extra | Medalla Heredero de la empresa |
+| Kebab eterno de Ali | Épico | Mano | +20% recuperación de energía · inmune al kebab caducado de Ali | Caja de Sádaba |
+| Gorra del Athletic | Épico | Cabeza | +15% a todo | Caja de Sádaba |
+| Mono de trabajo | Épico | Cuerpo | +20% por hora extra · +10% energía máxima | Caja Taita |
+| Cadena de oro de feria | Épico | Cuello | +20% garajes | Caja Taita |
+| Riñonera Rip Curl | Raro | Cintura | estafas −35% · +15% dinero de sucesos | Caja de Sádaba |
+| Gafas de sol de gasolinera | Raro | Cara | +3 puntos de crítico | Caja de Sádaba o comprar €8000 |
+| Móvil con la pantalla añicos | Raro | Mano | +15% becarios · los directos de Hernández ya no te distraen | comprar €25.000 |
+| Txapela del aitona | Raro | Cabeza | +12% garajes | Caja Taita |
+| Cascos con un solo lado | Raro | Cabeza | +10% por hora extra · rave más fácil | Caja Taita |
+| Bigote de mecánico de los 80 | Raro | Boca | +12% por hora extra | Caja Taita |
+| Llave del C4 Picasso | Raro | Mano | +6% por hora extra · +10% a «Encontrar sitio para aparcar» | Caja Taita |
+| Elástica del Athletic | Raro | Cuerpo | +10% a todo | Caja Taita |
+| Gorro de lana del Naval | Poco común | Cabeza | +8% energía máxima | Caja de Sádaba |
+| Destornillador de confianza | Poco común | Mano | +8% por hora extra | Caja de Sádaba |
+| Bufanda de la amona | Poco común | Cuello | +8% recuperación de energía | Caja de Sádaba |
+| Casco de la patrulla patinete | Poco común | Cabeza | +5% recuperación de energía · +15% a «Patrullazo» | Caja Taita |
+| Pintxo de tortilla de Lourdes | Poco común | Mano | +6% recuperación de energía · +15% a «Tortilla de Lourdes sorpresa» | Caja Taita |
+| Gorro de cowboy | Común | Cabeza | +4% a todo | Caja de Sádaba o comprar €2500 |
+| Desatascador | Común | Mano | +5% por hora extra | Caja de Sádaba o comprar €1500 |
+| Gorra de propaganda de neumáticos | Común | Cabeza | +5% garajes | Caja de Sádaba |
+| Calcetín solitario | Común | Mano | +5% suerte en cajas | Caja de Sádaba |
+| Chaleco reflectante | Común | Cuerpo | +5% recuperación de energía | Caja Taita |
+| Kalimotxo en vaso de plástico | Común | Mano | +6% energía máxima | Caja Taita |
+| Bocata de tortilla | Común | Mano | +4% energía máxima · +3% recuperación de energía | Caja Taita |

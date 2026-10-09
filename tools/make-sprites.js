@@ -578,6 +578,16 @@ var COSMETIC_DRAWS_V2 = {
     vline(fb, 31, 22 + b, 26 + b, 'K'); hline(fb, 26, 31, 27 + b, 'K');
   },
   // --- mano (siguen el balanceo del brazo) ---
+  jamon: function (fb, k) { // pata de jamon agarrada por la caña, como una porra
+    var x = 29 + k.armF, b = k.by;
+    px(fb, x, 30 + b, 'B'); px(fb, x + 1, 30 + b, 'B'); // pezuña
+    vline(fb, x, 25 + b, 29 + b, 'O'); vline(fb, x + 1, 25 + b, 29 + b, 'o'); // caña
+    hline(fb, x, x + 2, 18 + b, 'r'); hline(fb, x - 1, x + 3, 19 + b, 'r');
+    hline(fb, x - 2, x + 4, 20 + b, 'R'); hline(fb, x - 2, x + 4, 21 + b, 'R'); hline(fb, x - 2, x + 4, 22 + b, 'R'); hline(fb, x - 2, x + 3, 23 + b, 'R'); hline(fb, x - 1, x + 2, 24 + b, 'r');
+    vline(fb, x - 2, 20 + b, 23 + b, 'E'); px(fb, x - 1, 19 + b, 'E'); px(fb, x - 1, 24 + b, 'e'); // tocino
+    px(fb, x + 1, 21 + b, 'e'); px(fb, x + 2, 22 + b, 'e'); px(fb, x, 20 + b, 'e'); // vetas
+    vline(fb, x - 3, 20 + b, 23 + b, 'K'); vline(fb, x + 5, 20 + b, 22 + b, 'K'); hline(fb, x, x + 2, 17 + b, 'K'); px(fb, x + 4, 23 + b, 'K');
+  },
   kalimotxo: function (fb, k) {
     var x = 29 + k.armF, y = 24 + k.by;
     rect(fb, x, y, 4, 6, 'E'); hline(fb, x, x + 3, y, 'X'); hline(fb, x, x + 3, y + 1, 'X');
@@ -839,7 +849,7 @@ function dome(fb, x0, x1, t, b, c) { // copa redondeada con contorno
   for (var y = t; y <= b; y++) { var ins = y === t ? 4 : y === t + 1 ? 2 : y === t + 2 ? 1 : 0; hline(fb, x0 + ins, x1 - ins, y, c); px(fb, x0 + ins - 1, y, 'K'); px(fb, x1 - ins + 1, y, 'K'); if (ins) { hline(fb, x0 + ins - 1, x0 + [0, 1, 1, 0, 3][ins] + ins - 1, y - 1, 'K'); } }
   hline(fb, x0 + 4, x1 - 4, t - 1, 'K'); hline(fb, x0 + 2, x0 + 3, t, 'K'); hline(fb, x1 - 3, x1 - 2, t, 'K'); px(fb, x0 + 1, t + 1, 'K'); px(fb, x1 - 1, t + 1, 'K');
 }
-var HAND_ITEMS = ['cepillo', 'tresds', 'llaveoro', 'kebabali', 'movil', 'destor', 'desatascador', 'calcetin', 'kalimotxo', 'pintxo', 'llavec4', 'bocata'];
+var HAND_ITEMS = ['jamon', 'cepillo', 'tresds', 'llaveoro', 'kebabali', 'movil', 'destor', 'desatascador', 'calcetin', 'kalimotxo', 'pintxo', 'llavec4', 'bocata'];
 var COS_BUST = {
   // ---- cabeza ----
   gorrathletic: function (fb, k) { var t = k.top - 1; dome(fb, 12, 35, t, 8, 'R'); hline(fb, 12, 35, 5, 'E'); hline(fb, 13, 34, 6, 'E'); rect(fb, 22, t + 2, 4, 2, 'E'); px(fb, 23, t + 2, 'R');
