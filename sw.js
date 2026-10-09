@@ -1,6 +1,6 @@
 // Ethan life tycoon: service worker sencillo (red primero, cache de respaldo).
 // Permite instalar la app y abrirla aunque la conexion vaya justa.
-var V = 'elt-v21';
+var V = 'elt-v22';
 var CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'favicon.png',
   'sprites/ethan-sheet.png', 'sprites/ethan-walk.png', 'sprites/ethan-front.png'];
 self.addEventListener('install', function (e) {

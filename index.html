@@ -442,6 +442,37 @@ input[type=range]{width:100%;accent-color:var(--yel);margin:10px 0 2px}
 /* ---------- ethan ---------- */
 .prow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;background:var(--card);border:1px solid var(--edge);box-shadow:0 3px 0 var(--sh);margin-bottom:8px}
 .prow.me{border:2px solid var(--yel)}
+.prow{cursor:pointer;transition:transform .08s}
+.prow:active{transform:scale(.98)}
+.prow .go{flex:none;color:var(--mute);font-size:22px;font-weight:800;margin-left:-4px}
+#sortb button{flex:1 1 auto;padding:6px 3px;font-size:12.5px}
+.pvbox{width:min(460px,100%);padding:0;text-align:left;overflow:auto;overscroll-behavior:contain}
+.pvbox>.x{position:absolute;top:10px;right:10px;z-index:3}
+.pvbox .prob{margin:0;border-radius:22px 22px 0 0;align-items:flex-start;padding:14px 14px 16px}
+.pvbox .pw{width:112px;height:112px;background-size:448px 112px;animation-name:pwk112}
+@keyframes pwk112{from{background-position:0 0}to{background-position:-448px 0}}
+.pvh{min-width:0;flex:1;padding-right:40px}
+.pvh h3{font-size:19px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;overflow-wrap:anywhere}
+.pvr{margin:2px 0 8px;font-size:13px;color:var(--hudmute)}
+.pvchips{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 8px}
+.pvchips .chip{background:rgba(0,0,0,.28);color:var(--hudink)}
+.pvin{padding:4px 14px 6px}
+.pvsec{margin:14px 0 8px;font-size:16px;display:flex;align-items:baseline;gap:6px}
+.pvsec small{font-size:12.5px;color:var(--mute);font-weight:700}
+.pvg{display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:6px}
+.pvg button{border:0;border-radius:12px;background:var(--bg);padding:3px;aspect-ratio:1;display:grid;place-items:center;border-bottom:3px solid var(--rc,transparent);min-width:0}
+.pvg img{width:40px;height:40px;image-rendering:pixelated}
+.pvg .no img{filter:brightness(0);opacity:.22}
+.pvg .no{border-bottom-color:transparent}
+.pvg .eq{box-shadow:inset 0 0 0 2px var(--yel)}
+.pvg .sel{outline:3px solid var(--blue);outline-offset:-1px}
+.pvg .myq{width:40px;height:40px;margin:0;font-size:22px}
+.pvm button{border-bottom:0}
+.pvq{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;border:3px dashed var(--line);color:var(--mute);font-style:normal;font-weight:800;font-size:18px}
+.pvsl .slot{padding:3px;border-bottom:3px solid var(--rc)}
+.pvsl .slot img{width:32px;height:32px}
+.pvcap{position:sticky;bottom:0;margin:8px 0 0;padding:10px 14px 12px;min-height:58px;font-size:13px;line-height:1.35;color:var(--mute);background:var(--card);border-top:1px solid var(--line)}
+.pvcap b{color:var(--ink)}
 .pos{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--bg)}
 .pos.p1{background:#f2c94c;color:#3a2a00}.pos.p2{background:#cfd8dc;color:#263238}.pos.p3{background:#d99a6c;color:#3a1d06}
 .prow .rt strong{display:flex;align-items:center;gap:6px}
@@ -829,13 +860,15 @@ input[type=range]{width:100%;accent-color:var(--yel);margin:10px 0 2px}
 <div id="saco" class="ovl" hidden><div class="mbox bxbox"><div class="chd" style="padding:0"><div style="text-align:left"><h3>🥊 Aporrea a Ethan</h3><p class="sub" style="margin:2px 0 0">Tócale para darle, arrástrale y lánzale contra las paredes.</p></div><button id="bxx" class="x" style="background:var(--bg);color:var(--ink)" aria-label="Cerrar">✕</button></div>
  <div id="bxa"><div id="bxe"></div><div id="bxb" hidden></div></div>
  <div class="bxst"><span id="bxc" class="num">Golpes: 0</span><span id="bxm" class="num"></span></div></div></div>
+<!-- perfil de otro jugador -->
+<div id="pv" class="ovl" hidden><div class="mbox pvbox" id="pvb" role="dialog" aria-label="Perfil del jugador"><button id="pvx" class="x" aria-label="Cerrar">✕</button><div id="pvc"></div></div></div>
 <!-- instalar app -->
 <div id="inst" class="ovl" hidden><div class="mbox"><img src="icon-192.png" alt="" style="width:72px;height:72px;border-radius:18px"><h3 style="margin-top:8px">Ethan en tu pantalla de inicio</h3><ol class="isteps" id="isteps"></ol><button class="btn wide" id="instok" style="margin-top:12px">Entendido</button></div></div>
 <!-- final: novia buenorra -->
 <div id="fin" class="ovl" hidden><div class="mbox fin"><div class="ethm" style="background-position:0 0"></div><h3>💍 Ethan tiene novia buenorra</h3><p class="sub" id="fint"></p><button class="btn gold wide" id="finok" style="margin-top:14px">Seguir currando</button></div></div>
 <!-- novedades -->
 <div id="nov" class="ovl" hidden><div class="mbox nov"><div class="ethm" style="margin:0 auto 10px;background-position:0 0"></div><h3>Ethan life tycoon 2.1</h3><p class="sub">Ethan duerme (a veces), le puedes aporrear y la vida le dura mucho más.</p>
- <ul><li><b>📅 Sucesos con premio o castigo</b> Cada suceso trae un boost si sale bien y una cosa mala si sale mal. Los findes hay face to face (GTA V hasta las tantas) y si no encuentras sitio para aparcar te pueden robar. La ruleta es nueva, al estilo del upgrader.</li><li><b>🎧 Rave en Altos Hornos</b> La fiesta de la bajera ahora es una rave con minijuego de ritmo. Y resaca.</li><li><b>🥊 Aporrea a Ethan</b> Botón 🥊 en el taller. Y al Ethan que pasea puedes tocarle, agarrarle y soltarle.</li><li><b>🍺 Bar Ekintza</b> El bar ahora es el Ekintza, con la Caja Taita, y abres hasta 10 cajas a la vez. Garaje de Kueto y 13 pasos nuevos hasta la novia buenorra.</li><li><b>🎽 Cosméticos con efectos</b> Cada cosmético puesto da un efecto que tiene que ver con él, y cuanto más raro, mejor. La pata de jamón hace que no te puedan robar.</li><li><b>🌙 Horario de Ethan</b> Entre semana duerme de 23:00 a 06:30 y los findes hasta las 12:00, o hasta las 14:00 si se queda jugando. Además hay más de 25 logros nuevos, muchos ocultos.</li><li><b>🪪 El primo y Hernández</b> El primo con carnet de tonto viene de visita (su carnet es un cosmético legendario) y Hernández hace directos que no ve nadie.</li></ul>
+ <ul><li><b>📅 Sucesos con premio o castigo</b> Cada suceso trae un boost si sale bien y una cosa mala si sale mal. Los findes hay face to face (GTA V hasta las tantas) y si no encuentras sitio para aparcar te pueden robar. La ruleta es nueva, al estilo del upgrader.</li><li><b>🎧 Rave en Altos Hornos</b> La fiesta de la bajera ahora es una rave con minijuego de ritmo. Y resaca.</li><li><b>🥊 Aporrea a Ethan</b> Botón 🥊 en el taller. Y al Ethan que pasea puedes tocarle, agarrarle y soltarle.</li><li><b>🍺 Bar Ekintza</b> El bar ahora es el Ekintza, con la Caja Taita, y abres hasta 10 cajas a la vez. Garaje de Kueto y 13 pasos nuevos hasta la novia buenorra.</li><li><b>🎽 Cosméticos con efectos</b> Cada cosmético puesto da un efecto que tiene que ver con él, y cuanto más raro, mejor. La pata de jamón hace que no te puedan robar.</li><li><b>🌙 Horario de Ethan</b> Entre semana duerme de 23:00 a 06:30 y los findes hasta las 12:00, o hasta las 14:00 si se queda jugando. Además hay más de 25 logros nuevos, muchos ocultos.</li><li><b>👀 Perfiles y tiempo jugado</b> El ranking cuenta las horas que llevas jugando. Toca a cualquier jugador para ver su Ethan, sus cosméticos y sus medallas.</li><li><b>🪪 El primo y Hernández</b> El primo con carnet de tonto viene de visita (su carnet es un cosmético legendario) y Hernández hace directos que no ve nadie.</li></ul>
  <button class="btn wide" id="novok">A currar</button></div></div>
 <!-- login -->
 <div id="gate" hidden><div id="gatec"><div class="ethm"></div><h1 style="font-size:30px;margin:0 0 4px;font-stretch:80%">Ethan life tycoon</h1><p class="mute" style="margin:0 0 12px">Entra para jugar. Tu partida se guarda en tu cuenta.</p><div id="auth"></div></div></div>
@@ -1106,7 +1139,10 @@ var MED=[
 {id:'mecenas2',n:'Patrocinador del Ekintza',d:'Pierde 10 upgrades seguidos',k:'dado',col:'#e05548',sec:1,v:function(){return mk('mecenas2')},m:1},
 {id:'marmota',n:'Marmota',d:'200 noches durmiendo',k:'ojos',col:'#8c9bff',sec:1,v:function(){return (S.nights||0)>=200?1:0},m:1},
 {id:'gtamara',n:'Maratón de GTA',d:'25 noches de face to face',k:'dado',col:'#3dd6ff',sec:1,v:function(){return (S.lg.f2f||0)>=25?1:0},m:1},
-{id:'mitico',n:'Ni Jokin se lo cree',d:'Consigue un cosmético mítico',k:'corona',col:'#ff3b5c',sec:1,v:function(){return cosR('mitico')},m:1}];
+{id:'mitico',n:'Ni Jokin se lo cree',d:'Consigue un cosmético mítico',k:'corona',col:'#ff3b5c',sec:1,v:function(){return cosR('mitico')},m:1},
+{id:'vicio',n:'Enganchado al taller',d:'Juega 10 horas',k:'rayo',col:'#ffd84a',v:function(){return Math.floor((S.play||0)/3600)},m:10},
+{id:'sinvida',n:'Sin vida social',d:'Juega 50 horas',k:'ojos',col:'#7c4dff',sec:1,v:function(){return Math.floor((S.play||0)/3600)},m:50},
+{id:'cotilla',n:'Cotilla de Sestao',d:'Mira el perfil de 5 jugadores',k:'ojos',col:'#3dd6ff',v:function(){return Object.keys(S.pvs||{}).length},m:5}];
 var GL={garaje:'<path d="M12 34V21l12-8 12 8v13z" fill="#fff" stroke="#1f2f25" stroke-width="2.5" stroke-linejoin="round"/><rect x="17" y="25" width="14" height="9" fill="#4e7d5b"/>',
 food:'<path d="M12 23a12 9 0 0 1 24 0z" fill="#c8791a" stroke="#1f2f25" stroke-width="2"/><rect x="11" y="25" width="26" height="4" rx="2" fill="#4caf50" stroke="#1f2f25" stroke-width="1.5"/><rect x="12" y="29" width="24" height="5" rx="2" fill="#6b3a1a" stroke="#1f2f25" stroke-width="1.5"/><path d="M12 35h24v1a3 3 0 0 1-3 3H15a3 3 0 0 1-3-3z" fill="#c8791a" stroke="#1f2f25" stroke-width="2"/>',
 llave:'<path d="M14 34L28 20" stroke="#1f2f25" stroke-width="5" stroke-linecap="round"/><circle cx="31" cy="17" r="7" fill="#fff" stroke="#1f2f25" stroke-width="2.5"/>',
@@ -1151,7 +1187,7 @@ function rnd(a){return a[Math.floor(Math.random()*a.length)]}
 function today(){return Math.floor(Date.now()/864e5)}
 
 /* ================= ESTADO ================= */
-function freshS(){return {m:0,e:20,done:0,own:0,br:{},sn:0,ga:{},lg:{},td:{},t:16,acc:0,md:{},bo:0,bx:2,ms:0,up:{},sp:1,tho:{},th:'taller',dstr:0,crc:0,cos:{},cosn:{},cq:{},lbo:0,cbo:{},lt:0,sar:0,sart:0,pres:0,sk:{},uh:[],gbx:0,gbw:0,ccb:0,dly:-1,ged:0,glv:0,cbest:'',fx:[],slp:0,punch:0,thr:0,ffw:0,ffl:0,rvp:0,fin:0,mdone:0,bh:0}}
+function freshS(){return {m:0,e:20,done:0,own:0,br:{},sn:0,ga:{},lg:{},td:{},t:16,acc:0,md:{},bo:0,bx:2,ms:0,up:{},sp:1,tho:{},th:'taller',dstr:0,crc:0,cos:{},cosn:{},cq:{},lbo:0,cbo:{},lt:0,sar:0,sart:0,pres:0,sk:{},uh:[],gbx:0,gbw:0,ccb:0,dly:-1,ged:0,glv:0,cbest:'',fx:[],slp:0,punch:0,thr:0,ffw:0,ffl:0,rvp:0,fin:0,mdone:0,bh:0,play:0,pvs:{}}}
 function fixS(s){if(!s.md)s.md={};s.bo=s.bo||0;if(s.bo>1e10)s.bo=0;if(!s.up)s.up={};if([1,2,4,10].indexOf(s.sp)<0)s.sp=1;if(!s.tho)s.tho={};if(!s.th||s.th==='ria')s.th='taller';s.dstr=s.dstr||0;s.crc=s.crc||0;if(!s.cos)s.cos={};if(!s.cq)s.cq={};s.lbo=s.lbo||0;
  if(s.ms===undefined){s.ms=0;var th=[100,1000,10000,100000,1000000];while(s.ms<th.length&&s.m>=th[s.ms])s.ms++}
  if(!s.ga)s.ga={};var lv=0;for(var g in s.ga){s.ga[g]=Math.max(1,Math.floor(+s.ga[g]||1));lv+=s.ga[g]}
@@ -1162,7 +1198,7 @@ function fixS(s){if(!s.md)s.md={};s.bo=s.bo||0;if(s.bo>1e10)s.bo=0;if(!s.up)s.up
  if(!s.sk)s.sk={};if(!s.cbo)s.cbo={};if(!s.cosn){s.cosn={};for(var k in s.cos)s.cosn[k]=1}
  if(!Array.isArray(s.fx))s.fx=[];if(!s.mk)s.mk={};if(!s.wl)s.wl={};if(typeof s.nights!=='number')s.nights=0;if(s.late===undefined)s.late=-1;['slp','punch','thr','ffw','ffl','rvp','fin','bh'].forEach(function(k){if(typeof s[k]!=='number'||!isFinite(s[k]))s[k]=0});
  if(typeof s.mdone!=='number'){s.mdone=0;if(s.dm&&s.dm.l)s.dm.l.forEach(function(ms){if(ms.k==='work')ms.b=0})}
- if(!Array.isArray(s.uh))s.uh=[];if(s.dly===undefined)s.dly=-1;if(!s.bx)s.bx=2;if(!s.cbest)s.cbest='';
+ if(typeof s.play!=='number'||!isFinite(s.play)||s.play<0)s.play=0;if(!s.pvs)s.pvs={};if(!Array.isArray(s.uh))s.uh=[];if(s.dly===undefined)s.dly=-1;if(!s.bx)s.bx=2;if(!s.cbest)s.cbest='';
  return s}
 var S=freshS();
 try{var raw=localStorage.getItem('elt3');if(raw){var p0=JSON.parse(raw);if(p0&&p0.br&&p0.lg){S=p0}}}catch(e){}
@@ -1952,17 +1988,67 @@ function skillAvail(){return SKILLS.some(function(s){var l=skl(s.id);return l<s.
 
 /* ================= ETHAN: PERFIL Y RANKING ================= */
 var DB=null,myId=null,PL=[],NM={},cloudOk=false,cloudErr='',lastSig='',SK='m',rankSig='';
-var SORTS=[['m','Ganado total'],['own','Objetos'],['done','Horas extra'],['md','Medallas']];
+var SORTS=[['m','Ganado'],['own','Objetos'],['done','Horas extra'],['md','Medallas'],['pt','Jugado']];
 SORTS.forEach(function(k){var b=el('button',k[0]===SK?'on':'');b.textContent=k[1];b.onclick=function(){SK=k[0];$('sortb').querySelectorAll('button').forEach(function(x){tg(x,'on',x===b)});rankSig='';renderRank()};$('sortb').appendChild(b)});
 function rkM(m){m=+m||0;return m>=2e9&&m<2147483648?Math.pow(10,(m-2e9)/1e6):m}
 function rkEnc(v){v=Math.max(0,Math.floor(v||0));return v<2e9?v:Math.min(2147483647,2e9+Math.floor(Math.log10(v)*1e6))}
-function renderRank(){var sig=PL.map(function(x){return x.id+x.d.done+x.d.m+(x.d.md||[]).length+x.d.av+x.d.fm+x.d.own}).join()+SK+myId+Object.keys(NM).length;if(sig===rankSig)return;rankSig=sig;
- var l=$('plist');l.innerHTML='';var mdl=function(x){return Array.isArray(x.d.md)?x.d.md:[]};var val=function(x){return SK==='m'?rkM(x.d.m):SK==='own'?(+x.d.own||0):SK==='md'?mdl(x).length:(+x.d.done||0)};
+function renderRank(){var sig=PL.map(function(x){return x.id+x.d.done+x.d.m+x.p.md.length+x.d.av+x.d.fm+x.d.own+'/'+Math.floor((x.p.pt||0)/60)}).join()+SK+myId+Object.keys(NM).length;if(sig===rankSig)return;rankSig=sig;
+ var l=$('plist');l.innerHTML='';var val=function(x){return SK==='m'?rkM(x.d.m):SK==='own'?(+x.d.own||0):SK==='md'?x.p.md.length:SK==='pt'?(x.p.pt||0):(+x.d.done||0)};
  if(!PL.length){l.innerHTML='<div class="empty">'+(sb?'Cuando alguien guarde su perfil, aparecerá aquí.':'El ranking necesita conexión con tu cuenta. Ahora mismo juegas sin conexión.')+'</div>';return}
+ var hn=el('p','hint');hn.textContent='Toca a un jugador para ver su Ethan, sus cosméticos y sus medallas.';l.appendChild(hn);
  PL.slice().sort(function(a,c){return val(c)-val(a)}).forEach(function(x,i){var d=el('div','prow'+(x.id===myId?' me':''));
-  var fm=x.d.fm&&mdl(x).indexOf(x.d.fm)>=0?medOf(x.d.fm):null;
-  d.innerHTML='<div class="pos p'+(i+1)+'">'+(i+1)+'</div><div class="rt"><strong>'+esc(x.d.av||'😁')+' '+esc(NM[x.id]||'Jugador')+(fm?badge(true,20,fm.k,fm.col):'')+'</strong><p class="num">'+eur(rkM(x.d.m))+' ganado · Objetos '+fmt(+x.d.own||0)+'/'+ITEMS.length+' · Horas '+fmt(+x.d.done||0)+' · 🏅 '+mdl(x).length+'</p></div><div class="val num">'+(SK==='m'?eur(val(x)):SK==='own'?fmt(val(x))+'/'+ITEMS.length:fmt(val(x)))+'</div>';l.appendChild(d)})}
-function statsHTML(){return [['Ganado en total',eur(S.lt)],['Horas extra',fmt(S.done)],['Críticos',fmt(S.crc||0)],['Mejor cadena de críticos',S.ccb||0],['Jubilaciones',S.pres||0],['Sarro total',fmt(S.sart)],['Cajas abiertas',fmt(S.lbo||0)],['Cosméticos',cosCount()+'/'+COS.length],['Upgrades ganados / perdidos',fmt(S.gwc||0)+' / '+fmt(S.glc||0)],['Sucesos vistos',EV.filter(function(e){return S.lg[e.id]}).length+'/'+EV.length],['Horas de becarios',fmt(S.bh||0)],['Noches durmiendo',fmt(S.nights||0)],['Golpes a Ethan',fmt(S.punch||0)],['Noches de face to face',fmt(S.lg.f2f||0)],['Días de juego',Math.floor(S.t/48)]].map(function(r){return '<span>'+r[0]+'</span><b>'+r[1]+'</b>'}).join('')}
+  var fm=x.d.fm&&x.p.md.indexOf(x.d.fm)>=0?medOf(x.d.fm):null;
+  d.innerHTML='<div class="pos p'+(i+1)+'">'+(i+1)+'</div><div class="rt"><strong>'+esc(x.d.av||'😁')+' '+esc(NM[x.id]||'Jugador')+(fm?badge(true,20,fm.k,fm.col):'')+'</strong><p class="num">'+eur(rkM(x.d.m))+' ganado · Objetos '+fmt(+x.d.own||0)+'/'+ITEMS.length+' · '+fmt(+x.d.done||0)+' h extra · 🏅 '+x.p.md.length+' · ⏱ '+(x.p.pt>=3600?fmt(Math.floor(x.p.pt/3600))+' h':fmtPT(x.p.pt))+'</p></div><div class="val num">'+(SK==='m'?eur(val(x)):SK==='own'?fmt(val(x))+'/'+ITEMS.length:SK==='pt'?fmtPT(x.p.pt):fmt(val(x)))+'</div><div class="go" aria-hidden="true">›</div>';
+  d.setAttribute('role','button');d.tabIndex=0;d.onclick=function(){openPV(x.id)};d.onkeydown=function(ev){if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();openPV(x.id)}};l.appendChild(d)})}
+/* tiempo jugado: segundos reales con la pestaña a la vista */
+function fmtPT(v){if(v===null||v===undefined)return '—';v=Math.max(0,Math.floor(v));var m=Math.floor(v/60),h=Math.floor(m/60);return h?(h>=100?fmt(h)+' h':h+' h '+(m%60<10?'0':'')+(m%60)+' min'):m+' min'}
+/* datos publicos de un perfil: columnas pt/cq/cos si existen, o empaquetados en md con prefijo @ */
+function pData(d){var o={md:[],pt:d.pt!=null&&isFinite(+d.pt)?+d.pt:null,cq:Array.isArray(d.cq)?d.cq:null,cos:Array.isArray(d.cos)?d.cos:null};
+ (Array.isArray(d.md)?d.md:[]).forEach(function(k){if(typeof k!=='string')return;if(k.charAt(0)!=='@'){o.md.push(k);return}var i=k.indexOf(':'),t=k.slice(1,i),v=k.slice(i+1);
+  if(t==='pt')o.pt=Math.max(o.pt||0,+v||0);else if(t==='cq'&&!o.cq)o.cq=v?v.split(','):[];else if(t==='cs'&&!o.cos)o.cos=v?v.split(','):[]});
+ return o}
+function myCq(){var L=[];SLOT_ORDER.forEach(function(sl){var id=S.cq[sl];if(id&&S.cos[id])L.push(id)});return L}
+
+/* ================= PERFIL DE OTROS JUGADORES ================= */
+var PV=null;
+function pvMine(){return {me:1,id:myId,name:(myId&&NM[myId])||'Ethan',av:S.av,fm:S.fm,m:S.lt,done:S.done,own:S.own,md:Object.keys(S.md),pt:S.play||0,cq:myCq(),cos:Object.keys(S.cos),st:S}}
+function pvFrom(x){return {id:x.id,name:NM[x.id]||x.d.name||'Jugador',av:x.d.av,fm:x.d.fm,m:rkM(x.d.m),done:+x.d.done||0,own:+x.d.own||0,md:x.p.md.slice(),pt:x.p.pt,cq:x.p.cq,cos:x.p.cos,st:null}}
+function openPV(id){var x=PL.filter(function(p){return p.id===id})[0],me=!x||id===myId;var D=me?pvMine():pvFrom(x);PV=D;
+ if(!me){if(!S.pvs[id]){S.pvs[id]=1;save()}
+  if(sb)try{sb.from('saves').select('state').eq('id',id).maybeSingle().then(function(r){var s2=r&&r.data&&r.data.state;if(PV!==D||!s2||!s2.br)return;
+   D.st=s2;D.m=Math.max(D.m,+s2.lt||0);D.done=Math.max(D.done,+s2.done||0);D.own=+s2.own||D.own;D.pt=Math.max(D.pt||0,+s2.play||0);
+   if(s2.md)D.md=Object.keys(s2.md);if(s2.cos)D.cos=Object.keys(s2.cos);if(s2.cq){D.cq=[];SLOT_ORDER.forEach(function(sl){var c=s2.cq[sl];if(c&&(!s2.cos||s2.cos[c]))D.cq.push(c)})}
+   renderPV()},function(){})}catch(e){}}
+ $('pv').hidden=false;$('pvb').scrollTop=0;renderPV()}
+function closePV(){$('pv').hidden=true;PV=null}
+function renderPV(){var D=PV;if(!D)return;var known=!!D.cos,cos=(D.cos||[]).filter(cosOf),has={};cos.forEach(function(c){has[c]=1});
+ var cq=(D.cq||[]).filter(function(c){return cosOf(c)&&(!known||has[c])}),md=D.md.filter(function(k){return MED.some(function(m){return m.id===k})}),mh={};md.forEach(function(k){mh[k]=1});
+ var ri=0;while(ri+1<RANKS.length&&D.done>=RANKS[ri+1][0])ri++;var fm=D.fm&&mh[D.fm]?medOf(D.fm):null;
+ var bySl={};cq.forEach(function(c){bySl[cosOf(c).slot]=c});var lay=[];SLOT_ORDER.forEach(function(sl){if(bySl[sl])lay.push('url(sprites/cos-'+bySl[sl]+'-walk.png)')});lay.push('url(sprites/ethan-walk.png)');
+ var ag={ep:{},imm:{}};cq.forEach(function(c){var f=cosOf(c).fx;if(!f)return;for(var k in f){if(k==='ep'){for(var q in f.ep)ag.ep[q]=(ag.ep[q]||0)+f.ep[q]}else if(k==='imm')f.imm.forEach(function(z){ag.imm[z]=1});else ag[k]=(ag[k]||0)+f[k]}});
+ var h='<div class="prob"><div class="pw" style="background-image:'+lay.join(',')+'" role="img" aria-label="Ethan de '+esc(D.name)+'"></div><div class="pvh"><h3>'+esc(D.av||'😁')+' '+esc(D.name)+(fm?badge(true,22,fm.k,fm.col):'')+'</h3><p class="pvr">'+esc(RANKS[ri][1])+(D.me?' · Eres tú':'')+'</p>'+
+  '<div class="pvchips num"><span class="chip">⏱ '+fmtPT(D.pt)+'</span><span class="chip">🏅 '+md.length+'/'+MED.length+'</span>'+(known?'<span class="chip">🎽 '+cos.length+'/'+COS.length+'</span>':'')+'</div>'+
+  '<div class="slots pvsl">'+(cq.length?cq.map(function(c){var r=RAR[cosOf(c).r];return '<button class="slot on" data-c="'+c+'" style="--rc:'+r.c+'" aria-label="'+esc(cosOf(c).n)+'"><img src="'+ico(c)+'" alt=""></button>'}).join(''):'<span class="slot">'+(known?'Sin cosméticos puestos':'Aún no ha compartido sus cosméticos')+'</span>')+'</div>'+
+  (cfxTxt(ag)?'<p class="cfxa">Efectos: '+esc(cfxTxt(ag))+'</p>':'')+'</div></div><div class="pvin">';
+ var st2=D.st,rows=[['Ganado en total',eur(D.m)],['Horas extra',fmt(D.done)],['Tiempo jugado',fmtPT(D.pt)],['Objetos',fmt(D.own)+'/'+ITEMS.length],['Medallas',md.length+'/'+MED.length]];
+ if(known)rows.push(['Cosméticos',cos.length+'/'+COS.length]);
+ if(st2){var lg=st2.lg||{};rows.push(['Jubilaciones',+st2.pres||0],['Sarro total',fmt(+st2.sart||0)],['Cajas abiertas',fmt(+st2.lbo||0)],['Críticos',fmt(+st2.crc||0)],['Sucesos vistos',EV.filter(function(e){return lg[e.id]}).length+'/'+EV.length],['Golpes a Ethan',fmt(+st2.punch||0)],['Noches de face to face',fmt(+lg.f2f||0)],['Días de juego',Math.floor((+st2.t||0)/48)])}
+ h+='<h4 class="pvsec">Estadísticas</h4><div class="kv num">'+rows.map(function(r){return '<span>'+r[0]+'</span><b>'+r[1]+'</b>'}).join('')+'</div>';
+ h+='<h4 class="pvsec">Cosméticos'+(known?' <small>'+cos.length+'/'+COS.length+'</small>':'')+'</h4>';
+ if(known)h+='<div class="pvg">'+COS.slice().sort(function(a,b){return (has[b.id]?1:0)-(has[a.id]?1:0)||RAR[b.r].k-RAR[a.r].k}).map(function(c){var o=has[c.id],my=!o&&c.r==='mitico';
+   return '<button data-c="'+c.id+'" class="'+(o?'':'no')+(bySl[c.slot]===c.id?' eq':'')+'" style="--rc:'+RAR[c.r].c+'" aria-label="'+(o?esc(c.n):'Sin conseguir')+'">'+(my?'<i class="myq">✦</i>':'<img src="'+ico(c.id)+'" alt="">')+'</button>'}).join('')+'</div>';
+ else h+='<div class="empty">Su colección aparecerá cuando abra el juego actualizado.</div>';
+ h+='<h4 class="pvsec">Medallas <small>'+md.length+'/'+MED.length+'</small></h4><div class="pvg pvm">'+MED.slice().sort(function(a,b){return (mh[b.id]?1:0)-(mh[a.id]?1:0)}).map(function(m){var o=mh[m.id],sec=!o&&(m.hid||m.sec);
+   return '<button data-m="'+m.id+'" class="'+(o?'':'no')+'" aria-label="'+(o?esc(m.n):'Sin conseguir')+'">'+(sec?'<i class="pvq">?</i>':badge(o,40,m.k,m.col))+'</button>'}).join('')+'</div>';
+ h+='</div><p class="pvcap" id="pvcap">Toca un cosmético o una medalla para verlo.</p>';
+ sh($('pvc'),h)}
+function pvTap(ev){var b=ev.target.closest&&ev.target.closest('[data-c],[data-m]');if(!b||!PV)return;var cap=$('pvcap'),t;
+ $('pvc').querySelectorAll('.sel').forEach(function(x){x.classList.remove('sel')});b.classList.add('sel');
+ if(b.dataset.c){var c=cosOf(b.dataset.c),o=(PV.cos||[]).indexOf(c.id)>=0,r=RAR[c.r];
+  t=o?'<b style="color:'+r.c+'">'+esc(c.n)+'</b> · '+esc(r.n)+'<br>'+esc(cfxTxt(c.fx)||c.d):c.r==='mitico'?'<b>✦ Mítico</b> · Aún no lo tiene':'<b>'+esc(c.n)+'</b> · '+esc(r.n)+' · Aún no lo tiene'}
+ else{var m=medOf(b.dataset.m),got=PV.md.indexOf(m.id)>=0;t=got?'<b>🏅 '+esc(m.n)+'</b><br>'+esc(m.d):(m.hid||m.sec)?'<b>???</b> · Medalla secreta que aún no tiene':'<b>'+esc(m.n)+'</b> · Aún no la tiene<br>'+esc(m.d)}
+ cap.innerHTML=t}
+function statsHTML(){return [['Ganado en total',eur(S.lt)],['Horas extra',fmt(S.done)],['Críticos',fmt(S.crc||0)],['Mejor cadena de críticos',S.ccb||0],['Jubilaciones',S.pres||0],['Sarro total',fmt(S.sart)],['Cajas abiertas',fmt(S.lbo||0)],['Cosméticos',cosCount()+'/'+COS.length],['Upgrades ganados / perdidos',fmt(S.gwc||0)+' / '+fmt(S.glc||0)],['Sucesos vistos',EV.filter(function(e){return S.lg[e.id]}).length+'/'+EV.length],['Horas de becarios',fmt(S.bh||0)],['Noches durmiendo',fmt(S.nights||0)],['Golpes a Ethan',fmt(S.punch||0)],['Noches de face to face',fmt(S.lg.f2f||0)],['Tiempo jugado',fmtPT(S.play||0)],['Días de juego',Math.floor(S.t/48)]].map(function(r){return '<span>'+r[0]+'</span><b>'+r[1]+'</b>'}).join('')}
 function renderProf(){var sig=[Object.keys(S.md).join(),cloudOk,cloudErr,S.av,S.fm,mute,S.th,Object.keys(S.tho||{}).join(),THEMES.map(function(t){return S.m>=t.c?1:0}).join(''),myId,CFG.fw,CFG.evall,!!deferredPrompt].join('|');
  var sk=$('pstats');if(sig===lastSig){if(sk)sh(sk,statsHTML());return}lastSig=sig;var p=$('ep');p.innerHTML='';
  var a=el('div','pn');a.innerHTML='<div class="ph"><h3>Tu Ethan</h3><span class="chip">'+(cloudErr?'⚠ '+esc(cloudErr):cloudOk?'☁️ Guardado en tu cuenta':sb?'Sin conexión con tu cuenta':'💾 Partida en este dispositivo')+'</span></div><p class="hint">Elige cara y medalla para el ranking.</p>';
@@ -1981,7 +2067,7 @@ function renderProf(){var sig=[Object.keys(S.md).join(),cloudOk,cloudErr,S.av,S.
  if(!isStandalone()){var ib=el('button','btn g wide');ib.style.marginTop='10px';ib.textContent='📲 Añadir a la pantalla de inicio';ib.onclick=installApp;c.appendChild(ib)}
  if(sb&&myId){var o=el('button','btn ghost wide');o.style.marginTop='10px';o.textContent='Cerrar sesión';o.onclick=function(){sb.auth.signOut()};c.appendChild(o)}
  p.appendChild(c)}
-function renderEthan(){st($('pname'),(S.av||'😁')+' '+((myId&&NM[myId])||'Ethan'));st($('psub'),RANKS[rankIdx()][1]+' · Ganado en total '+eur(S.lt)+' · '+fmt(S.done)+' horas extra'+(S.pres?' · '+S.pres+' jubilaci'+(S.pres>1?'ones':'ón'):''));
+function renderEthan(){st($('pname'),(S.av||'😁')+' '+((myId&&NM[myId])||'Ethan'));st($('psub'),RANKS[rankIdx()][1]+' · Ganado en total '+eur(S.lt)+' · '+fmt(S.done)+' horas extra · ⏱ '+fmtPT(S.play||0)+(S.pres?' · '+S.pres+' jubilaci'+(S.pres>1?'ones':'ón'):''));
  if(sub.t4==='er')renderRank();else if(sub.t4==='ej')renderJub();else renderProf()}
 
 /* ================= TEMAS ================= */
@@ -1991,18 +2077,24 @@ function applyTheme(){var t=THEMES.filter(function(x){return x.id===(S.th||'tall
  var mt=document.querySelector('meta[name=theme-color]');if(mt)mt.setAttribute('content',getComputedStyle(r).getPropertyValue('--hud').trim()||'#1f3328')}
 
 /* ================= NUBE (Supabase) ================= */
-var sb=null,noAv=false,clampM=false;
+var sb=null,noAv=false,clampM=false,noEx=false,noPk=false;
 try{if(window.supabase&&SB_URL.indexOf('http')===0)sb=supabase.createClient(SB_URL,SB_KEY)}catch(e){}
 if(sb)S=fixS(freshS());
 function cloudSave(){if(!cloudOk||!sb)return;S.ts=Date.now();
  sb.from('saves').upsert({id:myId,state:S,ts:S.ts}).then(function(r){cloudErr=r.error?('No se pudo guardar: '+r.error.message):''});pUp()}
 function pUp(){var mv=rkEnc(S.lt);if(clampM)mv=Math.min(mv,2147483647);
- var o={id:myId,name:NM[myId]||'Ethan',m:mv,md:Object.keys(S.md),done:Math.min(S.done,2147483647),own:S.own,ts:S.ts};if(!noAv){o.av=S.av||'';o.fm=S.fm||''}
- return sb.from('profiles').upsert(o).then(function(r){
-  if(r.error&&!clampM&&/range|integer|bigint|overflow|syntax/i.test(r.error.message||'')){clampM=true;return pUp()}
-  if(r.error&&!noAv){noAv=true;return pUp()}
-  if(r.error)cloudErr='No se pudo guardar el perfil: '+r.error.message})}
-function loadPL(){if(!sb||!myId)return;sb.from('profiles').select('*').then(function(r){if(!r.data)return;PL=r.data.map(function(x){return{id:x.id,d:x}});r.data.forEach(function(x){NM[x.id]=x.name||''})})}
+ var pt=Math.floor(S.play||0),cq=myCq(),cs=Object.keys(S.cos),md=Object.keys(S.md);
+ var o={id:myId,name:NM[myId]||'Ethan',m:mv,md:md,done:Math.min(S.done,2147483647),own:S.own,ts:S.ts};if(!noAv){o.av=S.av||'';o.fm=S.fm||''}
+ /* tiempo jugado y cosmeticos: columnas propias si la tabla las tiene; si no, van dentro de md con prefijo @ */
+ if(!noEx){o.pt=pt;o.cq=cq;o.cos=cs}else if(!noPk)o.md=md.concat(['@pt:'+pt,'@cq:'+cq.join(','),'@cs:'+cs.join(',')]);
+ return sb.from('profiles').upsert(o).then(function(r){var e=r.error,msg=e?String(e.message||''):'',avc=/'(av|fm)'/.test(msg);if(!e)return;
+  if(/fetch|network|timeout|abort/i.test(msg))return;
+  if(!clampM&&/range|integer|bigint|overflow|syntax/i.test(msg)){clampM=true;return pUp()}
+  if(/column/i.test(msg)){if(avc){if(!noAv){noAv=true;return pUp()}}else if(!noEx){noEx=true;return pUp()}}
+  if(noEx&&!noPk){noPk=true;return pUp()}
+  if(!noAv){noAv=true;return pUp()}
+  cloudErr='No se pudo guardar el perfil: '+msg})}
+function loadPL(){if(!sb||!myId)return;sb.from('profiles').select('*').then(function(r){if(!r.data)return;PL=r.data.map(function(x){return{id:x.id,d:x,p:pData(x)}});r.data.forEach(function(x){NM[x.id]=x.name||''})})}
 async function onSession(ses){
  if(!ses){cloudOk=false;myId=null;PL=[];S=fixS(freshS());dm=0;showAuth();return}
  myId=ses.user.id;var nm=(ses.user.user_metadata&&ses.user.user_metadata.name)||'Ethan';
@@ -2132,7 +2224,7 @@ function renderBadges(){
  var jOk=sarPend()>=Math.max(1,S.sart)||skillAvail();navBadge('t4',jOk);segBadge('ej',jOk)}
 
 /* ================= RENDER Y BUCLES ================= */
-function ovlOpen(){return !$('ov').hidden||!$('mg').hidden||!$('cg').hidden||!$('rv').hidden||!$('saco').hidden||(!$('case').hidden&&spinning)}
+function ovlOpen(){return !$('pv').hidden||!$('ov').hidden||!$('mg').hidden||!$('cg').hidden||!$('rv').hidden||!$('saco').hidden||(!$('case').hidden&&spinning)}
 function render(force){renderTop();renderEth();
  if(ovlOpen()&&!force){checkMS();checkMed();checkRank();return}
  if(cur==='t1')renderTaller();else if(cur==='t2'){if(sub.t2==='sg')renderGar();else renderUps()}
@@ -2141,8 +2233,10 @@ function render(force){renderTop();renderEth();
  if(cOpen&&!spinning)updCaseBtn();
  checkMS();checkMed();checkRank();renderBadges();renderHUD()}
 function save(){S.ts=Date.now();if(sb){if(myId){try{localStorage.setItem('elt4_'+myId,JSON.stringify(S))}catch(e){}}return}try{localStorage.setItem('elt3',JSON.stringify(S))}catch(e){}}
-var aacc=0,lastT=Date.now();
+var aacc=0,lastT=Date.now(),lastIn=Date.now();
+['pointerdown','pointermove','keydown','wheel','touchstart'].forEach(function(t){window.addEventListener(t,function(){lastIn=Date.now()},{capture:true,passive:true})});
 setInterval(function(){var now=Date.now(),dt=Math.min(1,(now-lastT)/1000);lastT=now;if(sb&&!myId)return;var sp=spd();
+ if(!document.hidden&&now-lastIn<6e5)S.play=(S.play||0)+dt;
  S.e=Math.min(maxE(),S.e+regen()*dt*sp);earn(ps()*dt*sp);
  var td=today();if(!S.dm||S.dm.d!==td)genDM(td);
  var ar=autoRate();if(ar){aacc+=ar*dt*sp;var n=Math.floor(aacc);if(n>0){aacc-=n;earn(becPer()*n*(frzOn()?3:1));S.done+=n;S.bh=(S.bh||0)+n}}else aacc=0;
@@ -2154,7 +2248,8 @@ setInterval(save,5000);setInterval(cloudSave,10000);window.addEventListener('pag
 document.addEventListener('visibilitychange',function(){if(document.hidden){save();cloudSave()}else lastT=Date.now()});
 window.addEventListener('keydown',function(ev){var tgt=ev.target&&ev.target.tagName;
  if((ev.key===' '||ev.key==='Enter')&&cur==='t1'&&!ev.repeat&&tgt!=='INPUT'&&tgt!=='BUTTON'&&tgt!=='TEXTAREA'&&!busy&&$('nov').hidden&&$('fin').hidden){ev.preventDefault();work(null);return}
- if(ev.key==='Escape'){if(!$('saco').hidden)closeBox();else if(!$('case').hidden)closeCase();else if(!$('cm').hidden)$('cm').hidden=true;else if(!$('pc').hidden)$('pc').hidden=true;else if(!$('inst').hidden)$('inst').hidden=true;else if(!$('fin').hidden)$('fin').hidden=true}});
+ if(ev.key==='Escape'){if(!$('pv').hidden)closePV();else if(!$('saco').hidden)closeBox();else if(!$('case').hidden)closeCase();else if(!$('cm').hidden)$('cm').hidden=true;else if(!$('pc').hidden)$('pc').hidden=true;else if(!$('inst').hidden)$('inst').hidden=true;else if(!$('fin').hidden)$('fin').hidden=true}});
+$('pvx').onclick=closePV;$('pv').addEventListener('click',function(ev){if(ev.target===this)closePV()});$('pvc').addEventListener('click',pvTap);
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
 /* ================= INSTALAR LA APP ================= */
 var deferredPrompt=null;
@@ -2179,6 +2274,6 @@ if(innerWidth>=900)$('mapd').open=true;if(!sb)setSub('t4','ep');
 $('ufast').checked=!!CFG.uf;setGX(2);renderUH();sndIcon();
 applyTheme();applyWalkerCos();dm=S.m;minLvlBefore=minLvl();
 render(true);setTimeout(tkRun,600);
-try{if(!localStorage.getItem('elt_v21c'))$('nov').hidden=false}catch(e){}
-$('novok').onclick=function(){$('nov').hidden=true;try{localStorage.setItem('elt_v21c','1');localStorage.setItem('elt_v21b','1');localStorage.setItem('elt_v21','1');localStorage.setItem('elt_v2','1')}catch(e){}snd('buy')};
+try{if(!localStorage.getItem('elt_v21d'))$('nov').hidden=false}catch(e){}
+$('novok').onclick=function(){$('nov').hidden=true;try{localStorage.setItem('elt_v21d','1');localStorage.setItem('elt_v21c','1');localStorage.setItem('elt_v21b','1');localStorage.setItem('elt_v21','1');localStorage.setItem('elt_v2','1')}catch(e){}snd('buy')};
 </script></body></html>
