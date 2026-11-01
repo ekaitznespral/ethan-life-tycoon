@@ -425,6 +425,9 @@ input[type=range]{width:100%;accent-color:var(--yel);margin:10px 0 2px}
 .slot img{width:26px;height:26px;image-rendering:pixelated;border-radius:6px;background:rgba(255,255,255,.08)}
 .slot.on{color:var(--hudink)}
 .inv{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.invsec{margin:16px 0 8px;font-size:16px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.invsec:first-child{margin-top:4px}
+.invsec small{font-size:12.5px;color:var(--mute);font-weight:700}
 .inv button{position:relative;border:0;border-radius:14px;background:var(--card);padding:8px 6px 9px;text-align:center;font-size:11.5px;line-height:1.15;border-bottom:4px solid var(--rc);box-shadow:0 3px 0 var(--sh);min-width:0}
 .inv img{width:56px;height:56px;image-rendering:pixelated;display:block;margin:0 auto 5px}
 .inv .no img{filter:brightness(0);opacity:.25}
@@ -804,7 +807,7 @@ input[type=range]{width:100%;accent-color:var(--yel);margin:10px 0 2px}
  <div id="vc" hidden>
   <div class="prob"><div id="pwalk" class="pw" role="img" aria-label="Ethan con sus cosméticos"></div><div><h3 style="font-size:19px">Probador</h3><p style="margin:4px 0 8px;font-size:13px;color:var(--hudmute)">Toca un cosmético para ponérselo o quitárselo.</p><div id="slots" class="slots"></div><p class="cfxa" id="cfxa"></p></div></div>
   <p class="hint" id="cosc"></p>
-  <div id="inv" class="inv"></div>
+  <div id="inv"></div>
  </div>
 </section>
 <!-- ================= ETHAN ================= -->
@@ -1943,14 +1946,18 @@ function renderInv(){var sig=JSON.stringify(S.cq)+Object.keys(S.cos).join()+JSON
  var sl=$('slots');sl.innerHTML='';SLOTS.forEach(function(s){var id=S.cq[s[0]];if(!id)return;var c=cosOf(id);var b=el('button','slot on');b.innerHTML='<img src="'+ico(id)+'" alt="">'+esc(s[1]);b.title='Quitar '+c.n;b.onclick=function(){toggleCos(c)};sl.appendChild(b)});
  if(!sl.children.length)sl.innerHTML='<span class="slot">Sin cosméticos puestos</span>';
  st($('cosc'),cosCount()+' de '+COS.length+' cosméticos. Salen en las cajas, por medallas o comprándolos. Cada uno da un efecto mientras lo llevas puesto: cuanto más raro, mejor.');var ag=CFXC||cfxBuild();st($('cfxa'),cfxTxt(ag)?'Efectos: '+cfxTxt(ag):'Ponte cosméticos para ganar sus efectos.');
- var w=$('inv');w.innerHTML='';COS.slice().sort(function(a,b){return (S.cos[b.id]?1:0)-(S.cos[a.id]?1:0)||RAR[b.r].k-RAR[a.r].k}).forEach(function(c){var has=S.cos[c.id],r=RAR[c.r],eq=S.cq[c.slot]===c.id;
+ var iv=$('inv');iv.innerHTML='';SLOTS.forEach(function(s){var L=COS.filter(function(c){return c.slot===s[0]});if(!L.length)return;
+ var nh=L.filter(function(c){return S.cos[c.id]}).length,on=S.cq[s[0]]&&S.cos[S.cq[s[0]]]?cosOf(S.cq[s[0]]):null;
+ var h=el('h4','invsec');h.innerHTML=esc(s[1])+' <small>'+nh+'/'+L.length+(on?' · Llevas: '+esc(on.n):'')+'</small>';iv.appendChild(h);
+ var w=el('div','inv');iv.appendChild(w);
+ L.sort(function(a,b){return (S.cos[b.id]?1:0)-(S.cos[a.id]?1:0)||RAR[b.r].k-RAR[a.r].k}).forEach(function(c){var has=S.cos[c.id],r=RAR[c.r],eq=S.cq[c.slot]===c.id;
   var b=el('button','r'+r.k+(has?'':' no')+(eq?' eq':''));b.style.setProperty('--rc',r.c);
   var src=c.med?'Medalla: '+medOf(c.med).n:c.box?(c.box==='jokin'?'Caja de Jokin':c.box==='naval'?'Caja Taita':'Caja de Sádaba')+(c.c?' o '+eur(c.c):''):'Comprar: '+eur(c.c);
   var my=!has&&c.r==='mitico';if(my)b.classList.add('myst');
   b.innerHTML=(has&&S.cosn[c.id]>1?'<em>x'+S.cosn[c.id]+'</em>':'')+(my?'<i class="myq">✦</i>':'<img src="'+ico(c.id)+'" alt="">')+'<span>'+(has?esc(c.n):my?'Mítico':'???')+'</span>'+(has?'<small class="cfx">'+esc(cfxTxt(c.fx))+'</small>':'');
   b.title=has?c.n+' · '+r.n+' · '+c.d+' · Efecto: '+cfxTxt(c.fx):r.n+' · '+src+' · Efecto: '+(my?'???':cfxTxt(c.fx));
   b.onclick=function(){if(has)toggleCos(c);else if(c.c&&S.m>=c.c){S.m-=c.c;S.cos[c.id]=1;S.cosn[c.id]=1;showCos(c,'Comprado');render();save()}else toast(r.n+' · '+src+(my?'':' · Efecto: '+cfxTxt(c.fx)),'',c.c?'🛒':'📦')};
-  w.appendChild(b)})}
+  w.appendChild(b)})})}
 function showCos(it,ctx){var r=RAR[it.r];var l=$('cmr');l.textContent=(ctx?ctx+' · ':'')+r.n;l.className='rlab'+(r.k===5?' r5':'');l.style.setProperty('--rc',r.c);
  $('cmi').src=ico(it.id);$('cmn').textContent=it.n;$('cmd').innerHTML=esc(it.d)+'<span class="cfxl">'+esc(cfxTxt(it.fx))+'</span>';
  $('cmeq').onclick=function(){S.cq[it.slot]=it.id;applyWalkerCos();save();cloudSave();$('cm').hidden=true;render()};
