@@ -65,11 +65,11 @@
   var KEEP = [ETHAN];
 
   // ---------------- estado ----------------
-  var state = 'menu';         // menu | card | loading | play | pause | dev
+  var state = 'menu';         // menu | card | loading | play | talk | pause | dev
   var scene = null, sceneId = null;
   var cam = { x: 0 };
   var P = { x: 0, y: 0, vx: 0, vy: 0, w: 14, h: 42, dir: 1, ground: false, onPlat: false, coyote: 0, buf: 0, drop: 0, dist: 0, frame: 1 };
-  var debug = false, time = 0, fx = [];
+  var debug = false, time = 0, fx = [], npcs = [], talk = null;
 
   // ---------------- partidas (ranuras) ----------------
   // Cada ranura guarda: escenario y posicion, tiempo jugado y, para lo que venga
@@ -110,12 +110,13 @@
 
   async function loadScene(id) {
     var s = SCENES[id]; if (!s) throw new Error('Escenario desconocido: ' + id);
-    var srcs = s.layers.map(function (l) { return l.src; });
+    var srcs = s.layers.map(function (l) { return l.src; }).concat((s.npcs || []).map(function (n) { return n.sprite; }));
     // descarta las imagenes del escenario anterior que ya no hacen falta
     Object.keys(IMG).forEach(function (k) { if (srcs.indexOf(k) < 0 && KEEP.indexOf(k) < 0) delete IMG[k]; });
     await Promise.all(srcs.concat(KEEP).map(loadImg));
     scene = s; sceneId = id;
     fx = (s.fx || []).map(function (d) { return makeFx(d); });
+    npcs = (s.npcs || []).map(function (d) { return { d: d, blinkT: 1 + Math.random() * 3, blink: 0, mouth: false }; });
   }
   function place(spawn, at) {
     var sp = (at && at.x != null) ? at : (scene.spawns[spawn] || { x: 40, dir: 1 });
@@ -127,7 +128,7 @@
   var busy = false;
   async function goScene(id, spawn, at) {
     if (busy) return; busy = true;
-    var prev = state; state = 'loading'; hidePrompt();
+    var prev = state; state = 'loading'; hidePrompt(); if (talk) { talk = null; dlg.hidden = true; }
     if (prev !== 'card' && prev !== 'menu') await fadeTo(1, 280); else setFade(1);
     loading.hidden = false;
     var t0 = performance.now();
@@ -289,26 +290,97 @@
   };
   $('dclose').onclick = closeDev;
 
-  // ---------------- interaccion ----------------
-  var prompt = $('prompt'), curExit = null;
-  function hidePrompt() { prompt.classList.remove('on'); curExit = null; }
+  // ---------------- interaccion: salidas y personajes ----------------
+  var prompt = $('prompt'), cur = null;
+  function hidePrompt() { prompt.classList.remove('on'); cur = null; }
   function updatePrompt() {
-    var ex = null;
-    if (P.ground) (scene.exits || []).forEach(function (e) { if (P.x > e.x && P.x < e.x + e.w) ex = e; });
-    if (ex !== curExit) {
-      curExit = ex;
-      if (ex) { prompt.innerHTML = '<kbd>E</kbd> '; prompt.appendChild(document.createTextNode(ex.label || 'Entrar')); prompt.classList.add('on'); }
-      else prompt.classList.remove('on');
+    var best = null, bd = 1e9;
+    if (P.ground) {
+      (scene.exits || []).forEach(function (e) {
+        if (P.x > e.x && P.x < e.x + e.w) { var d = Math.abs(P.x - (e.x + e.w / 2)); if (d < bd) { bd = d; best = { k: 'exit', e: e }; } }
+      });
+      npcs.forEach(function (n) {
+        var d = Math.abs(P.x - n.d.x); if (d < (n.d.reach || 22) && d < bd) { bd = d; best = { k: 'npc', n: n }; }
+      });
     }
-    if (ex) {
-      prompt.style.left = ((ex.x + ex.w / 2 - Math.round(cam.x)) * SCALE) + 'px';
-      prompt.style.top = ((P.y - 58) * SCALE) + 'px';
+    var key = best ? (best.e || best.n) : null;
+    if (key !== (cur && (cur.e || cur.n))) {
+      cur = best;
+      if (best) {
+        prompt.innerHTML = '<kbd>E</kbd> ';
+        prompt.appendChild(document.createTextNode(best.k === 'npc' ? 'Hablar con ' + best.n.d.name : (best.e.label || 'Entrar')));
+        prompt.classList.add('on');
+      } else prompt.classList.remove('on');
     }
-    if (ex && pressed.act) goScene(ex.to, ex.spawn);
+    if (best) {
+      var px = best.k === 'npc' ? best.n.d.x : best.e.x + best.e.w / 2, py = best.k === 'npc' ? best.n.d.top + 2 : P.y - 58;
+      prompt.style.left = ((px - Math.round(cam.x)) * SCALE) + 'px';
+      prompt.style.top = (py * SCALE) + 'px';
+      if (pressed.act) { if (best.k === 'npc') startTalk(best.n); else goScene(best.e.to, best.e.spawn); }
+    }
+  }
+
+  // ---------------- dialogos ----------------
+  // STORY.dialogs[id] = [{ who: 'ethan' | id de personaje, text }]. La segunda vez que hablas con
+  // alguien se usa STORY.dialogs[id + ':otra'] si existe. Cada charla suma la flag hablado_<id>.
+  var dlg = $('dlg'), dAdv = false;
+  dlg.addEventListener('pointerdown', function () { dAdv = true; });
+  function startTalk(n) {
+    var d = n.d, fl = game ? game.flags : {}, k = 'hablado_' + d.id, D = STORY.dialogs || {};
+    var lines = (fl[k] && D[d.talk + ':otra']) || D[d.talk] || [{ who: d.id, text: '...' }];
+    if (game) game.flags[k] = (fl[k] || 0) + 1;
+    talk = { lines: lines, i: 0, n: 0, t: 0, npc: n, sx: null };
+    if (Math.abs(P.x - d.x) < 20) talk.sx = Math.max(12, Math.min(scene.w - 12, d.x + (P.x <= d.x ? -26 : 26))); // se aparta para no taparle la cara
+    P.vx = 0; P.dir = d.x < P.x ? -1 : 1; state = 'talk'; hidePrompt(); dAdv = false;
+    $('sname').classList.remove('on'); dlg.hidden = false; showLine();
+  }
+  function whoOf(id) {
+    if (id === 'ethan') return { name: 'Ethan', src: 'sprites/ethan-sheet.png', sw: 384, fr: 0 };
+    for (var i = 0; i < npcs.length; i++) if (npcs[i].d.id === id) return { name: npcs[i].d.name, src: npcs[i].d.sprite, sw: 336, fr: 1, npc: npcs[i] };
+    return { name: id };
+  }
+  function showLine() {
+    var L = talk.lines[talk.i], w = whoOf(L.who);
+    talk.n = 0; talk.t = 0; talk.w = w;
+    $('dname').textContent = w.name; $('dtext').textContent = '';
+    var pt = $('dport'); pt.hidden = !w.src;
+    if (w.src) { pt.style.backgroundImage = 'url(' + w.src + ')'; portrait(w, false); }
+    $('dnext').classList.remove('on');
+  }
+  function portrait(w, open) {
+    var fr = w.npc ? (open ? 5 : 1) : w.fr, pt = $('dport');
+    pt.style.backgroundSize = (w.sw * SCALE) + 'px ' + (48 * SCALE) + 'px';
+    pt.style.backgroundPosition = (-(fr * 48 + 4) * SCALE) + 'px ' + (w.npc ? 0 : -2 * SCALE) + 'px';
+  }
+  function talkStep(dt) {
+    if (talk.sx != null) {
+      var dd = talk.sx - P.x;
+      if (Math.abs(dd) > 1) { P.x += Math.sign(dd) * Math.min(Math.abs(dd), WALK * dt); P.dir = Math.sign(dd); P.dist += WALK * dt; P.frame = Math.floor(P.dist / 7) % 4; }
+      else { P.x = talk.sx; talk.sx = null; P.frame = 1; P.dist = 0; P.dir = talk.npc.d.x < P.x ? -1 : 1; }
+    }
+    var L = talk.lines[talk.i], len = L.text.length;
+    talk.t += dt;
+    var n = Math.min(len, Math.floor(talk.t * 42));
+    if (n !== talk.n) { talk.n = n; $('dtext').textContent = L.text.slice(0, n); }
+    var typing = talk.n < len, w = talk.w;
+    npcs.forEach(function (o) { o.mouth = false; });
+    if (w.npc && typing) w.npc.mouth = Math.floor(talk.t / 0.11) % 2 === 0;
+    if (w.src) portrait(w, w.npc ? w.npc.mouth : false);
+    $('dnext').classList.toggle('on', !typing);
+    if (pressed.act || pressed.jump || pressed.ok || dAdv) {
+      dAdv = false;
+      if (typing) { talk.t = len / 42 + 0.01; }
+      else if (++talk.i < talk.lines.length) showLine();
+      else endTalk();
+    }
+  }
+  function endTalk() {
+    npcs.forEach(function (o) { o.mouth = false; });
+    talk = null; dlg.hidden = true; state = 'play'; P.buf = 0; pressed = {}; writeSave();
   }
 
   // ---------------- fisica de Ethan ----------------
-  var WALK = 82, RUN = 132, ACC = 950, AIR = 620, FRIC = 1100, G = 920, JUMP = 312, CUT = 190, MAXF = 430;
+  var WALK = 82, RUN = 132, ACC = 950, AIR = 620, FRIC = 1100, G = 920, FALLG = 1.5, JUMP = 312, CUT = 190, MAXF = 480, JBUF = 0.15;
   function step(dt) {
     var ax = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), max = keys.run ? RUN : WALK;
     if (ax) {
@@ -321,12 +393,11 @@
       P.vx = Math.abs(P.vx) <= f ? 0 : P.vx - Math.sign(P.vx) * f;
     }
     // salto con margen (coyote) y buffer, salto variable y bajar de plataformas
-    if (pressed.jump) P.buf = 0.13;
-    P.buf -= dt; P.coyote = P.ground ? 0.09 : P.coyote - dt; P.drop -= dt;
+    P.buf -= dt; P.coyote = P.ground ? 0.1 : P.coyote - dt; P.drop -= dt;
     if (P.buf > 0 && keys.down && P.onPlat) { P.drop = 0.22; P.buf = 0; P.ground = false; P.onPlat = false; P.coyote = 0; }
     else if (P.buf > 0 && P.coyote > 0) { P.vy = -JUMP; P.buf = 0; P.coyote = 0; P.ground = false; }
     if (!keys.jump && P.vy < -CUT) P.vy = -CUT;
-    P.vy = Math.min(MAXF, P.vy + G * dt);
+    P.vy = Math.min(MAXF, P.vy + G * (P.vy > 0 ? FALLG : 1) * dt);  // cae mas rapido de lo que sube: salto mas agil
 
     P.x += P.vx * dt;
     var hw = P.w / 2;
@@ -427,10 +498,18 @@
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VW, VH);
     if (!scene) return;
     var cx = Math.round(cam.x);
-    scene.layers.forEach(function (l, i) {
+    function layer(l, i) {
       var im = img(l.src); if (im) ctx.drawImage(im, -Math.round(cx * l.f), l.y || 0);
       fx.forEach(function (o) { if ((o.d.z == null ? scene.layers.length - 1 : o.d.z) === i) fxDraw(o, cx); });
+    }
+    scene.layers.forEach(function (l, i) { if (!l.front) layer(l, i); });
+    npcs.forEach(function (o) {                       // personajes: miran hacia Ethan y parpadean
+      var im = img(o.d.sprite); if (!im) return;
+      var look = P.x < o.d.x - 14 ? 0 : P.x > o.d.x + 14 ? 2 : 1;
+      var fr = o.mouth ? 4 + look : o.blink > 0 ? 3 : look;
+      ctx.drawImage(im, fr * 48, 0, 48, 48, Math.round(o.d.x) - 24 - cx, o.d.top, 48, 48);
     });
+    scene.layers.forEach(function (l, i) { if (l.front) layer(l, i); });
     // Ethan
     var e = img(ETHAN);
     if (e) {
@@ -446,6 +525,8 @@
     (scene.platforms || []).forEach(function (p) { ctx.beginPath(); ctx.moveTo(p.x - cx, p.y + 0.5); ctx.lineTo(p.x + p.w - cx, p.y + 0.5); ctx.stroke(); });
     ctx.fillStyle = 'rgba(0,255,120,0.25)';
     (scene.exits || []).forEach(function (e) { ctx.fillRect(e.x - cx, scene.floor - 70, e.w, 70); });
+    ctx.fillStyle = 'rgba(255,200,0,0.22)';
+    npcs.forEach(function (o) { var r = o.d.reach || 22; ctx.fillRect(o.d.x - r - cx, scene.floor - 8, r * 2, 8); });
     ctx.strokeStyle = '#ff3355'; ctx.strokeRect(Math.round(P.x - P.w / 2) - cx + 0.5, Math.round(P.y - P.h) + 0.5, P.w, P.h);
     ctx.fillStyle = '#000a'; ctx.fillRect(0, 0, 150, 11);
     ctx.fillStyle = '#0f0'; ctx.font = '8px monospace'; ctx.textBaseline = 'top';
@@ -461,11 +542,16 @@
     if (pressed.dev) { if (state === 'dev') closeDev(); else openDev(); }
     else if (pressed.menu) { if (state === 'dev') closeDev(); else if (state === 'play') pause(true); else if (state === 'pause') pause(false); }
     if (state === 'play' && scene) {
+      // la pulsacion se guarda en el buffer aqui (no dentro del paso fijo) para no perderla
+      // en pantallas de mas de 60 Hz, donde hay fotogramas sin ningun paso de fisica
+      if (pressed.jump) P.buf = JBUF;
       acc += dt;
-      while (acc >= STEP) { step(STEP); acc -= STEP; pressed.jump = false; }
+      while (acc >= STEP) { step(STEP); acc -= STEP; }
       camStep(dt); updatePrompt();
       if (game) { game.play = (game.play || 0) + dt; saveT += dt; if (saveT > 10) { saveT = 0; writeSave(); } }
-    } else acc = 0;
+    } else if (state === 'talk' && talk) { acc = 0; P.vx = 0; talkStep(dt); camStep(dt); if (game) game.play = (game.play || 0) + dt; }
+    else acc = 0;
+    npcs.forEach(function (o) { o.blinkT -= dt; if (o.blinkT <= 0) { o.blink = 0.13; o.blinkT = 2 + Math.random() * 3.5; } o.blink -= dt; });
     if (scene && state !== 'menu') { time += dt; fx.forEach(function (o) { fxStep(o, dt); }); }
     draw();
     pressed = {};

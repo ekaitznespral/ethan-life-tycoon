@@ -28,6 +28,14 @@ body{display:flex;align-items:center;justify-content:center;font-family:var(--px
 #sname span{font-size:calc(var(--s)*4.5px);color:#d6c48e}
 #prompt{position:absolute;transform:translate(-50%,-100%);background:#1d1a17e6;border:calc(var(--s)*1px) solid #f3eedb;padding:calc(var(--s)*2.5px) calc(var(--s)*3.5px);font-size:calc(var(--s)*4.5px);white-space:nowrap;opacity:0;transition:opacity .15s;pointer-events:none}
 #prompt.on{opacity:1}
+#dlg{position:absolute;left:calc(var(--s)*10px);right:calc(var(--s)*10px);top:calc(var(--s)*8px);min-height:calc(var(--s)*52px);display:flex;gap:calc(var(--s)*6px);align-items:flex-start;background:#1d1a17f2;border:calc(var(--s)*1px) solid #f3eedb;padding:calc(var(--s)*5px);box-shadow:0 0 0 calc(var(--s)*1px) #000,0 calc(var(--s)*2px) 0 calc(var(--s)*1px) #000a;cursor:pointer}
+#dport{flex:none;width:calc(var(--s)*40px);height:calc(var(--s)*40px);background-color:#3a2f27;background-repeat:no-repeat;image-rendering:pixelated;border:calc(var(--s)*.7px) solid #f3eedb77}
+.dtx{flex:1;min-width:0}
+.dtx b{display:block;color:#ffd75e;font-weight:400;font-size:calc(var(--s)*5.4px);margin:calc(var(--s)*1px) 0 calc(var(--s)*4px)}
+.dtx p{margin:0;font-size:calc(var(--s)*4.8px);line-height:1.75;min-height:3.5em}
+#dnext{position:absolute;right:calc(var(--s)*5px);bottom:calc(var(--s)*3px);font-style:normal;font-size:calc(var(--s)*4.5px);color:#ffd75e;opacity:0}
+#dnext.on{opacity:1;animation:bob .7s steps(2) infinite}
+@keyframes bob{50%{transform:translateY(calc(var(--s)*1.2px))}}
 kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--s)*1.2px)}
 /* menus */
 .mn{background:radial-gradient(ellipse at 50% 35%,#1b2140 0%,#05060c 70%);gap:calc(var(--s)*6px)}
@@ -78,6 +86,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
  <canvas id="cv" aria-label="Modo Historia"></canvas>
  <div id="sname"></div>
  <div id="prompt"></div>
+ <div id="dlg" hidden><div id="dport"></div><div class="dtx"><b id="dname"></b><p id="dtext"></p></div><i id="dnext">▼</i></div>
  <div id="touch" aria-hidden="true">
   <button data-k="left">◀</button><button data-k="right">▶</button>
   <button data-k="act">E</button><button data-k="jump">▲</button><button data-k="menu">II</button>

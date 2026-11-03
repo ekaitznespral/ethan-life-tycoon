@@ -9,6 +9,9 @@
 //    S + salto para bajarse). {x, y, w}.
 //  - spawns: puntos donde aparece Ethan. exits: zonas con [E] que llevan a otro escenario.
 //  - fx: efectos animados. z = indice de la capa tras la que se pintan.
+//  - Una capa con front: true se pinta delante de los personajes (p. ej. la mesa).
+//  - npcs: personajes. x = centro, top = y de la parte de arriba del sprite (48x48, 7 fotogramas),
+//    talk = id del dialogo en STORY.dialogs, reach = distancia para poder hablarle.
 // Con F2 dentro del juego se ven las plataformas, las salidas y la X de Ethan.
 
 window.STORY = {
@@ -20,7 +23,26 @@ window.STORY = {
     { id: 'inicio', name: 'Inicio · 31/12/2022 (con la fecha)', cards: true, scene: 'cocina', spawn: 'inicio' },
     { id: 'cocina', name: 'Cocina · Nochevieja', scene: 'cocina', spawn: 'inicio' },
     { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' }
-  ]
+  ],
+  // Dialogos. who: 'ethan' o el id de un personaje. 'id:otra' = lo que dice si vuelves a hablarle.
+  // PROVISIONALES: hasta tener los dialogos de verdad.
+  dialogs: {
+    hermanastra: [
+      { who: 'hermanastra', text: 'Ethan, ¿te vas a sentar o qué? Que empiezan las campanadas.' },
+      { who: 'ethan', text: 'Ya voy, ya voy.' }
+    ],
+    'hermanastra:otra': [{ who: 'hermanastra', text: 'Sigo esperando, eh.' }],
+    padre: [
+      { who: 'padre', text: 'Ni se te ocurra tocar el cava antes de las doce.' },
+      { who: 'ethan', text: 'Que sí...' }
+    ],
+    'padre:otra': [{ who: 'padre', text: 'A las doce. He dicho.' }],
+    lourdes: [
+      { who: 'lourdes', text: '¡Ay, Ethan! Que es Nochevieja, hijo, ponte algo decente.' },
+      { who: 'ethan', text: 'Voy bien así.' }
+    ],
+    'lourdes:otra': [{ who: 'lourdes', text: 'Bueno, bueno... tú verás.' }]
+  }
 };
 
 window.STORY_SCENES = {
@@ -29,13 +51,19 @@ window.STORY_SCENES = {
     w: 640, floor: 196,
     layers: [
       { src: 'sprites/story/cocina-cielo.png', f: 0.3 },
-      { src: 'sprites/story/cocina.png', f: 1 }
+      { src: 'sprites/story/cocina.png', f: 1 },
+      { src: 'sprites/story/cocina-mesa.png', f: 1, front: true }
+    ],
+    npcs: [
+      { id: 'hermanastra', name: 'Hermanastra', sprite: 'sprites/story/npc-hermanastra.png', x: 398, top: 145, talk: 'hermanastra' },
+      { id: 'padre', name: 'Padre', sprite: 'sprites/story/npc-padre.png', x: 444, top: 145, talk: 'padre' },
+      { id: 'lourdes', name: 'Lourdes', sprite: 'sprites/story/npc-lourdes.png', x: 490, top: 145, talk: 'lourdes' }
     ],
     platforms: [
       { x: 24, y: 128, w: 40 },   // nevera
       { x: 62, y: 165, w: 244 },  // encimera
       { x: 246, y: 147, w: 40 },  // microondas
-      { x: 378, y: 171, w: 128 }  // mesa
+      { x: 372, y: 177, w: 144 }  // mesa
     ],
     spawns: { inicio: { x: 150, dir: 1 }, puerta: { x: 606, dir: -1 } },
     exits: [{ x: 588, w: 42, to: 'calle', spawn: 'portal', label: 'Salir' }],

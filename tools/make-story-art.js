@@ -188,27 +188,11 @@ function cocina() {
   for (var h = 0; h < 12; h++) { var a = h / 12 * Math.PI * 2; f.px(cx + Math.round(Math.sin(a) * 8), cy - Math.round(Math.cos(a) * 8), '#8c8778'); }
   f.line(cx, cy, cx - 1, cy - 6, K); f.line(cx, cy, cx - 4, cy - 7, red); f.px(cx, cy, K);
 
-  // mesa con mantel, uvas y cava
-  f.rect(378, 171, 128, 1, redD); f.rect(378, 172, 128, 12, red); f.rect(378, 172, 128, 2, '#d24a40');
-  for (var x = 378; x < 506; x += 8) { f.px(x + 2, 178, '#e86a5c'); f.px(x + 6, 181, '#e86a5c'); }
-  f.rect(378, 184, 128, 1, redD);
-  f.rect(388, 185, 3, 11, woodD); f.rect(492, 185, 3, 11, woodD);
-  [394, 418, 466, 488].forEach(function (x) { f.rect(x - 6, 169, 13, 2, white); f.rect(x - 4, 171, 9, 1, '#cfccc3'); });
-  [394, 418, 466, 488].forEach(function (x, n) { // copas con las 12 uvas
-    f.rect(x - 3, 163, 7, 6, '#e8f2f6', 200); f.box(x - 3, 163, 7, 6, '#a9c3cf');
-    for (var g = 0; g < 5; g++) f.px(x - 2 + (g % 3) * 2, 164 + (g > 2 ? 2 : 0) + (n % 2), '#8fbf3e');
+  // respaldos de las sillas de la familia (detras de cada uno; la mesa va en otra capa)
+  MESA.seats.forEach(function (x) {
+    f.rect(x - 12, 150, 3, 40, woodD); f.rect(x + 10, 150, 3, 40, woodD);
+    f.rect(x - 12, 150, 25, 3, wood); f.rect(x - 12, 150, 25, 1, woodL); f.rect(x - 12, 160, 25, 2, wood);
   });
-  f.rect(441, 148, 7, 24, '#1f4a2c'); f.rect(442, 149, 1, 20, '#3a7a4c'); f.rect(442, 142, 5, 7, gold); f.rect(442, 142, 5, 1, goldD);
-  f.rect(441, 156, 7, 6, '#f0e6c8'); f.rect(442, 158, 5, 1, gold);
-  [431, 454].forEach(function (x) { f.rect(x, 158, 3, 7, '#f4ecc4'); f.box(x - 1, 157, 5, 8, '#b8c8d0'); f.rect(x + 1, 165, 1, 5, '#b8c8d0'); f.rect(x - 1, 170, 5, 1, '#b8c8d0'); });
-  // sillas
-  function silla(x, back) {
-    f.rect(x, 180, 18, 3, wood); f.rect(x, 183, 18, 1, woodD);
-    f.rect(x + 1, 184, 2, 12, woodD); f.rect(x + 15, 184, 2, 12, woodD);
-    var bx = back < 0 ? x : x + 15; f.rect(bx, 150, 3, 30, wood); f.rect(bx, 150, 3, 1, woodL);
-    f.rect(back < 0 ? x : x + 9, 156, 9, 2, wood); f.rect(back < 0 ? x : x + 9, 164, 9, 2, wood);
-  }
-  silla(357, -1); silla(509, 1);
 
   // tele en la pared (el motor pinta la imagen encima)
   f.rect(560, 112, 6, 8, '#5d6166');
@@ -223,6 +207,146 @@ function cocina() {
   f.rect(574, 146, 5, 8, white); f.box(574, 146, 5, 8, '#a9a394'); f.px(576, 149, '#a9a394');
   save(f, 'cocina.png');
 }
+
+// La mesa va en una capa delantera: se pinta DELANTE de la familia sentada y DETRAS de Ethan.
+var MESA = { x: 372, w: 144, top: 178, seats: [398, 444, 490] };
+function cocinaMesa() {
+  var f = new FB(640, 216), wood = '#a9733f', woodD = '#7f5229', woodL = '#c98f53', white = '#f6f4ee',
+    red = '#b8322c', redD = '#86221d', gold = '#e3b341', goldD = '#a97c22', X = MESA.x, Wd = MESA.w, T = MESA.top;
+  f.rect(X, T - 1, Wd, 1, redD); f.rect(X, T, Wd, 12, red); f.rect(X, T, Wd, 2, '#d24a40');
+  for (var x = X; x < X + Wd; x += 8) { f.px(x + 2, T + 5, '#e86a5c'); f.px(x + 6, T + 8, '#e86a5c'); }
+  for (var x = X; x < X + Wd; x += 4) f.px(x + 1, T + 12, red);
+  f.rect(X, T + 12, Wd, 1, redD);
+  f.rect(X + 8, T + 13, 3, 196 - T - 13, woodD); f.rect(X + Wd - 11, T + 13, 3, 196 - T - 13, woodD);
+  MESA.seats.forEach(function (x, n) {
+    f.rect(x - 7, T - 2, 15, 2, white); f.rect(x - 5, T - 1, 11, 1, '#cfccc3');         // plato
+    var g = x + (n === 1 ? -14 : 12);                                                 // copa con las 12 uvas
+    f.rect(g - 3, T - 8, 7, 6, '#e8f2f6', 200); f.box(g - 3, T - 8, 7, 6, '#a9c3cf'); f.rect(g, T - 2, 1, 2, '#a9c3cf');
+    for (var k = 0; k < 6; k++) f.px(g - 2 + (k % 3) * 2, T - 7 + (k > 2 ? 2 : 0), k % 2 ? '#8fbf3e' : '#a8d455');
+  });
+  var bx = 465; // cava
+  f.rect(bx, T - 24, 7, 24, '#1f4a2c'); f.rect(bx + 1, T - 23, 1, 20, '#3a7a4c'); f.rect(bx + 1, T - 30, 5, 7, gold); f.rect(bx + 1, T - 30, 5, 1, goldD);
+  f.rect(bx, T - 16, 7, 6, '#f0e6c8'); f.rect(bx + 1, T - 14, 5, 1, gold);
+  [421, 508].forEach(function (x) { f.rect(x, T - 13, 3, 6, '#f4ecc4'); f.box(x - 1, T - 14, 5, 7, '#b8c8d0'); f.rect(x + 1, T - 7, 1, 5, '#b8c8d0'); f.rect(x - 1, T - 2, 5, 1, '#b8c8d0'); });
+  f.rect(380, T - 3, 12, 3, '#f0c060'); f.rect(381, T - 4, 10, 1, '#f7d98a'); // turron
+  // la silla vacia de Ethan, en la cabecera
+  var cx = 349;
+  f.rect(cx, 184, 18, 3, wood); f.rect(cx, 187, 18, 1, woodD);
+  f.rect(cx + 1, 188, 2, 8, woodD); f.rect(cx + 15, 188, 2, 8, woodD);
+  f.rect(cx, 154, 3, 30, wood); f.rect(cx, 154, 3, 1, woodL); f.rect(cx, 160, 9, 2, wood); f.rect(cx, 168, 9, 2, wood);
+  save(f, 'cocina-mesa.png');
+}
+
+// ======================= PERSONAJES (vista frontal, sentados, 48x48) =======================
+// 7 fotogramas: mirar izq / centro / dcha, parpadeo, hablar izq / centro / dcha.
+// La fila 33 del sprite coincide con el borde de la mesa: de ahi para abajo no se ve.
+var PK = '#1f241e';
+function outline(f) { // contorno de tinta alrededor de todo lo opaco
+  var add = [];
+  for (var y = 0; y < f.h; y++) for (var x = 0; x < f.w; x++) {
+    if (f.d[(y * f.w + x) * 4 + 3]) continue;
+    var n = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(function (d) {
+      var X = x + d[0], Y = y + d[1]; if (X < 0 || Y < 0 || X >= f.w || Y >= f.h) return false;
+      var i = (Y * f.w + X) * 4; return f.d[i + 3] && !(f.d[i] === 31 && f.d[i + 1] === 36 && f.d[i + 2] === 30);
+    });
+    if (n) add.push([x, y]);
+  }
+  add.forEach(function (p) { f.px(p[0], p[1], PK); });
+}
+function person(o, look, blink, talk) {
+  var f = new FB(48, 48), r = rng(o.seed || 1);
+  var S = '#e8b990', s = '#c9966b', fat = !!o.fat;
+  var hx0 = fat ? 11 : 13, hx1 = fat ? 36 : 34, cx = 24;
+  var tx0 = fat ? 5 : 12, tx1 = fat ? 42 : 35;
+  if (o.hairBack) o.hairBack(f, hx0, hx1, r);
+  // torso
+  for (var y = 25; y < 40; y++) { var ins = y === 25 ? 3 : y === 26 ? 1 : 0; f.rect(tx0 + ins, y, tx1 - tx0 + 1 - ins * 2, 1, o.shirt); }
+  f.rect(tx1 - 2, 27, 2, 13, o.shirtS); f.rect(tx0 + 4, 27, 1, 5, o.shirtS); f.rect(tx1 - 5, 27, 1, 5, o.shirtS);
+  if (o.torso) o.torso(f, tx0, tx1);
+  // manos sobre la mesa
+  f.rect(tx0 + 1, 30, 5, 3, S); f.rect(tx0 + 1, 32, 5, 1, s); f.rect(tx1 - 5, 30, 5, 3, S); f.rect(tx1 - 5, 32, 5, 1, s);
+  // cuello y cabeza
+  f.rect(21, 23, 6, 3, s);
+  for (var y = 4; y <= 24; y++) {
+    var c = (y === 4 || y === 24) ? 3 : (y === 5 || y === 23) ? 1 : 0;
+    if (fat && y >= 20) c = Math.max(0, c - 1);
+    f.rect(hx0 + c, y, hx1 - hx0 + 1 - c * 2, 1, S);
+  }
+  f.rect(hx1 - 1, 7, 1, 15, s);
+  f.rect(hx0 - 1, 13, 1, 4, S); f.rect(hx1 + 1, 13, 1, 4, S);
+  if (fat) { f.rect(hx0 + 2, 17, 4, 3, '#e8998a'); f.rect(hx1 - 5, 17, 4, 3, '#e8998a'); f.rect(cx - 5, 23, 10, 1, s); f.rect(hx0, 22, hx1 - hx0 + 1, 3, S); f.rect(cx - 6, 25, 12, 1, s); f.rect(tx0 + 6, 33, tx1 - tx0 - 12, 1, o.shirtS); }
+  // ojos
+  [cx - 6, cx + 3].forEach(function (ex) {
+    if (blink) { f.rect(ex, 14, 3, 1, PK); return; }
+    f.rect(ex, 13, 3, 2, '#f8f6f0'); f.rect(ex + 1 + look, 13, 1, 2, '#3a2a1e');
+    if (o.lashes) f.rect(ex, 12, 3, 1, PK);
+  });
+  f.rect(cx - 6, 11, 3, 1, o.brow); f.rect(cx + 3, 11, 3, 1, o.brow);
+  f.px(cx - 1, 17, s); f.px(cx - 1, 18, s); f.px(cx, 18, s);
+  if (talk) { f.rect(cx - 3, 20, 4, 2, '#6a2424'); f.rect(cx - 3, 20, 4, 1, '#f8f6f0'); }
+  else f.rect(cx - 3, 21, 4, 1, o.lips || '#a05848');
+  if (o.face) o.face(f, hx0, hx1, r);
+  if (o.hairFront) o.hairFront(f, hx0, hx1, r);
+  outline(f);
+  if (o.after) o.after(f, hx0, hx1);
+  return f;
+}
+function sheet(o, name) {
+  var fr = [[-1, 0, 0], [0, 0, 0], [1, 0, 0], [0, 1, 0], [-1, 0, 1], [0, 0, 1], [1, 0, 1]];
+  var out = new FB(48 * fr.length, 48);
+  fr.forEach(function (a, i) {
+    var p = person(o, a[0], a[1], a[2]);
+    for (var y = 0; y < 48; y++) for (var x = 0; x < 48; x++) { var k = (y * 48 + x) * 4, j = (y * out.w + i * 48 + x) * 4; for (var c = 0; c < 4; c++) out.d[j + c] = p.d[k + c]; }
+  });
+  save(out, name);
+}
+// --- hermanastra: gordita, pelo castaño largo, sudadera rosa
+var HERMANASTRA = {
+  seed: 4, fat: true, shirt: '#d86a9a', shirtS: '#b04f7c', brow: '#4a2c18', lashes: true,
+  hairBack: function (f, a, b) { f.rect(a - 3, 8, 5, 24, '#6b4226'); f.rect(b - 1, 8, 5, 24, '#6b4226'); f.rect(a - 3, 8, 2, 24, '#4a2c18'); f.rect(b + 2, 8, 2, 24, '#4a2c18'); },
+  torso: function (f, a, b) { f.px(21, 27, '#f6f4ee'); f.px(21, 28, '#f6f4ee'); f.px(26, 27, '#f6f4ee'); f.px(26, 28, '#f6f4ee'); f.rect(19, 25, 10, 1, '#b04f7c'); },
+  hairFront: function (f, a, b) {
+    for (var y = 2; y <= 9; y++) { var c = y === 2 ? 5 : y === 3 ? 2 : y === 4 ? 1 : 0; f.rect(a - 1 + c, y, b - a + 3 - c * 2, 1, '#6b4226'); }
+    f.rect(a, 10, 10, 1, '#6b4226'); f.rect(a, 11, 6, 1, '#6b4226'); f.rect(b - 3, 10, 4, 1, '#6b4226');
+    f.rect(a + 4, 4, 7, 1, '#8f5d36'); f.rect(a + 2, 5, 3, 1, '#8f5d36'); f.rect(b - 6, 7, 1, 3, '#4a2c18');
+  }
+};
+// --- padre: pelo medio canoso, polo, un cable neutro (azul) de cinturon
+var PADRE = {
+  seed: 8, shirt: '#3f6b4a', shirtS: '#2e5238', brow: '#5a544e',
+  torso: function (f, a, b) {
+    f.rect(19, 25, 10, 2, '#e9e4d6'); f.px(24, 27, '#e9e4d6'); f.px(24, 28, '#2e5238');
+    for (var x = a + 1; x < b; x++) f.px(x, 31, (x % 3) ? '#2f6fd6' : '#6aa2f0');
+    for (var x = a + 1; x < b; x++) f.px(x, 32, (x % 3) === 1 ? '#6aa2f0' : '#2457b0');
+    f.rect(23, 30, 3, 4, '#2f6fd6'); f.px(24, 30, '#6aa2f0'); f.px(26, 33, '#d08a3a'); f.px(27, 33, '#e8a85a'); // nudo y cobre
+  },
+  face: function (f, a, b) { f.rect(20, 19, 8, 1, '#8a8682'); f.px(20, 20, '#8a8682'); f.px(27, 20, '#8a8682'); f.px(18, 9, '#c9966b'); f.px(29, 9, '#c9966b'); },
+  hairFront: function (f, a, b, r) {
+    for (var y = 2; y <= 8; y++) for (var x = a - 1; x <= b + 1; x++) {
+      var edge = y === 2 ? (x < a + 4 || x > b - 4) : y === 3 ? (x < a + 1 || x > b - 1) : false;
+      var entrada = y >= 7 && (x < a + 4 || x > b - 4);
+      if (!edge && !entrada) f.px(x, y, (x + y * 3) % 7 === 0 ? '#4a443e' : (x * 5 + y) % 9 === 0 ? '#d6d7da' : y <= 4 ? '#b3b5b9' : '#989a9f');
+    }
+    f.rect(a - 1, 9, 2, 6, '#7f8186'); f.rect(b, 9, 2, 6, '#7f8186'); f.px(a - 1, 9, '#4a443e'); f.px(b + 1, 9, '#4a443e');
+  }
+};
+// --- Lourdes: rizos rubio oscuro, top rojo de Nochevieja, pendientes
+var LOURDES = {
+  seed: 13, shirt: '#c0303a', shirtS: '#962530', brow: '#8a6630', lashes: true, lips: '#c23a4a',
+  hairBack: function (f, a, b, r) {
+    var pts = [];
+    for (var y = 3; y <= 27; y += 3) { pts.push([a - 3 + (y % 2), y]); pts.push([b + 3 - (y % 2), y]); }
+    for (var x = a; x <= b; x += 4) { pts.push([x, 2]); pts.push([x + 2, 4]); }
+    pts.forEach(function (p) { f.disc(p[0], p[1], 3, '#c9a04e'); });
+    pts.forEach(function (p) { f.px(p[0] - 1, p[1] - 2, '#f0d892'); f.px(p[0] - 2, p[1] - 1, '#f0d892'); f.px(p[0] + 2, p[1] + 1, '#8a6428'); f.px(p[0] + 1, p[1] + 2, '#8a6428'); f.px(p[0], p[1] + 2, '#8a6428'); });
+  },
+  torso: function (f) { f.rect(20, 25, 8, 1, '#e8b990'); f.px(22, 26, '#e3b341'); f.px(24, 27, '#e3b341'); f.px(26, 26, '#e3b341'); },
+  hairFront: function (f, a, b) {
+    for (var x = a; x <= b; x += 4) { f.disc(x, 6, 2, '#c9a04e'); f.px(x - 1, 5, '#f0d892'); f.px(x + 1, 8, '#8a6428'); f.px(x + 2, 7, '#8a6428'); }
+    f.rect(a, 8, 3, 3, '#c9a04e'); f.rect(b - 2, 8, 3, 3, '#c9a04e');
+  },
+  after: function (f, a, b) { f.px(a - 1, 17, '#e3b341'); f.px(a - 1, 18, '#e3b341'); f.px(b + 1, 17, '#e3b341'); f.px(b + 1, 18, '#e3b341'); }
+};
 
 // ======================= CALLE (1100x216, suelo en y=200) =======================
 function calleCielo() {
@@ -326,4 +450,5 @@ function calle() {
   save(f, 'calle.png');
 }
 
-cocinaCielo(); cocina(); calleCielo(); calleLejos(); calleMedio(); calle();
+cocinaCielo(); cocina(); cocinaMesa(); calleCielo(); calleLejos(); calleMedio(); calle();
+sheet(HERMANASTRA, 'npc-hermanastra.png'); sheet(PADRE, 'npc-padre.png'); sheet(LOURDES, 'npc-lourdes.png');
