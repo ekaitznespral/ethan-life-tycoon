@@ -36,6 +36,44 @@ body{display:flex;align-items:center;justify-content:center;font-family:var(--px
 #dnext{position:absolute;right:calc(var(--s)*5px);bottom:calc(var(--s)*3px);font-style:normal;font-size:calc(var(--s)*4.5px);color:#ffd75e;opacity:0}
 #dnext.on{opacity:1;animation:bob .7s steps(2) infinite}
 @keyframes bob{50%{transform:translateY(calc(var(--s)*1.2px))}}
+/* modo cine: bandas negras arriba y abajo */
+.cb{position:absolute;left:0;right:0;height:0;background:#000;transition:height .6s ease;pointer-events:none;z-index:1}
+#cbt{top:0}#cbb{bottom:0}
+.cine .cb{height:calc(var(--s)*24px)}
+.cine #mis,.cine #prompt,.cine #sname,.talking #mis{opacity:0!important}
+.cine #dlg{top:auto;bottom:calc(var(--s)*28px)}
+/* objetivos */
+#mis{position:absolute;right:calc(var(--s)*8px);top:calc(var(--s)*8px);max-width:calc(var(--s)*140px);background:#0b0f22cc;border:calc(var(--s)*.7px) solid #ffd75e88;padding:calc(var(--s)*3.5px) calc(var(--s)*4.5px);font-size:calc(var(--s)*3.9px);line-height:1.6;transition:opacity .4s;pointer-events:none}
+#mis .mt{color:#ffd75e;font-size:calc(var(--s)*4.4px);margin-bottom:calc(var(--s)*1.5px)}
+#mis .ms{display:flex;gap:calc(var(--s)*2.5px);align-items:baseline}
+#mis .ms i{flex:none;width:calc(var(--s)*3.2px);height:calc(var(--s)*3.2px);border:calc(var(--s)*.7px) solid #f3eedb}
+#mis .ms.ok{color:#8fa08a;text-decoration:line-through}
+#mis .ms.ok i{background:#8fdf6e;border-color:#8fdf6e}
+#mis .ms.ex{color:#b9bfd8;font-size:calc(var(--s)*3.5px)}
+/* avisos */
+#toasts{position:absolute;left:50%;top:calc(var(--s)*74px);transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:calc(var(--s)*2px);pointer-events:none;z-index:2}
+.toast{display:flex;align-items:center;gap:calc(var(--s)*2.5px);background:#1d1a17ee;border:calc(var(--s)*.7px) solid #ffd75e;color:#ffd75e;padding:calc(var(--s)*2.5px) calc(var(--s)*4px);font-size:calc(var(--s)*4.4px);white-space:nowrap;animation:tin .25s ease-out;transition:opacity .5s}
+.toast.out{opacity:0}
+.toast i,.ivr i{flex:none;width:32px;height:32px;image-rendering:pixelated;background-repeat:no-repeat;transform:scale(calc(var(--s) / 3));transform-origin:center;margin:calc(var(--s)*-2px) 0}
+@keyframes tin{from{transform:translateY(calc(var(--s)*-4px));opacity:0}}
+/* elecciones */
+#dopts{display:flex;flex-wrap:wrap;gap:calc(var(--s)*2px);margin-top:calc(var(--s)*2.5px)}
+#dopts:empty{display:none}
+#dopts button{font-family:var(--px);font-size:calc(var(--s)*4.2px);background:#2b2620;color:#f3eedb;border:calc(var(--s)*.7px) solid #f3eedb66;padding:calc(var(--s)*2px) calc(var(--s)*3.5px);cursor:pointer}
+#dopts button.sel{background:#ffd75e;color:#1d1a17;border-color:#ffd75e}
+#dopts button.sel::before{content:'▶ '}
+/* inventario */
+#inv{background:#000a}
+.ivb{width:calc(var(--s)*170px);max-width:92%;background:#1d1a17;border:calc(var(--s)*1px) solid #f3eedb;padding:calc(var(--s)*5px);text-align:left}
+.ivb .dh{display:flex;justify-content:space-between;align-items:center;color:#ffd75e;font-size:calc(var(--s)*5.5px);margin-bottom:calc(var(--s)*4px)}
+.ivb .dh b{font-weight:400}
+.ivb .dh button{font-family:var(--px);background:none;border:0;color:#f3eedb;font-size:calc(var(--s)*5px);cursor:pointer}
+#invl{display:flex;flex-direction:column;gap:calc(var(--s)*3px)}
+.ivr{display:flex;align-items:center;gap:calc(var(--s)*4px);background:#2b2620;padding:calc(var(--s)*2.5px) calc(var(--s)*3px)}
+.ivr div{display:flex;flex-direction:column;gap:calc(var(--s)*1.5px)}
+.ivr b{font-weight:400;font-size:calc(var(--s)*4.6px)}
+.ivr span{font-size:calc(var(--s)*3.6px);color:#b9bfd8;line-height:1.5}
+.iv0{font-size:calc(var(--s)*4.2px);color:#b9bfd8;margin:calc(var(--s)*2px) 0}
 kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--s)*1.2px)}
 /* menus */
 .mn{background:radial-gradient(ellipse at 50% 35%,#1b2140 0%,#05060c 70%);gap:calc(var(--s)*6px)}
@@ -86,7 +124,11 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
  <canvas id="cv" aria-label="Modo Historia"></canvas>
  <div id="sname"></div>
  <div id="prompt"></div>
- <div id="dlg" hidden><div id="dport"></div><div class="dtx"><b id="dname"></b><p id="dtext"></p></div><i id="dnext">▼</i></div>
+ <div id="cbt" class="cb"></div><div id="cbb" class="cb"></div>
+ <div id="mis" hidden></div>
+ <div id="toasts"></div>
+ <div id="dlg" hidden><div id="dport"></div><div class="dtx"><b id="dname"></b><p id="dtext"></p><div id="dopts"></div></div><i id="dnext">▼</i></div>
+ <div id="inv" class="ov" hidden><div class="ivb"><div class="dh"><b>Inventario</b><button id="invx" aria-label="Cerrar">✕</button></div><div id="invl"></div></div></div>
  <div id="touch" aria-hidden="true">
   <button data-k="left">◀</button><button data-k="right">▶</button>
   <button data-k="act">E</button><button data-k="jump">▲</button><button data-k="menu">II</button>
@@ -100,7 +142,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
   <button id="mplay">Jugar</button>
   <button id="mdev" class="dv">Desarrollador</button>
   <a href="./">Volver al tycoon</a>
-  <div class="ctl">A / D andar · W o Espacio saltar · Mayús correr<br>E interactuar · S + salto bajar · Esc pausa · º desarrollador</div>
+  <div class="ctl">A / D andar · W o Espacio saltar · Mayús correr<br>E interactuar · I inventario · S + salto bajar · Esc pausa · º desarrollador</div>
  </div>
  <div id="slots" class="ov mn" hidden>
   <h2>PARTIDAS</h2>
@@ -110,6 +152,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
  <div id="pause" class="ov mn" hidden>
   <h2>PAUSA</h2>
   <button id="pcont">Seguir</button>
+  <button id="pinv">Inventario</button>
   <button id="pdev" class="dv">Desarrollador</button>
   <button id="pmenu">Menú del Modo Historia</button>
   <a href="./">Volver al tycoon</a>

@@ -147,12 +147,17 @@ function cocina() {
   f.rect(98, 166, 42, 2, steelD); f.rect(98, 166, 42, 1, '#6b6f74');
   f.rect(119, 152, 2, 14, steel); f.rect(119, 152, 9, 2, steel); f.rect(126, 152, 2, 5, steel); f.px(126, 158, '#9fd0ff');
   f.rect(104, 158, 10, 8, '#d9e7ef'); f.box(104, 158, 10, 8, '#9db0bd'); // vaso
-  // vitro y horno
-  f.rect(178, 166, 48, 2, black); f.px(186, 166, red); f.px(187, 166, red); f.px(208, 166, red); f.px(209, 166, red);
+  // vitro ROTA: cristal negro con grietas, un trozo saltado y cinta americana; y el horno
+  f.rect(178, 162, 48, 4, black); f.rect(178, 162, 48, 1, '#3a3a44');
+  [[180, 165], [183, 164], [186, 163], [189, 164], [192, 162], [195, 163], [198, 164], [201, 163], [204, 165]].forEach(function (p) { f.px(p[0], p[1], '#d8dde6'); f.px(p[0] + 1, p[1], '#9aa3b0'); });
+  [[205, 163], [207, 162], [209, 164], [211, 163]].forEach(function (p) { f.px(p[0], p[1], '#d8dde6'); });
+  f.rect(219, 162, 7, 2, counter); f.px(218, 162, '#9aa3b0'); f.px(218, 163, '#d8dde6');  // trozo que falta
+  f.rect(232, 164, 4, 1, black); f.px(233, 163, black); f.px(236, 164, '#3a3a44');           // el trozo, en la encimera
+  f.rect(196, 161, 12, 4, '#9b9ea3'); f.rect(196, 161, 12, 1, '#c3c6ca'); f.px(197, 164, '#7a7d82'); f.px(206, 162, '#7a7d82'); // cinta americana
   f.rect(181, 175, 42, 15, black); f.rect(183, 177, 38, 1, steelL); f.rect(185, 180, 10, 6, '#33363d');
-  // olla
-  f.rect(188, 155, 22, 11, steel); f.box(188, 155, 22, 11, steelD); f.rect(188, 155, 22, 2, steelL);
-  f.rect(185, 158, 3, 2, black); f.rect(210, 158, 3, 2, black); f.rect(197, 152, 4, 3, black);
+  // olla (ya no en la vitro)
+  f.rect(146, 155, 22, 11, steel); f.box(146, 155, 22, 11, steelD); f.rect(146, 155, 22, 2, steelL);
+  f.rect(143, 158, 3, 2, black); f.rect(168, 158, 3, 2, black); f.rect(155, 152, 4, 3, black);
   // microondas
   f.rect(246, 147, 40, 18, '#e2e0da'); f.box(246, 147, 40, 18, K);
   f.rect(249, 150, 25, 12, '#3a3f42'); f.rect(250, 151, 6, 2, '#5c6468');
@@ -228,7 +233,7 @@ function cocinaMesa() {
   f.rect(bx, T - 24, 7, 24, '#1f4a2c'); f.rect(bx + 1, T - 23, 1, 20, '#3a7a4c'); f.rect(bx + 1, T - 30, 5, 7, gold); f.rect(bx + 1, T - 30, 5, 1, goldD);
   f.rect(bx, T - 16, 7, 6, '#f0e6c8'); f.rect(bx + 1, T - 14, 5, 1, gold);
   [421, 508].forEach(function (x) { f.rect(x, T - 13, 3, 6, '#f4ecc4'); f.box(x - 1, T - 14, 5, 7, '#b8c8d0'); f.rect(x + 1, T - 7, 1, 5, '#b8c8d0'); f.rect(x - 1, T - 2, 5, 1, '#b8c8d0'); });
-  f.rect(380, T - 3, 12, 3, '#f0c060'); f.rect(381, T - 4, 10, 1, '#f7d98a'); // turron
+  f.rect(474, T - 3, 9, 3, '#f0c060'); f.rect(475, T - 4, 7, 1, '#f7d98a'); // turron
   // la silla vacia de Ethan, en la cabecera
   var cx = 349;
   f.rect(cx, 184, 18, 3, wood); f.rect(cx, 187, 18, 1, woodD);
@@ -239,8 +244,9 @@ function cocinaMesa() {
 
 // ======================= PERSONAJES (vista frontal, sentados, 48x48) =======================
 // 7 fotogramas: mirar izq / centro / dcha, parpadeo, hablar izq / centro / dcha.
-// La fila 33 del sprite coincide con el borde de la mesa: de ahi para abajo no se ve.
-var PK = '#1f241e';
+// Mas pequeños que Ethan: estan sentados y al fondo de la mesa. La fila 34 del sprite
+// coincide con el borde de la mesa (top = 178 - 34 = 144 en la cocina).
+var PK = '#1f241e', HT = 12; // HT = fila de arriba de la cabeza
 function outline(f) { // contorno de tinta alrededor de todo lo opaco
   var add = [];
   for (var y = 0; y < f.h; y++) for (var x = 0; x < f.w; x++) {
@@ -255,40 +261,40 @@ function outline(f) { // contorno de tinta alrededor de todo lo opaco
 }
 function person(o, look, blink, talk) {
   var f = new FB(48, 48), r = rng(o.seed || 1);
-  var S = '#e8b990', s = '#c9966b', fat = !!o.fat;
-  var hx0 = fat ? 11 : 13, hx1 = fat ? 36 : 34, cx = 24;
-  var tx0 = fat ? 5 : 12, tx1 = fat ? 42 : 35;
-  if (o.hairBack) o.hairBack(f, hx0, hx1, r);
-  // torso
-  for (var y = 25; y < 40; y++) { var ins = y === 25 ? 3 : y === 26 ? 1 : 0; f.rect(tx0 + ins, y, tx1 - tx0 + 1 - ins * 2, 1, o.shirt); }
-  f.rect(tx1 - 2, 27, 2, 13, o.shirtS); f.rect(tx0 + 4, 27, 1, 5, o.shirtS); f.rect(tx1 - 5, 27, 1, 5, o.shirtS);
-  if (o.torso) o.torso(f, tx0, tx1);
+  var S = '#e8b990', s = '#c9966b', fat = !!o.fat, T = HT, B = T + 15;
+  var hx0 = fat ? 15 : 16, hx1 = fat ? 32 : 31;
+  var tx0 = fat ? 10 : 15, tx1 = fat ? 37 : 32;
+  if (o.hairBack) o.hairBack(f, hx0, hx1, T);
+  // torso (de B+1 para abajo; la mesa tapa desde la fila 34)
+  for (var y = B + 1; y < 42; y++) { var ins = y === B + 1 ? 2 : y === B + 2 ? 1 : 0; f.rect(tx0 + ins, y, tx1 - tx0 + 1 - ins * 2, 1, o.shirt); }
+  f.rect(tx1 - 1, B + 3, 1, 12, o.shirtS); f.rect(tx0 + 3, B + 3, 1, 4, o.shirtS); f.rect(tx1 - 3, B + 3, 1, 4, o.shirtS);
+  if (o.torso) o.torso(f, tx0, tx1, B);
   // manos sobre la mesa
-  f.rect(tx0 + 1, 30, 5, 3, S); f.rect(tx0 + 1, 32, 5, 1, s); f.rect(tx1 - 5, 30, 5, 3, S); f.rect(tx1 - 5, 32, 5, 1, s);
+  f.rect(tx0, 31, 4, 3, S); f.rect(tx0, 33, 4, 1, s); f.rect(tx1 - 3, 31, 4, 3, S); f.rect(tx1 - 3, 33, 4, 1, s);
   // cuello y cabeza
-  f.rect(21, 23, 6, 3, s);
-  for (var y = 4; y <= 24; y++) {
-    var c = (y === 4 || y === 24) ? 3 : (y === 5 || y === 23) ? 1 : 0;
-    if (fat && y >= 20) c = Math.max(0, c - 1);
+  f.rect(21, B - 1, 6, 3, s);
+  for (var y = T; y <= B; y++) {
+    var c = (y === T || y === B) ? 2 : (y === T + 1 || y === B - 1) ? 1 : 0;
+    if (fat && y >= B - 3) c = Math.max(0, c - 1);
     f.rect(hx0 + c, y, hx1 - hx0 + 1 - c * 2, 1, S);
   }
-  f.rect(hx1 - 1, 7, 1, 15, s);
-  f.rect(hx0 - 1, 13, 1, 4, S); f.rect(hx1 + 1, 13, 1, 4, S);
-  if (fat) { f.rect(hx0 + 2, 17, 4, 3, '#e8998a'); f.rect(hx1 - 5, 17, 4, 3, '#e8998a'); f.rect(cx - 5, 23, 10, 1, s); f.rect(hx0, 22, hx1 - hx0 + 1, 3, S); f.rect(cx - 6, 25, 12, 1, s); f.rect(tx0 + 6, 33, tx1 - tx0 - 12, 1, o.shirtS); }
-  // ojos
-  [cx - 6, cx + 3].forEach(function (ex) {
-    if (blink) { f.rect(ex, 14, 3, 1, PK); return; }
-    f.rect(ex, 13, 3, 2, '#f8f6f0'); f.rect(ex + 1 + look, 13, 1, 2, '#3a2a1e');
-    if (o.lashes) f.rect(ex, 12, 3, 1, PK);
+  f.rect(hx1 - 1, T + 3, 1, 10, s);
+  f.rect(hx0 - 1, T + 6, 1, 3, S); f.rect(hx1 + 1, T + 6, 1, 3, S);
+  if (fat) { f.rect(hx0 + 1, T + 9, 3, 2, '#e8998a'); f.rect(hx1 - 3, T + 9, 3, 2, '#e8998a'); f.rect(20, B, 8, 1, s); f.rect(19, B + 1, 10, 1, s); }
+  // ojos, cejas, nariz, boca
+  [18, 27].forEach(function (ex) {
+    if (blink) { f.rect(ex, T + 6, 3, 1, PK); return; }
+    f.rect(ex, T + 5, 3, 2, '#f8f6f0'); f.rect(ex + 1 + look, T + 5, 1, 2, '#3a2a1e');
+    if (o.lashes) f.px(ex + (ex < 24 ? 0 : 2), T + 4, PK);
   });
-  f.rect(cx - 6, 11, 3, 1, o.brow); f.rect(cx + 3, 11, 3, 1, o.brow);
-  f.px(cx - 1, 17, s); f.px(cx - 1, 18, s); f.px(cx, 18, s);
-  if (talk) { f.rect(cx - 3, 20, 4, 2, '#6a2424'); f.rect(cx - 3, 20, 4, 1, '#f8f6f0'); }
-  else f.rect(cx - 3, 21, 4, 1, o.lips || '#a05848');
-  if (o.face) o.face(f, hx0, hx1, r);
-  if (o.hairFront) o.hairFront(f, hx0, hx1, r);
+  f.rect(18, T + 3, 3, 1, o.brow); f.rect(27, T + 3, 3, 1, o.brow);
+  f.px(23, T + 8, s); f.px(23, T + 9, s); f.px(24, T + 9, s);
+  if (talk) { f.rect(22, T + 11, 4, 2, '#6a2424'); f.rect(22, T + 11, 4, 1, '#f8f6f0'); }
+  else f.rect(22, T + 12, 4, 1, o.lips || '#a05848');
+  if (o.face) o.face(f, hx0, hx1, T);
+  if (o.hairFront) o.hairFront(f, hx0, hx1, T, r);
   outline(f);
-  if (o.after) o.after(f, hx0, hx1);
+  if (o.after) o.after(f, hx0, hx1, T);
   return f;
 }
 function sheet(o, name) {
@@ -303,50 +309,116 @@ function sheet(o, name) {
 // --- hermanastra: gordita, pelo castaño largo, sudadera rosa
 var HERMANASTRA = {
   seed: 4, fat: true, shirt: '#d86a9a', shirtS: '#b04f7c', brow: '#4a2c18', lashes: true,
-  hairBack: function (f, a, b) { f.rect(a - 3, 8, 5, 24, '#6b4226'); f.rect(b - 1, 8, 5, 24, '#6b4226'); f.rect(a - 3, 8, 2, 24, '#4a2c18'); f.rect(b + 2, 8, 2, 24, '#4a2c18'); },
-  torso: function (f, a, b) { f.px(21, 27, '#f6f4ee'); f.px(21, 28, '#f6f4ee'); f.px(26, 27, '#f6f4ee'); f.px(26, 28, '#f6f4ee'); f.rect(19, 25, 10, 1, '#b04f7c'); },
-  hairFront: function (f, a, b) {
-    for (var y = 2; y <= 9; y++) { var c = y === 2 ? 5 : y === 3 ? 2 : y === 4 ? 1 : 0; f.rect(a - 1 + c, y, b - a + 3 - c * 2, 1, '#6b4226'); }
-    f.rect(a, 10, 10, 1, '#6b4226'); f.rect(a, 11, 6, 1, '#6b4226'); f.rect(b - 3, 10, 4, 1, '#6b4226');
-    f.rect(a + 4, 4, 7, 1, '#8f5d36'); f.rect(a + 2, 5, 3, 1, '#8f5d36'); f.rect(b - 6, 7, 1, 3, '#4a2c18');
+  hairBack: function (f, a, b, T) { f.rect(a - 2, T + 2, 4, 20, '#6b4226'); f.rect(b - 1, T + 2, 4, 20, '#6b4226'); f.rect(a - 2, T + 2, 1, 20, '#4a2c18'); f.rect(b + 2, T + 2, 1, 20, '#4a2c18'); },
+  torso: function (f, a, b, B) { f.px(21, B + 3, '#f6f4ee'); f.px(21, B + 4, '#f6f4ee'); f.px(26, B + 3, '#f6f4ee'); f.px(26, B + 4, '#f6f4ee'); f.rect(20, B + 1, 8, 1, '#b04f7c'); },
+  hairFront: function (f, a, b, T) {
+    for (var y = T - 2; y <= T + 2; y++) { var c = y === T - 2 ? 4 : y === T - 1 ? 2 : y === T ? 1 : 0; f.rect(a - 1 + c, y, b - a + 3 - c * 2, 1, '#6b4226'); }
+    f.rect(a, T + 3, 8, 1, '#6b4226'); f.rect(a, T + 4, 4, 1, '#6b4226'); f.rect(b - 2, T + 3, 3, 1, '#6b4226');
+    f.rect(a + 3, T - 1, 6, 1, '#8f5d36'); f.rect(b - 5, T + 1, 1, 2, '#4a2c18');
   }
 };
 // --- padre: pelo medio canoso, polo, un cable neutro (azul) de cinturon
 var PADRE = {
   seed: 8, shirt: '#3f6b4a', shirtS: '#2e5238', brow: '#5a544e',
-  torso: function (f, a, b) {
-    f.rect(19, 25, 10, 2, '#e9e4d6'); f.px(24, 27, '#e9e4d6'); f.px(24, 28, '#2e5238');
-    for (var x = a + 1; x < b; x++) f.px(x, 31, (x % 3) ? '#2f6fd6' : '#6aa2f0');
-    for (var x = a + 1; x < b; x++) f.px(x, 32, (x % 3) === 1 ? '#6aa2f0' : '#2457b0');
-    f.rect(23, 30, 3, 4, '#2f6fd6'); f.px(24, 30, '#6aa2f0'); f.px(26, 33, '#d08a3a'); f.px(27, 33, '#e8a85a'); // nudo y cobre
+  torso: function (f, a, b, B) {
+    f.rect(20, B + 1, 8, 2, '#e9e4d6'); f.px(24, B + 3, '#e9e4d6');
+    for (var x = a + 1; x < b; x++) { f.px(x, 32, (x % 3) ? '#2f6fd6' : '#6aa2f0'); f.px(x, 33, (x % 3) === 1 ? '#6aa2f0' : '#2457b0'); }
+    f.rect(23, 31, 3, 3, '#2f6fd6'); f.px(24, 31, '#6aa2f0'); f.px(26, 33, '#d08a3a'); f.px(27, 33, '#e8a85a'); // nudo y cobre
   },
-  face: function (f, a, b) { f.rect(20, 19, 8, 1, '#8a8682'); f.px(20, 20, '#8a8682'); f.px(27, 20, '#8a8682'); f.px(18, 9, '#c9966b'); f.px(29, 9, '#c9966b'); },
-  hairFront: function (f, a, b, r) {
-    for (var y = 2; y <= 8; y++) for (var x = a - 1; x <= b + 1; x++) {
-      var edge = y === 2 ? (x < a + 4 || x > b - 4) : y === 3 ? (x < a + 1 || x > b - 1) : false;
-      var entrada = y >= 7 && (x < a + 4 || x > b - 4);
-      if (!edge && !entrada) f.px(x, y, (x + y * 3) % 7 === 0 ? '#4a443e' : (x * 5 + y) % 9 === 0 ? '#d6d7da' : y <= 4 ? '#b3b5b9' : '#989a9f');
+  face: function (f, a, b, T) { f.rect(21, T + 11, 6, 1, '#8a8682'); f.px(21, T + 12, '#8a8682'); f.px(26, T + 12, '#8a8682'); },
+  hairFront: function (f, a, b, T) {
+    for (var y = T - 2; y <= T + 2; y++) for (var x = a - 1; x <= b + 1; x++) {
+      var edge = y === T - 2 ? (x < a + 3 || x > b - 3) : y === T - 1 ? (x < a || x > b) : false;
+      var entrada = y >= T + 1 && (x < a + 3 || x > b - 3);
+      if (!edge && !entrada) f.px(x, y, (x + y * 3) % 7 === 0 ? '#4a443e' : (x * 5 + y) % 9 === 0 ? '#d6d7da' : y <= T - 1 ? '#b3b5b9' : '#989a9f');
     }
-    f.rect(a - 1, 9, 2, 6, '#7f8186'); f.rect(b, 9, 2, 6, '#7f8186'); f.px(a - 1, 9, '#4a443e'); f.px(b + 1, 9, '#4a443e');
+    f.rect(a - 1, T + 3, 2, 4, '#7f8186'); f.rect(b, T + 3, 2, 4, '#7f8186'); f.px(a - 1, T + 3, '#4a443e'); f.px(b + 1, T + 3, '#4a443e');
   }
 };
 // --- Lourdes: rizos rubio oscuro, top rojo de Nochevieja, pendientes
 var LOURDES = {
   seed: 13, shirt: '#c0303a', shirtS: '#962530', brow: '#8a6630', lashes: true, lips: '#c23a4a',
-  hairBack: function (f, a, b, r) {
+  hairBack: function (f, a, b, T) {
     var pts = [];
-    for (var y = 3; y <= 27; y += 3) { pts.push([a - 3 + (y % 2), y]); pts.push([b + 3 - (y % 2), y]); }
-    for (var x = a; x <= b; x += 4) { pts.push([x, 2]); pts.push([x + 2, 4]); }
+    for (var y = T - 1; y <= T + 19; y += 3) { pts.push([a - 3 + (y % 2), y]); pts.push([b + 3 - (y % 2), y]); }
+    for (var x = a; x <= b; x += 4) { pts.push([x, T - 2]); pts.push([x + 2, T]); }
     pts.forEach(function (p) { f.disc(p[0], p[1], 3, '#c9a04e'); });
     pts.forEach(function (p) { f.px(p[0] - 1, p[1] - 2, '#f0d892'); f.px(p[0] - 2, p[1] - 1, '#f0d892'); f.px(p[0] + 2, p[1] + 1, '#8a6428'); f.px(p[0] + 1, p[1] + 2, '#8a6428'); f.px(p[0], p[1] + 2, '#8a6428'); });
   },
-  torso: function (f) { f.rect(20, 25, 8, 1, '#e8b990'); f.px(22, 26, '#e3b341'); f.px(24, 27, '#e3b341'); f.px(26, 26, '#e3b341'); },
-  hairFront: function (f, a, b) {
-    for (var x = a; x <= b; x += 4) { f.disc(x, 6, 2, '#c9a04e'); f.px(x - 1, 5, '#f0d892'); f.px(x + 1, 8, '#8a6428'); f.px(x + 2, 7, '#8a6428'); }
-    f.rect(a, 8, 3, 3, '#c9a04e'); f.rect(b - 2, 8, 3, 3, '#c9a04e');
+  torso: function (f, a, b, B) { f.rect(21, B + 1, 6, 1, '#e8b990'); f.px(22, B + 2, '#e3b341'); f.px(24, B + 3, '#e3b341'); f.px(26, B + 2, '#e3b341'); },
+  hairFront: function (f, a, b, T) {
+    for (var x = a + 1; x <= b; x += 4) { f.disc(x, T + 1, 2, '#c9a04e'); f.px(x - 1, T, '#f0d892'); f.px(x + 1, T + 3, '#8a6428'); }
+    f.rect(a, T + 2, 2, 3, '#c9a04e'); f.rect(b - 1, T + 2, 2, 3, '#c9a04e');
   },
-  after: function (f, a, b) { f.px(a - 1, 17, '#e3b341'); f.px(a - 1, 18, '#e3b341'); f.px(b + 1, 17, '#e3b341'); f.px(b + 1, 18, '#e3b341'); }
+  after: function (f, a, b, T) { f.px(a - 1, T + 9, '#e3b341'); f.px(a - 1, T + 10, '#e3b341'); f.px(b + 1, T + 9, '#e3b341'); f.px(b + 1, T + 10, '#e3b341'); }
 };
+
+// ======================= OBJETOS (iconos 16x16) =======================
+// 0 tortilla de Lourdes · 1 jamon · 2 langostinos
+function objetos() {
+  var f = new FB(48, 16);
+  // tortilla en su plato
+  f.rect(1, 12, 14, 2, '#f6f4ee'); f.rect(2, 14, 12, 1, '#cfccc3');
+  f.rect(2, 6, 12, 6, '#f0c34a'); f.rect(3, 5, 10, 1, '#d99a2e'); f.rect(2, 6, 12, 1, '#d99a2e'); f.rect(2, 11, 12, 1, '#c98a28');
+  f.px(5, 8, '#f7dc7a'); f.px(9, 7, '#f7dc7a'); f.px(11, 9, '#e3ad3a'); f.px(6, 10, '#e3ad3a');
+  // jamon: pata con pezuña y la grasa blanca
+  var o = 16;
+  f.line(o + 2, 13, o + 9, 4, '#7a3a26'); f.line(o + 3, 13, o + 10, 4, '#7a3a26');
+  f.rect(o + 8, 3, 6, 8, '#a8442e'); f.rect(o + 9, 2, 4, 1, '#a8442e'); f.rect(o + 9, 4, 3, 3, '#c9604a'); f.rect(o + 12, 4, 1, 6, '#f2e6d6'); f.px(o + 10, 9, '#f2e6d6');
+  f.rect(o + 1, 13, 3, 2, '#2b2b2b'); f.rect(o + 1, 14, 14, 1, '#8a6038'); // pezuña y jamonero
+  f.rect(o + 13, 11, 2, 3, '#8a6038');
+  // langostinos en su plato
+  o = 32;
+  f.rect(o + 1, 12, 14, 2, '#f6f4ee'); f.rect(o + 2, 14, 12, 1, '#cfccc3');
+  [[o + 3, 8], [o + 8, 6], [o + 9, 10]].forEach(function (p) {
+    f.rect(p[0], p[1], 5, 3, '#f07a4a'); f.rect(p[0], p[1], 5, 1, '#ff9e70'); f.px(p[0] + 5, p[1] + 1, '#f07a4a'); f.px(p[0] + 5, p[1] + 2, '#d85a32');
+    f.px(p[0] - 1, p[1] + 1, '#d85a32'); f.px(p[0] + 1, p[1] + 1, '#1f241e'); f.line(p[0] - 1, p[1], p[0] - 3, p[1] - 2, '#d85a32');
+  });
+  outline(f);
+  save(f, 'objetos.png');
+}
+
+// ======================= ETHAN SENTADO (2 fotogramas, mira a la derecha) =======================
+// Sale del paseo de Ethan (sprites/ethan-walk.png, fotograma 1): se queda el cuerpo y se
+// redibujan las piernas dobladas. Fotograma 2: cabeza un pixel abajo (comiendo).
+function readPNG(file) {
+  var b = fs.readFileSync(file), pos = 8, w, h, idat = [];
+  while (pos < b.length) {
+    var len = b.readUInt32BE(pos), type = b.toString('ascii', pos + 4, pos + 8), data = b.slice(pos + 8, pos + 8 + len);
+    if (type === 'IHDR') { w = data.readUInt32BE(0); h = data.readUInt32BE(4); if (data[8] !== 8 || data[9] !== 6) throw new Error('solo PNG RGBA de 8 bits'); }
+    if (type === 'IDAT') idat.push(data);
+    pos += 12 + len;
+  }
+  var raw = zlib.inflateSync(Buffer.concat(idat)), f = new FB(w, h), st = w * 4, prev = Buffer.alloc(st);
+  for (var y = 0; y < h; y++) {
+    var ft = raw[y * (st + 1)], line = Buffer.from(raw.slice(y * (st + 1) + 1, (y + 1) * (st + 1)));
+    for (var i = 0; i < st; i++) {
+      var a = i >= 4 ? line[i - 4] : 0, up = prev[i], c = i >= 4 ? prev[i - 4] : 0, v = line[i];
+      if (ft === 1) v += a; else if (ft === 2) v += up; else if (ft === 3) v += (a + up) >> 1;
+      else if (ft === 4) { var p = a + up - c, pa = Math.abs(p - a), pb = Math.abs(p - up), pc = Math.abs(p - c); v += (pa <= pb && pa <= pc) ? a : pb <= pc ? up : c; }
+      line[i] = v & 255;
+    }
+    line.copy(f.d, y * st); prev = line;
+  }
+  return f;
+}
+function ethanSentado() {
+  var walk = readPNG(path.join(__dirname, '..', 'sprites', 'ethan-walk.png')), out = new FB(96, 48);
+  for (var k = 0; k < 2; k++) {
+    var f = new FB(48, 48);
+    for (var y = 0; y < 34; y++) for (var x = 0; x < 48; x++) {
+      var sy = k && y <= 22 ? y - 1 : y; if (sy < 0) continue;              // comiendo: cabeza un pixel abajo
+      var i = (sy * walk.w + 48 + x) * 4, j = (y * 48 + x) * 4;
+      for (var c = 0; c < 4; c++) f.d[j + c] = walk.d[i + c];
+    }
+    var A = '#1f2420', G = '#28324e', F = '#3a486c', E = '#e8b990', Hs = '#c9966b', D = '#f8f6f0', I = '#c42e28';
+    f.rect(32, 28, 6, 1, A); f.rect(32, 29, 6, 4, G); f.rect(38, 29, 1, 4, A); f.rect(21, 33, 17, 1, F); // muslo hacia delante
+    f.rect(34, 34, 1, 8, A); f.rect(35, 34, 2, 8, E); f.rect(37, 34, 1, 8, Hs); f.rect(38, 34, 1, 8, A); // espinilla
+    f.rect(33, 42, 10, 3, D); f.rect(33, 41, 6, 1, A); f.rect(39, 42, 1, 1, I); f.rect(40, 42, 2, 1, '#2f6fd6'); f.rect(33, 45, 10, 1, A); f.px(43, 43, A); f.px(43, 44, A); f.px(32, 42, A); f.px(32, 43, A); f.px(32, 44, A);
+    for (var y = 0; y < 48; y++) for (var x = 0; x < 48; x++) { var j2 = (y * 48 + x) * 4, o2 = (y * 96 + k * 48 + x) * 4; for (var c = 0; c < 4; c++) out.d[o2 + c] = f.d[j2 + c]; }
+  }
+  save(out, 'ethan-sit.png');
+}
 
 // ======================= CALLE (1100x216, suelo en y=200) =======================
 function calleCielo() {
@@ -452,3 +524,4 @@ function calle() {
 
 cocinaCielo(); cocina(); cocinaMesa(); calleCielo(); calleLejos(); calleMedio(); calle();
 sheet(HERMANASTRA, 'npc-hermanastra.png'); sheet(PADRE, 'npc-padre.png'); sheet(LOURDES, 'npc-lourdes.png');
+objetos(); ethanSentado();

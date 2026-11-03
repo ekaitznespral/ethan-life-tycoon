@@ -27,7 +27,7 @@
     KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right',
     KeyW: 'jump', ArrowUp: 'jump', Space: 'jump', KeyS: 'down', ArrowDown: 'down',
     KeyE: 'act', Enter: 'ok', Escape: 'menu', KeyP: 'menu', ShiftLeft: 'run', ShiftRight: 'run', F2: 'debug',
-    Backquote: 'dev', F1: 'dev'
+    Backquote: 'dev', F1: 'dev', KeyI: 'inv', Tab: 'inv'
   };
   var keys = {}, pressed = {};
   var skipCard = false;
@@ -61,15 +61,15 @@
     im.src = src; IMG[src] = e; return e.p;
   }
   function img(src) { return IMG[src] && IMG[src].im; }
-  var ETHAN = 'sprites/ethan-walk.png';
-  var KEEP = [ETHAN];
+  var ETHAN = 'sprites/ethan-walk.png', SIT = 'sprites/story/ethan-sit.png', OBJ = 'sprites/story/objetos.png';
+  var KEEP = [ETHAN, SIT, OBJ];
 
   // ---------------- estado ----------------
-  var state = 'menu';         // menu | card | loading | play | talk | pause | dev
+  var state = 'menu';         // menu | card | loading | play | talk (guion) | inv | pause | dev
   var scene = null, sceneId = null;
   var cam = { x: 0 };
-  var P = { x: 0, y: 0, vx: 0, vy: 0, w: 14, h: 42, dir: 1, ground: false, onPlat: false, coyote: 0, buf: 0, drop: 0, dist: 0, frame: 1 };
-  var debug = false, time = 0, fx = [], npcs = [], talk = null;
+  var P = { x: 0, y: 0, vx: 0, vy: 0, w: 14, h: 42, dir: 1, ground: false, onPlat: false, coyote: 0, buf: 0, drop: 0, dist: 0, frame: 1, sit: null, eatF: 0 };
+  var debug = false, time = 0, fx = [], npcs = [];
 
   // ---------------- partidas (ranuras) ----------------
   // Cada ranura guarda: escenario y posicion, tiempo jugado y, para lo que venga
@@ -128,14 +128,14 @@
   var busy = false;
   async function goScene(id, spawn, at) {
     if (busy) return; busy = true;
-    var prev = state; state = 'loading'; hidePrompt(); if (talk) { talk = null; dlg.hidden = true; }
+    var prev = state; state = 'loading'; hidePrompt(); stopScript();
     if (prev !== 'card' && prev !== 'menu') await fadeTo(1, 280); else setFade(1);
     loading.hidden = false;
     var t0 = performance.now();
     try { await loadScene(id); } catch (e) { console.error(e); loading.textContent = 'Error al cargar'; busy = false; return; }
     place(spawn, at);
     var el = performance.now() - t0; if (el < 450) await wait(450 - el);
-    loading.hidden = true; state = 'play'; writeSave();
+    loading.hidden = true; state = 'play'; writeSave(); hudSig = null; refreshHud();
     await fadeTo(0, 380);
     busy = false;
     if (scene && sceneId === id && state !== 'menu') showSceneName();
@@ -172,6 +172,7 @@
   function screen(id) { ['menu', 'slots', 'pause'].forEach(function (k) { $(k).hidden = k !== id; }); }
   function showMenu() {
     if (state === 'dev') closeDev();
+    stopScript(); $('inv').hidden = true; $('mis').hidden = true; hudSig = '';
     state = 'menu'; scene = null; sceneId = null; slot = 0; game = null; setFade(1); hidePrompt();
     screen('menu'); $('mplay').focus();
   }
@@ -290,94 +291,199 @@
   };
   $('dclose').onclick = closeDev;
 
-  // ---------------- interaccion: salidas y personajes ----------------
+  // ---------------- interaccion: salidas, personajes y objetos ----------------
+  var ITEMS = STORY.items || {}, MIS = STORY.missions || {};
+  // GS: lo que ven las condiciones when(g) y los guiones
+  var GS = {
+    flag: function (k, v) {
+      if (!game) return undefined;
+      if (arguments.length > 1) { if (v == null || v === false) delete game.flags[k]; else game.flags[k] = v; refreshHud(); }
+      return game.flags[k];
+    },
+    has: function (id) { return !!game && game.inv.indexOf(id) >= 0; }
+  };
+  function avail(o) { try { return !o.when || !!o.when(GS); } catch (e) { return false; } }
   var prompt = $('prompt'), cur = null;
   function hidePrompt() { prompt.classList.remove('on'); cur = null; }
   function updatePrompt() {
     var best = null, bd = 1e9;
+    function cand(k, o, cx, reach) { var d = Math.abs(P.x - cx); if (d < reach && d < bd) { bd = d; best = { k: k, o: o }; } }
     if (P.ground) {
-      (scene.exits || []).forEach(function (e) {
-        if (P.x > e.x && P.x < e.x + e.w) { var d = Math.abs(P.x - (e.x + e.w / 2)); if (d < bd) { bd = d; best = { k: 'exit', e: e }; } }
-      });
-      npcs.forEach(function (n) {
-        var d = Math.abs(P.x - n.d.x); if (d < (n.d.reach || 22) && d < bd) { bd = d; best = { k: 'npc', n: n }; }
-      });
+      (scene.exits || []).forEach(function (e) { if (P.x > e.x && P.x < e.x + e.w) cand('exit', e, e.x + e.w / 2, 1e9); });
+      npcs.forEach(function (n) { if (avail(n.d)) cand('npc', n, n.d.x, n.d.reach || 22); });
+      (scene.objects || []).forEach(function (o) { if (avail(o)) cand('obj', o, o.x, o.reach || 16); });
     }
-    var key = best ? (best.e || best.n) : null;
-    if (key !== (cur && (cur.e || cur.n))) {
+    if ((best && best.o) !== (cur && cur.o)) {
       cur = best;
       if (best) {
         prompt.innerHTML = '<kbd>E</kbd> ';
-        prompt.appendChild(document.createTextNode(best.k === 'npc' ? 'Hablar con ' + best.n.d.name : (best.e.label || 'Entrar')));
+        prompt.appendChild(document.createTextNode(best.k === 'npc' ? 'Hablar con ' + best.o.d.name : (best.o.label || 'Entrar')));
         prompt.classList.add('on');
       } else prompt.classList.remove('on');
     }
     if (best) {
-      var px = best.k === 'npc' ? best.n.d.x : best.e.x + best.e.w / 2, py = best.k === 'npc' ? best.n.d.top + 2 : P.y - 58;
-      prompt.style.left = ((px - Math.round(cam.x)) * SCALE) + 'px';
+      var o = best.o, px = best.k === 'npc' ? o.d.x : best.k === 'obj' ? o.x : o.x + o.w / 2;
+      var py = best.k === 'npc' ? o.d.top + 9 : best.k === 'obj' && o.py ? o.py : P.y - 58;
+      var hw = prompt.offsetWidth / 2 + 4 * SCALE, sx = (px - Math.round(cam.x)) * SCALE;
+      prompt.style.left = Math.max(hw, Math.min(VW * SCALE - hw, sx)) + 'px';   // que no se corte en los bordes
       prompt.style.top = (py * SCALE) + 'px';
-      if (pressed.act) { if (best.k === 'npc') startTalk(best.n); else goScene(best.e.to, best.e.spawn); }
+      if (pressed.act) {
+        if (best.k === 'npc') runScript(o.d.run, o);
+        else if (best.k === 'obj') runScript(o.run);
+        else goScene(o.to, o.spawn);
+      }
     }
   }
 
-  // ---------------- dialogos ----------------
-  // STORY.dialogs[id] = [{ who: 'ethan' | id de personaje, text }]. La segunda vez que hablas con
-  // alguien se usa STORY.dialogs[id + ':otra'] si existe. Cada charla suma la flag hablado_<id>.
-  var dlg = $('dlg'), dAdv = false;
-  dlg.addEventListener('pointerdown', function () { dAdv = true; });
-  function startTalk(n) {
-    var d = n.d, fl = game ? game.flags : {}, k = 'hablado_' + d.id, D = STORY.dialogs || {};
-    var lines = (fl[k] && D[d.talk + ':otra']) || D[d.talk] || [{ who: d.id, text: '...' }];
-    if (game) game.flags[k] = (fl[k] || 0) + 1;
-    talk = { lines: lines, i: 0, n: 0, t: 0, npc: n, sx: null };
-    if (Math.abs(P.x - d.x) < 20) talk.sx = Math.max(12, Math.min(scene.w - 12, d.x + (P.x <= d.x ? -26 : 26))); // se aparta para no taparle la cara
-    P.vx = 0; P.dir = d.x < P.x ? -1 : 1; state = 'talk'; hidePrompt(); dAdv = false;
-    $('sname').classList.remove('on'); dlg.hidden = false; showLine();
+  // ---------------- guiones (dialogos, elecciones, misiones, cinematicas) ----------------
+  // Los guiones estan en STORY.scripts: funciones async que reciben la API "s" de abajo.
+  var run = null, dlg = $('dlg'), dAdv = false;
+  dlg.addEventListener('pointerdown', function (e) { if (!e.target.closest('#dopts')) dAdv = true; });
+  function clampX(x) { return Math.max(12, Math.min(scene.w - 12, x)); }
+  function runScript(name, npc) {
+    var fn = (STORY.scripts || {})[name];
+    if (!fn) { console.warn('[historia] falta el guion', name); return; }
+    run = { line: null, walk: null, waits: [], eat: false };
+    state = 'talk'; hidePrompt(); P.vx = 0; dAdv = false; $('sname').classList.remove('on');
+    if (npc) {
+      P.dir = npc.d.x < P.x ? -1 : 1;
+      if (Math.abs(P.x - npc.d.x) < 20) run.walk = { x: clampX(npc.d.x + (P.x <= npc.d.x ? -26 : 26)), done: function () { P.dir = npc.d.x < P.x ? -1 : 1; } }; // se aparta para no taparle la cara
+    }
+    var me = run, p;
+    try { p = Promise.resolve(fn(API)); } catch (e) { p = Promise.reject(e); }
+    p.catch(function (e) { console.error('[historia] error en el guion', name, e); }).then(function () { if (run === me) endScript(); });
   }
+  function endScript() {
+    if (!run) return;
+    run = null; dlg.hidden = true; stage.classList.remove('talking'); $('dopts').innerHTML = ''; npcs.forEach(function (o) { o.mouth = false; });
+    if (state === 'talk') state = 'play';
+    P.buf = 0; pressed = {}; writeSave(); refreshHud();
+  }
+  function stopScript() { if (run) { run = null; dlg.hidden = true; $('dopts').innerHTML = ''; } stage.classList.remove('talking'); P.sit = null; cine(false); npcs.forEach(function (o) { o.mouth = false; }); }
+  var API = {
+    flag: GS.flag, has: GS.has,
+    say: function (who, text) { return new Promise(function (res) { showLine(who, text, null, res); }); },
+    choose: function (who, text, opts) { return new Promise(function (res) { showLine(who, text, opts, res); }); },
+    give: function (id) { if (!game || GS.has(id)) return; game.inv.push(id); toast('+ ' + (ITEMS[id] ? ITEMS[id].name : id), id); refreshHud(); },
+    take: function (id) { if (!game) return; var i = game.inv.indexOf(id); if (i >= 0) game.inv.splice(i, 1); refreshHud(); },
+    mission: function (id) { if (GS.flag('mision:' + id)) return; GS.flag('mision:' + id, 'activa'); toast('Nueva misión: ' + (MIS[id] ? MIS[id].name : id)); },
+    complete: function (id) { GS.flag('mision:' + id, 'hecha'); toast('Misión completada: ' + (MIS[id] ? MIS[id].name : id)); },
+    toast: function (t) { toast(t); },
+    wait: function (sec) { var r = run; return new Promise(function (res) { if (r) r.waits.push({ t: sec, res: res }); else res(); }); },
+    walkTo: function (x) { var r = run; return new Promise(function (res) { if (r) r.walk = { x: clampX(x), done: res }; else res(); }); },
+    face: function (d) { P.dir = d < 0 ? -1 : 1; },
+    cine: function (on) { cine(on); return API.wait(0.7); },
+    sit: function (x) { if (x == null) { P.sit = null; P.frame = 1; } else { P.sit = { x: x }; P.x = x; P.vx = 0; P.dir = 1; } },
+    eat: function (on) { if (run) run.eat = !!on; if (!on) npcs.forEach(function (o) { o.mouth = false; }); },
+    fade: function (o, ms) { return fadeTo(o, ms || 600); }
+  };
   function whoOf(id) {
     if (id === 'ethan') return { name: 'Ethan', src: 'sprites/ethan-sheet.png', sw: 384, fr: 0 };
     for (var i = 0; i < npcs.length; i++) if (npcs[i].d.id === id) return { name: npcs[i].d.name, src: npcs[i].d.sprite, sw: 336, fr: 1, npc: npcs[i] };
-    return { name: id };
+    return { name: id || '' };
   }
-  function showLine() {
-    var L = talk.lines[talk.i], w = whoOf(L.who);
-    talk.n = 0; talk.t = 0; talk.w = w;
-    $('dname').textContent = w.name; $('dtext').textContent = '';
+  function showLine(who, text, opts, res) {
+    var w = whoOf(who);
+    run.line = { w: w, text: text, n: 0, t: 0, opts: opts, sel: 0, shown: false, res: res };
+    dlg.hidden = false; dAdv = false; stage.classList.add('talking');
+    $('dname').textContent = w.name; $('dname').hidden = !w.name; $('dtext').textContent = '';
     var pt = $('dport'); pt.hidden = !w.src;
     if (w.src) { pt.style.backgroundImage = 'url(' + w.src + ')'; portrait(w, false); }
-    $('dnext').classList.remove('on');
+    $('dopts').innerHTML = ''; $('dnext').classList.remove('on');
   }
   function portrait(w, open) {
     var fr = w.npc ? (open ? 5 : 1) : w.fr, pt = $('dport');
     pt.style.backgroundSize = (w.sw * SCALE) + 'px ' + (48 * SCALE) + 'px';
-    pt.style.backgroundPosition = (-(fr * 48 + 4) * SCALE) + 'px ' + (w.npc ? 0 : -2 * SCALE) + 'px';
+    pt.style.backgroundPosition = (-(fr * 48 + 4) * SCALE) + 'px ' + (w.npc ? 2 * SCALE : -2 * SCALE) + 'px';
   }
-  function talkStep(dt) {
-    if (talk.sx != null) {
-      var dd = talk.sx - P.x;
-      if (Math.abs(dd) > 1) { P.x += Math.sign(dd) * Math.min(Math.abs(dd), WALK * dt); P.dir = Math.sign(dd); P.dist += WALK * dt; P.frame = Math.floor(P.dist / 7) % 4; }
-      else { P.x = talk.sx; talk.sx = null; P.frame = 1; P.dist = 0; P.dir = talk.npc.d.x < P.x ? -1 : 1; }
-    }
-    var L = talk.lines[talk.i], len = L.text.length;
-    talk.t += dt;
-    var n = Math.min(len, Math.floor(talk.t * 42));
-    if (n !== talk.n) { talk.n = n; $('dtext').textContent = L.text.slice(0, n); }
-    var typing = talk.n < len, w = talk.w;
-    npcs.forEach(function (o) { o.mouth = false; });
-    if (w.npc && typing) w.npc.mouth = Math.floor(talk.t / 0.11) % 2 === 0;
+  function finishLine(val) { var L = run.line; run.line = null; dlg.hidden = true; stage.classList.remove('talking'); $('dopts').innerHTML = ''; npcs.forEach(function (o) { o.mouth = false; }); L.res(val); }
+  function lineStep(dt) {
+    var L = run.line, len = L.text.length;
+    L.t += dt;
+    var n = Math.min(len, Math.floor(L.t * 42));
+    if (n !== L.n) { L.n = n; $('dtext').textContent = L.text.slice(0, n); }
+    var typing = L.n < len, w = L.w, adv = pressed.act || pressed.jump || pressed.ok || dAdv;
+    if (w.npc) w.npc.mouth = typing && Math.floor(L.t / 0.11) % 2 === 0;
     if (w.src) portrait(w, w.npc ? w.npc.mouth : false);
-    $('dnext').classList.toggle('on', !typing);
-    if (pressed.act || pressed.jump || pressed.ok || dAdv) {
-      dAdv = false;
-      if (typing) { talk.t = len / 42 + 0.01; }
-      else if (++talk.i < talk.lines.length) showLine();
-      else endTalk();
+    if (L.opts) {
+      if (typing) { if (adv) L.t = len / 42 + 0.01; dAdv = false; return; }
+      if (!L.shown) {
+        L.shown = true; var box = $('dopts');
+        L.opts.forEach(function (t, i) {
+          var b = document.createElement('button'); b.textContent = t;
+          b.onpointerenter = function () { L.sel = i; mark(); };
+          b.onclick = function () { if (run && run.line === L) finishLine(i); };
+          box.appendChild(b);
+        });
+        mark(); return;
+      }
+      if (pressed.jump) { L.sel = (L.sel + L.opts.length - 1) % L.opts.length; mark(); }
+      if (pressed.down) { L.sel = (L.sel + 1) % L.opts.length; mark(); }
+      if (pressed.act || pressed.ok) finishLine(L.sel);
+      dAdv = false; return;
     }
+    $('dnext').classList.toggle('on', !typing);
+    if (adv) { dAdv = false; if (typing) L.t = len / 42 + 0.01; else finishLine(); }
+    function mark() { $('dopts').querySelectorAll('button').forEach(function (b, i) { b.classList.toggle('sel', i === L.sel); }); }
   }
-  function endTalk() {
-    npcs.forEach(function (o) { o.mouth = false; });
-    talk = null; dlg.hidden = true; state = 'play'; P.buf = 0; pressed = {}; writeSave();
+  function scriptStep(dt) {
+    if (run.walk) {
+      var dd = run.walk.x - P.x;
+      if (Math.abs(dd) > 1) { P.x += Math.sign(dd) * Math.min(Math.abs(dd), WALK * dt); P.dir = Math.sign(dd); P.dist += WALK * dt; P.frame = Math.floor(P.dist / 7) % 4; }
+      else { P.x = run.walk.x; P.frame = 1; P.dist = 0; var cb = run.walk.done; run.walk = null; if (cb) cb(); }
+    }
+    if (!run) return;
+    run.waits = run.waits.filter(function (w) { w.t -= dt; if (w.t <= 0) { w.res(); return false; } return true; });
+    if (!run) return;
+    if (run.eat) { npcs.forEach(function (o, i) { o.mouth = Math.sin(time * 9 + i * 2.1) > 0.35; }); P.eatF = Math.sin(time * 6.5) > 0.2 ? 1 : 0; }
+    else P.eatF = 0;
+    if (run.line) lineStep(dt);
   }
+
+  // ---------------- cine, avisos, objetivos e inventario ----------------
+  function cine(on) { stage.classList.toggle('cine', !!on); }
+  function icon(el, id) {
+    var it = ITEMS[id]; if (!it) return;
+    el.style.backgroundImage = 'url(' + OBJ + ')';
+    el.style.backgroundSize = (48 * 2) + 'px 32px'; el.style.backgroundPosition = (-it.icon * 32) + 'px 0';
+  }
+  function toast(text, id) {
+    var t = document.createElement('div'); t.className = 'toast';
+    if (id && ITEMS[id]) { var i = document.createElement('i'); icon(i, id); t.appendChild(i); }
+    t.appendChild(document.createTextNode(text)); $('toasts').appendChild(t);
+    setTimeout(function () { t.classList.add('out'); }, 2600); setTimeout(function () { t.remove(); }, 3200);
+  }
+  var hudSig = '';
+  function refreshHud() {
+    var box = $('mis'), h = '';
+    if (game) Object.keys(MIS).forEach(function (id) {
+      if (game.flags['mision:' + id] !== 'activa') return;
+      var m = MIS[id];
+      h += '<div class="mt">' + esc(m.name) + '</div>';
+      (m.steps || []).forEach(function (st) { h += '<div class="ms' + (avail({ when: st.done }) ? ' ok' : '') + '"><i></i>' + esc(st.text) + '</div>'; });
+      (m.extra || []).forEach(function (st) { h += '<div class="ms ex' + (avail({ when: st.done }) ? ' ok' : '') + '"><i></i>' + esc(st.text) + '</div>'; });
+    });
+    if (h === hudSig) return; hudSig = h;
+    box.innerHTML = h; box.hidden = !h;
+  }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function toggleInv(on) {
+    var el = $('inv');
+    if (on === undefined) on = el.hidden;
+    if (on && state !== 'play') return;
+    if (!on) { el.hidden = true; if (state === 'inv') state = 'play'; pressed = {}; return; }
+    state = 'inv'; keys = {}; el.hidden = false;
+    var l = $('invl'); l.innerHTML = '';
+    if (!game || !game.inv.length) l.innerHTML = '<p class="iv0">No llevas nada encima.</p>';
+    else game.inv.forEach(function (id) {
+      var it = ITEMS[id] || { name: id }, row = document.createElement('div'); row.className = 'ivr';
+      var i = document.createElement('i'); icon(i, id); row.appendChild(i);
+      var d = document.createElement('div'), b = document.createElement('b'), p = document.createElement('span');
+      b.textContent = it.name; p.textContent = it.desc || ''; d.appendChild(b); d.appendChild(p); row.appendChild(d); l.appendChild(row);
+    });
+  }
+  $('invx').onclick = function () { toggleInv(false); };
+  $('pinv').onclick = function () { pause(false); toggleInv(true); };
 
   // ---------------- fisica de Ethan ----------------
   var WALK = 82, RUN = 132, ACC = 950, AIR = 620, FRIC = 1100, G = 920, FALLG = 1.5, JUMP = 312, CUT = 190, MAXF = 480, JBUF = 0.15;
@@ -510,9 +616,15 @@
       ctx.drawImage(im, fr * 48, 0, 48, 48, Math.round(o.d.x) - 24 - cx, o.d.top, 48, 48);
     });
     scene.layers.forEach(function (l, i) { if (l.front) layer(l, i); });
+    var ob = img(OBJ);                                  // cosas puestas en el escenario (p. ej. la cena en la mesa)
+    if (ob) (scene.props || []).forEach(function (pr) {
+      if (!avail(pr) || !ITEMS[pr.item]) return;
+      ctx.drawImage(ob, ITEMS[pr.item].icon * 16, 0, 16, 16, Math.round(pr.x) - 8 - cx, pr.y - 16, 16, 16);
+    });
     // Ethan
-    var e = img(ETHAN);
-    if (e) {
+    var e = img(ETHAN), es = img(SIT);
+    if (P.sit && es) ctx.drawImage(es, (P.eatF || 0) * 48, 0, 48, 48, Math.round(P.x) - 24 - cx, Math.round(P.y) - 46, 48, 48);
+    else if (e) {
       var dx = Math.round(P.x) - cx, dy = Math.round(P.y) - 46;
       ctx.fillStyle = 'rgba(0,0,0,0.18)'; if (P.ground) ctx.fillRect(dx - 8, Math.round(P.y) - 1, 16, 2);
       if (P.dir > 0) ctx.drawImage(e, P.frame * 48, 0, 48, 48, dx - 24, dy, 48, 48);
@@ -527,6 +639,8 @@
     (scene.exits || []).forEach(function (e) { ctx.fillRect(e.x - cx, scene.floor - 70, e.w, 70); });
     ctx.fillStyle = 'rgba(255,200,0,0.22)';
     npcs.forEach(function (o) { var r = o.d.reach || 22; ctx.fillRect(o.d.x - r - cx, scene.floor - 8, r * 2, 8); });
+    ctx.fillStyle = 'rgba(255,90,255,0.3)';
+    (scene.objects || []).forEach(function (o) { var r = o.reach || 16; ctx.fillRect(o.x - r - cx, scene.floor - 4, r * 2, 4); });
     ctx.strokeStyle = '#ff3355'; ctx.strokeRect(Math.round(P.x - P.w / 2) - cx + 0.5, Math.round(P.y - P.h) + 0.5, P.w, P.h);
     ctx.fillStyle = '#000a'; ctx.fillRect(0, 0, 150, 11);
     ctx.fillStyle = '#0f0'; ctx.font = '8px monospace'; ctx.textBaseline = 'top';
@@ -539,8 +653,9 @@
     var dt = Math.min(0.1, (now - last) / 1000); last = now;
     fc++; ft += dt; if (ft >= 1) { fps = fc; fc = 0; ft = 0; }
     if (pressed.debug) debug = !debug;
+    if (pressed.inv && (state === 'play' || state === 'inv')) toggleInv();
     if (pressed.dev) { if (state === 'dev') closeDev(); else openDev(); }
-    else if (pressed.menu) { if (state === 'dev') closeDev(); else if (state === 'play') pause(true); else if (state === 'pause') pause(false); }
+    else if (pressed.menu) { if (state === 'inv') toggleInv(false); else if (state === 'dev') closeDev(); else if (state === 'play') pause(true); else if (state === 'pause') pause(false); }
     if (state === 'play' && scene) {
       // la pulsacion se guarda en el buffer aqui (no dentro del paso fijo) para no perderla
       // en pantallas de mas de 60 Hz, donde hay fotogramas sin ningun paso de fisica
@@ -549,7 +664,7 @@
       while (acc >= STEP) { step(STEP); acc -= STEP; }
       camStep(dt); updatePrompt();
       if (game) { game.play = (game.play || 0) + dt; saveT += dt; if (saveT > 10) { saveT = 0; writeSave(); } }
-    } else if (state === 'talk' && talk) { acc = 0; P.vx = 0; talkStep(dt); camStep(dt); if (game) game.play = (game.play || 0) + dt; }
+    } else if (state === 'talk' && run) { acc = 0; P.vx = 0; scriptStep(dt); camStep(dt); if (game) game.play = (game.play || 0) + dt; }
     else acc = 0;
     npcs.forEach(function (o) { o.blinkT -= dt; if (o.blinkT <= 0) { o.blink = 0.13; o.blinkT = 2 + Math.random() * 3.5; } o.blink -= dt; });
     if (scene && state !== 'menu') { time += dt; fx.forEach(function (o) { fxStep(o, dt); }); }
