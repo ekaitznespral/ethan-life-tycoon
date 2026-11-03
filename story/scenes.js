@@ -12,7 +12,15 @@
 // Con F2 dentro del juego se ven las plataformas, las salidas y la X de Ethan.
 
 window.STORY = {
-  intro: { cards: ['31 de diciembre de 2022'], scene: 'cocina', spawn: 'inicio' }
+  intro: { cards: ['31 de diciembre de 2022'], scene: 'cocina', spawn: 'inicio' },
+  // Puntos de la historia para el panel de desarrollador (tecla º o F1).
+  // Cada uno deja la partida como estaria en ese momento: escenario, flags e inventario.
+  // cards: true muestra antes las tarjetas de la intro.
+  checkpoints: [
+    { id: 'inicio', name: 'Inicio · 31/12/2022 (con la fecha)', cards: true, scene: 'cocina', spawn: 'inicio' },
+    { id: 'cocina', name: 'Cocina · Nochevieja', scene: 'cocina', spawn: 'inicio' },
+    { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' }
+  ]
 };
 
 window.STORY_SCENES = {

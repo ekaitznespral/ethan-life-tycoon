@@ -37,6 +37,29 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
 .mn button:hover,.mn button:focus-visible,.mn a:hover,.mn a:focus-visible{background:#f3eedb;color:#1d1a17;outline:none}
 .mn .ctl{font-size:calc(var(--s)*4px);color:#8f96b8;line-height:2;margin-top:calc(var(--s)*6px)}
 #pause{background:#000b}
+.mn .dv{color:#9fb1ff;border-color:#9fb1ff}
+.mn .dv:hover,.mn .dv:focus-visible{background:#9fb1ff;color:#0b0f22}
+#slist{display:flex;flex-direction:column;gap:calc(var(--s)*3px);width:calc(var(--s)*230px);max-width:92%}
+.slot{display:flex;align-items:center;gap:calc(var(--s)*3px);background:#1d1a17;border:calc(var(--s)*1px) solid #f3eedb55;padding:calc(var(--s)*3px)}
+.slot.empty{opacity:.75;border-style:dashed}
+.slot .si{flex:1;display:flex;flex-direction:column;gap:calc(var(--s)*2px);text-align:left;min-width:0}
+.slot .si b{font-size:calc(var(--s)*5.5px);font-weight:400;color:#ffd75e}
+.slot .si span{font-size:calc(var(--s)*3.8px);color:#b9bfd8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mn .slot button{min-width:0;font-size:calc(var(--s)*4.5px);padding:calc(var(--s)*2.5px) calc(var(--s)*4px)}
+.mn button.del,#dev button.del{color:#ff8a8a;border-color:#ff8a8a}
+.mn button.del:hover,.mn button.del:focus-visible,.mn button.del.sure{background:#ff5a5a;color:#1d1a17}
+#dev{position:absolute;top:0;right:0;bottom:0;width:min(100%,calc(var(--s)*170px));background:#0b0f22f2;border-left:calc(var(--s)*1px) solid #9fb1ff;padding:calc(var(--s)*5px);overflow:auto;display:flex;flex-direction:column;gap:calc(var(--s)*3px);font-size:calc(var(--s)*4px);color:#dfe4ff}
+#dev .dh{display:flex;align-items:center;justify-content:space-between;color:#9fb1ff;font-size:calc(var(--s)*5px)}
+#dev .dh b{font-weight:400}
+#dev button,#dev select{font-family:var(--px);font-size:calc(var(--s)*3.8px);background:#1b2140;color:#f3eedb;border:calc(var(--s)*.6px) solid #9fb1ff88;padding:calc(var(--s)*2px) calc(var(--s)*3px);cursor:pointer;text-align:left}
+#dev button:hover,#dev button:focus-visible{background:#9fb1ff;color:#0b0f22;outline:none}
+#dev label{display:flex;flex-direction:column;gap:calc(var(--s)*1.5px)}
+#dev label.dck{flex-direction:row;align-items:center;gap:calc(var(--s)*2px);line-height:1.5}
+#dev .dt{color:#ffd75e;margin-top:calc(var(--s)*3px)}
+#dcps{display:flex;flex-direction:column;gap:calc(var(--s)*1.5px)}
+#dev .drow{display:flex;gap:calc(var(--s)*1.5px)}
+#dev .drow select{flex:1;min-width:0}
+#dev pre{margin:0;background:#000a;padding:calc(var(--s)*2px);font-family:ui-monospace,monospace;font-size:calc(var(--s)*3.6px);white-space:pre-wrap;word-break:break-all;max-height:calc(var(--s)*44px);overflow:auto;user-select:text}
 #rot{display:none}
 /* controles tactiles */
 #touch{display:none}
@@ -65,16 +88,34 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
  <div id="menu" class="ov mn" hidden>
   <h1>Ethan life tycoon</h1>
   <h2>MODO HISTORIA</h2>
-  <button id="mcont" hidden>Continuar</button>
-  <button id="mnew">Nueva partida</button>
+  <button id="mplay">Jugar</button>
+  <button id="mdev" class="dv">Desarrollador</button>
   <a href="./">Volver al tycoon</a>
-  <div class="ctl">A / D andar · W o Espacio saltar · Mayús correr<br>E interactuar · S + salto bajar · Esc pausa</div>
+  <div class="ctl">A / D andar · W o Espacio saltar · Mayús correr<br>E interactuar · S + salto bajar · Esc pausa · º desarrollador</div>
+ </div>
+ <div id="slots" class="ov mn" hidden>
+  <h2>PARTIDAS</h2>
+  <div id="slist"></div>
+  <button id="sback">Atrás</button>
  </div>
  <div id="pause" class="ov mn" hidden>
   <h2>PAUSA</h2>
   <button id="pcont">Seguir</button>
+  <button id="pdev" class="dv">Desarrollador</button>
   <button id="pmenu">Menú del Modo Historia</button>
   <a href="./">Volver al tycoon</a>
+ </div>
+ <div id="dev" hidden>
+  <div class="dh"><b>Panel de desarrollador</b><button id="dclose" aria-label="Cerrar">✕</button></div>
+  <label>Partida<select id="dslot"></select></label>
+  <div class="dt">Punto de la historia</div>
+  <div id="dcps"></div>
+  <div class="dt">Ir a un escenario</div>
+  <div class="drow"><select id="dscene"></select><select id="dspawn"></select><button id="dgo">Ir</button></div>
+  <label class="dck"><input type="checkbox" id="ddebug"> Ver plataformas, salidas y coordenadas (F2)</label>
+  <div class="dt">Datos de la partida</div>
+  <pre id="ddata"></pre>
+  <div class="drow"><button id="dsave">Guardar ahora</button><button id="ddel" class="del">Borrar partida</button></div>
  </div>
 </div>
 <div id="rot">Gira el móvil<br>para jugar en horizontal</div>

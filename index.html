@@ -55,9 +55,6 @@ img.px,.px{image-rendering:pixelated}
 #tsar small{display:block;font-size:10.5px;color:var(--hudmute);font-weight:700;margin-top:2px}
 #sndb{flex:none;width:34px;height:34px;border:0;border-radius:10px;background:transparent;color:var(--hudmute);display:grid;place-items:center;padding:0}
 #sndb svg{width:20px;height:20px}
-#storyb{flex:none;width:34px;height:34px;border-radius:10px;color:var(--hudmute);display:grid;place-items:center}
-#storyb svg{width:20px;height:20px}
-#storyb:hover{color:var(--hudink)}
 #ticker{display:flex;align-items:center;gap:8px;height:28px;padding:0 12px;border-top:1px solid rgba(255,255,255,.07);font-size:13px;overflow:hidden;background:rgba(0,0,0,.14)}
 .tkl{flex:none;font-weight:800;color:var(--yel);display:flex;gap:6px;align-items:center}
 .tkl svg{width:15px;height:15px}
@@ -71,6 +68,16 @@ img.px,.px{image-rendering:pixelated}
 #nav svg{width:46px;height:30px;padding:4px 12px;border-radius:12px;transition:background .15s,color .15s}
 #nav button.on{color:var(--ink)}
 #nav button.on svg{background:var(--yel);color:#1f2f25}
+#navst{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;padding:2px;text-decoration:none;color:#c99a1e;font-size:11.5px;font-weight:800;white-space:nowrap}
+#navst .nsi{position:relative;width:46px;height:30px;border-radius:12px;overflow:hidden;background:radial-gradient(circle at 70% 25%,#fff6 0 1px,transparent 2px),radial-gradient(circle at 25% 60%,#fff5 0 1px,transparent 2px),linear-gradient(160deg,#1b2140,#3b2b5a);box-shadow:inset 0 0 0 2px #ffd75e;animation:nsglow 2.4s ease-in-out infinite}
+#navst .nsi i{position:absolute;left:50%;bottom:-4px;width:48px;height:48px;margin-left:-24px;background:url(sprites/ethan-walk.png) 0 0/192px 48px no-repeat;image-rendering:pixelated;transform:scale(.7);transform-origin:50% 100%;animation:nswalk .62s steps(4) infinite}
+#navst .nst{display:flex;flex-direction:column;align-items:center}
+#navst b{font-weight:800}
+#navst .nsl,#navst small{display:none}
+@keyframes nswalk{to{background-position:-192px 0}}
+@keyframes nsglow{50%{box-shadow:inset 0 0 0 2px #ffd75e,0 0 14px rgba(255,215,94,.75)}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #navst{color:#ffd75e}}
+:root[data-theme="dark"] #navst{color:#ffd75e}
 .bd{position:absolute;top:0;left:calc(50% + 12px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--card);display:none}
 .bd.on{display:block}
 .bd.dot{min-width:11px;height:11px;padding:0;top:3px;left:calc(50% + 14px)}
@@ -660,6 +667,13 @@ input[type=range]{width:100%;accent-color:var(--yel);margin:10px 0 2px}
  #nav button{flex:none;flex-direction:row;justify-content:flex-start;gap:10px;font-size:15.5px;padding:8px 10px;border-radius:16px}
  #nav svg{width:44px;height:34px;padding:5px 10px}
  #nav button.on{background:var(--card);box-shadow:0 3px 0 var(--sh)}
+ #navst{flex:none;flex-direction:row;justify-content:flex-start;gap:12px;margin-top:14px;padding:10px 12px;border-radius:16px;color:#ffd75e;font-size:15.5px;background:radial-gradient(circle at 85% 20%,#fff5 0 1px,transparent 2px),radial-gradient(circle at 60% 75%,#fff4 0 1px,transparent 2px),radial-gradient(circle at 92% 70%,#ffd75e88 0 1px,transparent 2px),linear-gradient(135deg,#141a35,#3b2b5a);box-shadow:0 3px 0 var(--sh),inset 0 0 0 2px #ffd75e66;transition:transform .15s,box-shadow .15s}
+ #navst:hover{transform:translateY(-2px);box-shadow:0 5px 0 var(--sh),inset 0 0 0 2px #ffd75e,0 0 18px rgba(255,215,94,.35)}
+ #navst .nsi{width:48px;height:48px;flex:none;border-radius:12px}
+ #navst .nsi i{transform:scale(.95);bottom:-2px}
+ #navst .nst{align-items:flex-start;gap:4px}
+ #navst .nsl{display:inline}
+ #navst small{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;background:#ffd75e;color:#1d1a17;padding:2px 7px;border-radius:6px}
  .bd{position:static;margin-left:auto}
  .bd.dot{margin-right:6px}
  main{grid-area:main;padding:20px 0 140px}
@@ -688,6 +702,8 @@ input[type=range]{width:100%;accent-color:var(--yel);margin:10px 0 2px}
  .ebar{width:40px}
  #nav button{font-size:10.5px}
  #nav svg{width:40px;padding:4px 9px}
+ #navst{font-size:10.5px}
+ #navst .nsi{width:40px}
  .cgrid{gap:8px}
 }
 @media (prefers-reduced-motion:reduce){
@@ -701,7 +717,6 @@ input[type=range]{width:100%;accent-color:var(--yel);margin:10px 0 2px}
   <div id="tmon"><b id="m" class="num" title="">€0</b><div id="tsub"><span><b id="psv" class="num">€0</b>/s</span><span><b id="perv" class="num">€2</b>/hora</span></div></div>
   <div id="tsar" class="tpill" hidden title="Sarro: bonus permanente a todo lo que ganas"><span>🦷</span><div><b id="sarv" class="num">0</b><small id="sarp" class="num"></small></div></div>
   <div id="ten" class="tpill" title="Energía"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><div><b id="etv" class="num">20/20</b><div class="ebar"><i id="efill"></i></div></div></div>
-  <a id="storyb" href="historia.html" aria-label="Modo Historia" title="Modo Historia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M9 8h7"/></svg></a>
   <button id="sndb" aria-label="Sonido"></button>
  </div>
  <div id="ticker"><span class="tkl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M7 8 17 3"/><circle cx="15" cy="14.5" r="3"/><path d="M6 12h3M6 16h3"/></svg>Radio Sestao</span><div class="tkw" aria-live="off"><span id="tkt"></span></div></div>
@@ -713,6 +728,7 @@ input[type=range]{width:100%;accent-color:var(--yel);margin:10px 0 2px}
  <button data-t="t5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="16" cy="16" r="1.2" fill="currentColor"/></svg><span>Bar Ekintza</span><i class="bd dot"></i></button>
  <button data-t="t3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 21h8M9 17h6v4H9z"/></svg><span>Vitrina</span><i class="bd"></i></button>
  <button data-t="t4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Ethan</span><i class="bd dot"></i></button>
+ <a id="navst" href="historia.html" aria-label="Modo Historia"><span class="nsi"><i></i></span><span class="nst"><b><span class="nsl">Modo </span>Historia</b><small>NUEVO</small></span></a>
 </nav>
 <main>
 <!-- ================= TALLER ================= -->

@@ -26,14 +26,17 @@
   var MAP = {
     KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right',
     KeyW: 'jump', ArrowUp: 'jump', Space: 'jump', KeyS: 'down', ArrowDown: 'down',
-    KeyE: 'act', Enter: 'ok', Escape: 'menu', KeyP: 'menu', ShiftLeft: 'run', ShiftRight: 'run', F2: 'debug'
+    KeyE: 'act', Enter: 'ok', Escape: 'menu', KeyP: 'menu', ShiftLeft: 'run', ShiftRight: 'run', F2: 'debug',
+    Backquote: 'dev', F1: 'dev'
   };
   var keys = {}, pressed = {};
   var skipCard = false;
   function press(a) { if (!keys[a]) pressed[a] = true; keys[a] = true; if (a === 'jump' || a === 'ok' || a === 'act') skipCard = true; }
   addEventListener('keydown', function (e) {
     var a = MAP[e.code]; if (!a) return;
-    if (e.target && e.target.tagName === 'BUTTON' && (a === 'ok' || a === 'jump') && (state === 'menu' || state === 'pause')) return; // deja usar menus
+    var tag = e.target && e.target.tagName;
+    if ((tag === 'SELECT' || tag === 'INPUT') && a !== 'dev' && a !== 'menu') return;             // deja usar los desplegables
+    if (tag === 'BUTTON' && (a === 'ok' || a === 'jump') && state !== 'play') return;               // y los botones de los menus
     e.preventDefault(); if (!e.repeat) press(a); else keys[a] = true;
   });
   addEventListener('keyup', function (e) { var a = MAP[e.code]; if (a) keys[a] = false; });
@@ -62,19 +65,39 @@
   var KEEP = [ETHAN];
 
   // ---------------- estado ----------------
-  var state = 'menu';         // menu | card | loading | play | pause
+  var state = 'menu';         // menu | card | loading | play | pause | dev
   var scene = null, sceneId = null;
   var cam = { x: 0 };
   var P = { x: 0, y: 0, vx: 0, vy: 0, w: 14, h: 42, dir: 1, ground: false, onPlat: false, coyote: 0, buf: 0, drop: 0, dist: 0, frame: 1 };
   var debug = false, time = 0, fx = [];
 
-  // ---------------- guardado ----------------
-  function readSave() { try { return JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) { return null; } }
-  function writeSave() {
-    if (!sceneId) return;
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ v: 1, scene: sceneId, x: Math.round(P.x), y: Math.round(P.y), dir: P.dir, t: Date.now() })); } catch (e) { }
+  // ---------------- partidas (ranuras) ----------------
+  // Cada ranura guarda: escenario y posicion, tiempo jugado y, para lo que venga
+  // (misiones, inventario), flags e inv.
+  var SLOTS = 3, slot = 0, game = null, saveT = 0;
+  function slotKey(n) { return 'elt-historia-slot' + n; }
+  function readSlot(n) {
+    try { var d = JSON.parse(localStorage.getItem(slotKey(n))); return d && SCENES[d.scene] ? d : null; } catch (e) { return null; }
   }
-  addEventListener('beforeunload', function () { if (state === 'play' || state === 'pause') writeSave(); });
+  function newData() { return { v: 2, scene: null, x: null, y: null, dir: 1, created: Date.now(), t: Date.now(), play: 0, flags: {}, inv: [] }; }
+  function writeSave() {
+    if (!slot || !game || !sceneId) return;
+    game.scene = sceneId; game.x = Math.round(P.x); game.y = Math.round(P.y); game.dir = P.dir; game.t = Date.now();
+    try { localStorage.setItem(slotKey(slot), JSON.stringify(game)); } catch (e) { }
+  }
+  function deleteSlot(n) { try { localStorage.removeItem(slotKey(n)); } catch (e) { } if (n === slot) { slot = 0; game = null; } }
+  try { // el guardado antiguo (una sola partida) pasa a la ranura 1
+    var old = localStorage.getItem(SAVE_KEY);
+    if (old) {
+      var o = JSON.parse(old);
+      if (o && SCENES[o.scene] && !localStorage.getItem(slotKey(1))) {
+        var d = newData(); d.scene = o.scene; d.x = o.x; d.y = o.y; d.dir = o.dir; d.t = o.t || Date.now();
+        localStorage.setItem(slotKey(1), JSON.stringify(d));
+      }
+      localStorage.removeItem(SAVE_KEY);
+    }
+  } catch (e) { }
+  addEventListener('beforeunload', function () { if (state === 'play' || state === 'pause' || state === 'dev') writeSave(); });
 
   // ---------------- transiciones ----------------
   var fade = $('fade'), loading = $('loading');
@@ -113,7 +136,8 @@
     var el = performance.now() - t0; if (el < 450) await wait(450 - el);
     loading.hidden = true; state = 'play'; writeSave();
     await fadeTo(0, 380);
-    showSceneName(); busy = false;
+    busy = false;
+    if (scene && sceneId === id && state !== 'menu') showSceneName();
   }
 
   var nameT = 0;
@@ -144,31 +168,126 @@
   }
 
   // ---------------- menus ----------------
+  function screen(id) { ['menu', 'slots', 'pause'].forEach(function (k) { $(k).hidden = k !== id; }); }
   function showMenu() {
-    state = 'menu'; scene = null; sceneId = null; setFade(1); hidePrompt();
-    $('pause').hidden = true; $('menu').hidden = false;
-    var sv = readSave(); $('mcont').hidden = !(sv && SCENES[sv.scene]);
-    ($('mcont').hidden ? $('mnew') : $('mcont')).focus();
+    if (state === 'dev') closeDev();
+    state = 'menu'; scene = null; sceneId = null; slot = 0; game = null; setFade(1); hidePrompt();
+    screen('menu'); $('mplay').focus();
   }
-  async function newGame() {
-    if (readSave() && !confirm('¿Empezar de nuevo? Se perderá el avance del Modo Historia.')) return;
-    try { localStorage.removeItem(SAVE_KEY); } catch (e) { }
-    $('menu').hidden = true;
-    await showCards(STORY.intro.cards);
-    await goScene(STORY.intro.scene, STORY.intro.spawn);
+  function ago(t) {
+    var m = Math.round((Date.now() - t) / 60000);
+    if (m < 1) return 'ahora mismo'; if (m < 60) return 'hace ' + m + ' min';
+    var h = Math.round(m / 60); if (h < 24) return 'hace ' + h + ' h';
+    return new Date(t).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
   }
-  function continueGame() {
-    var sv = readSave(); if (!sv || !SCENES[sv.scene]) return newGame();
-    $('menu').hidden = true; goScene(sv.scene, null, { x: sv.x, y: sv.y, dir: sv.dir });
+  function played(sec) { var m = Math.floor(sec / 60); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min'; }
+  function showSlots() {
+    screen('slots');
+    var box = $('slist'); box.innerHTML = '';
+    for (var n = 1; n <= SLOTS; n++) (function (n) {
+      var d = readSlot(n), row = document.createElement('div'); row.className = 'slot' + (d ? '' : ' empty');
+      var info = document.createElement('div'); info.className = 'si';
+      var b = document.createElement('b'); b.textContent = 'Partida ' + n;
+      var sp = document.createElement('span');
+      sp.textContent = d ? SCENES[d.scene].name + ' · ' + played(d.play || 0) + ' · ' + ago(d.t) : 'Vacía';
+      info.appendChild(b); info.appendChild(sp); row.appendChild(info);
+      var go = document.createElement('button'); go.textContent = d ? 'Continuar' : 'Nueva';
+      go.onclick = function () { d ? continueGame(n) : newGame(n); };
+      row.appendChild(go);
+      if (d) {
+        var del = document.createElement('button'); del.className = 'del'; del.textContent = 'Borrar';
+        del.onclick = function () {
+          if (del.dataset.sure) { deleteSlot(n); showSlots(); return; }
+          del.dataset.sure = 1; del.textContent = '¿Seguro?'; del.classList.add('sure');
+          setTimeout(function () { if (del.isConnected) { delete del.dataset.sure; del.textContent = 'Borrar'; del.classList.remove('sure'); } }, 3000);
+        };
+        row.appendChild(del);
+      }
+      box.appendChild(row);
+    })(n);
+    box.querySelector('button').focus();
+  }
+  async function startAt(n, cp) { // empieza una partida en la ranura n desde un punto de la historia
+    slot = n; game = newData();
+    if (cp.flags) game.flags = JSON.parse(JSON.stringify(cp.flags));
+    if (cp.inv) game.inv = cp.inv.slice();
+    screen(null); scene = null; sceneId = null;
+    if (cp.cards) await showCards(STORY.intro.cards);
+    await goScene(cp.scene, cp.spawn);
+  }
+  function newGame(n) { startAt(n, { cards: true, scene: STORY.intro.scene, spawn: STORY.intro.spawn }); }
+  function continueGame(n) {
+    var d = readSlot(n); if (!d) return newGame(n);
+    slot = n; game = d; if (!game.flags) game.flags = {}; if (!game.inv) game.inv = [];
+    screen(null); goScene(d.scene, null, { x: d.x, y: d.y, dir: d.dir });
   }
   function pause(on) {
-    if (on && state === 'play') { state = 'pause'; writeSave(); $('pause').hidden = false; $('pcont').focus(); keys = {}; }
-    else if (!on && state === 'pause') { state = 'play'; $('pause').hidden = true; pressed = {}; }
+    if (on && state === 'play') { state = 'pause'; writeSave(); screen('pause'); $('pcont').focus(); keys = {}; }
+    else if (!on && state === 'pause') { state = 'play'; screen(null); pressed = {}; }
   }
   $('card').addEventListener('pointerdown', function () { skipCard = true; });
-  $('mnew').onclick = newGame; $('mcont').onclick = continueGame;
+  $('mplay').onclick = showSlots; $('sback').onclick = showMenu;
   $('pcont').onclick = function () { pause(false); };
   $('pmenu').onclick = function () { writeSave(); showMenu(); };
+  $('mdev').onclick = $('pdev').onclick = function () { openDev(); };
+
+  // ---------------- panel de desarrollador (tecla º o F1) ----------------
+  var devPrev = null;
+  function openDev() {
+    if (state === 'dev' || state === 'loading' || state === 'card') return;
+    devPrev = state; state = 'dev'; keys = {}; $('dev').hidden = false; renderDev();
+  }
+  function closeDev() {
+    if (state !== 'dev') return;
+    $('dev').hidden = true; state = devPrev; devPrev = null; pressed = {};
+    if (state === 'menu') $('mplay').focus();
+  }
+  function renderDev() {
+    var ss = $('dslot'); ss.innerHTML = '';
+    for (var n = 1; n <= SLOTS; n++) {
+      var d = readSlot(n), o = document.createElement('option'); o.value = n;
+      o.textContent = 'Partida ' + n + (d ? ' (' + SCENES[d.scene].name + ')' : ' (vacía)') + (n === slot ? ' · en juego' : '');
+      ss.appendChild(o);
+    }
+    ss.value = slot || 1;
+    var cl = $('dcps'); cl.innerHTML = '';
+    (STORY.checkpoints || []).forEach(function (cp) {
+      var b = document.createElement('button'); b.textContent = cp.name;
+      b.onclick = function () { jumpTo(cp); }; cl.appendChild(b);
+    });
+    var sc = $('dscene'); sc.innerHTML = '';
+    Object.keys(SCENES).forEach(function (id) { var o = document.createElement('option'); o.value = id; o.textContent = SCENES[id].name + ' (' + id + ')'; sc.appendChild(o); });
+    sc.value = sceneId || Object.keys(SCENES)[0]; fillSpawns();
+    $('ddebug').checked = debug;
+    $('ddata').textContent = game ? JSON.stringify(Object.assign({}, game, { play: Math.round(game.play || 0) }, sceneId ? { scene: sceneId, x: Math.round(P.x), y: Math.round(P.y) } : {}), null, 1) : '(no hay partida en juego)';
+  }
+  function fillSpawns() {
+    var sp = $('dspawn'); sp.innerHTML = '';
+    Object.keys(SCENES[$('dscene').value].spawns).forEach(function (k) { var o = document.createElement('option'); o.value = k; o.textContent = k; sp.appendChild(o); });
+  }
+  function jumpTo(cp) {
+    var n = +$('dslot').value;
+    $('dev').hidden = true; state = devPrev === 'menu' ? 'menu' : 'pause'; devPrev = null;
+    if (n !== slot || !game) startAt(n, cp);
+    else {
+      if (cp.flags) game.flags = JSON.parse(JSON.stringify(cp.flags));
+      if (cp.inv) game.inv = cp.inv.slice();
+      screen(null);
+      if (cp.cards) { scene = null; sceneId = null; showCards(STORY.intro.cards).then(function () { goScene(cp.scene, cp.spawn); }); }
+      else goScene(cp.scene, cp.spawn);
+    }
+  }
+  $('dscene').onchange = fillSpawns;
+  $('dgo').onclick = function () { jumpTo({ scene: $('dscene').value, spawn: $('dspawn').value }); };
+  $('ddebug').onchange = function () { debug = this.checked; };
+  $('dsave').onclick = function () { writeSave(); renderDev(); };
+  $('ddel').onclick = function () {
+    var n = +$('dslot').value;
+    if (!confirm('¿Borrar la partida ' + n + '?')) return;
+    var wasCur = n === slot; deleteSlot(n);
+    if (wasCur) showMenu(); else renderDev();
+  };
+  $('dclose').onclick = closeDev;
 
   // ---------------- interaccion ----------------
   var prompt = $('prompt'), curExit = null;
@@ -339,11 +458,13 @@
     var dt = Math.min(0.1, (now - last) / 1000); last = now;
     fc++; ft += dt; if (ft >= 1) { fps = fc; fc = 0; ft = 0; }
     if (pressed.debug) debug = !debug;
-    if (pressed.menu) { if (state === 'play') pause(true); else if (state === 'pause') pause(false); }
+    if (pressed.dev) { if (state === 'dev') closeDev(); else openDev(); }
+    else if (pressed.menu) { if (state === 'dev') closeDev(); else if (state === 'play') pause(true); else if (state === 'pause') pause(false); }
     if (state === 'play' && scene) {
       acc += dt;
       while (acc >= STEP) { step(STEP); acc -= STEP; pressed.jump = false; }
       camStep(dt); updatePrompt();
+      if (game) { game.play = (game.play || 0) + dt; saveT += dt; if (saveT > 10) { saveT = 0; writeSave(); } }
     } else acc = 0;
     if (scene && state !== 'menu') { time += dt; fx.forEach(function (o) { fxStep(o, dt); }); }
     draw();
@@ -354,5 +475,5 @@
   loadImg(ETHAN);
   showMenu();
   requestAnimationFrame(frame);
-  window.__historia = { P: P, cam: cam, get state() { return state; }, get scene() { return sceneId; }, go: goScene }; // para pruebas
+  window.__historia = { P: P, cam: cam, get state() { return state; }, get scene() { return sceneId; }, get slot() { return slot; }, go: goScene }; // para pruebas
 })();
