@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Ethan life tycoon · Modo Historia</title>
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{--s:3;--px:'Press Start 2P',ui-monospace,monospace}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#000;color:#f3eedb;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+body{display:flex;align-items:center;justify-content:center;font-family:var(--px)}
+#stage{position:relative;overflow:hidden;background:#000}
+#cv{display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+#fade{position:absolute;inset:0;background:#000;opacity:1;pointer-events:none}
+.ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.ov[hidden],[hidden]{display:none!important}
+#card{font-size:calc(var(--s)*9px);line-height:1.5;padding:0 8%;letter-spacing:.04em;transition:opacity .7s;cursor:pointer}
+#card.out{opacity:0}
+#loading{position:absolute;right:calc(var(--s)*10px);bottom:calc(var(--s)*9px);font-size:calc(var(--s)*5px);color:#8a8a8a}
+#loading::after{content:'';animation:dots 1s steps(4) infinite}
+@keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+#sname{position:absolute;left:calc(var(--s)*10px);top:calc(var(--s)*9px);display:flex;flex-direction:column;gap:calc(var(--s)*3px);opacity:0;transform:translateY(-6px);transition:opacity .6s,transform .6s;text-shadow:0 calc(var(--s)*1px) 0 #000a;pointer-events:none}
+#sname.on{opacity:1;transform:none}
+#sname b{font-size:calc(var(--s)*8px);font-weight:400}
+#sname span{font-size:calc(var(--s)*4.5px);color:#d6c48e}
+#prompt{position:absolute;transform:translate(-50%,-100%);background:#1d1a17e6;border:calc(var(--s)*1px) solid #f3eedb;padding:calc(var(--s)*2.5px) calc(var(--s)*3.5px);font-size:calc(var(--s)*4.5px);white-space:nowrap;opacity:0;transition:opacity .15s;pointer-events:none}
+#prompt.on{opacity:1}
+kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--s)*1.2px)}
+/* menus */
+.mn{background:radial-gradient(ellipse at 50% 35%,#1b2140 0%,#05060c 70%);gap:calc(var(--s)*6px)}
+.mn h1{font-size:calc(var(--s)*12px);font-weight:400;margin:0;color:#ffd75e;text-shadow:0 calc(var(--s)*1.5px) 0 #8a5a10}
+.mn h2{font-size:calc(var(--s)*6px);font-weight:400;margin:0 0 calc(var(--s)*6px);color:#9fb1ff;letter-spacing:.12em}
+.mn button,.mn a{font-family:var(--px);font-size:calc(var(--s)*6px);min-width:calc(var(--s)*120px);padding:calc(var(--s)*4px) calc(var(--s)*6px);background:#1d1a17;color:#f3eedb;border:calc(var(--s)*1px) solid #f3eedb;cursor:pointer;text-decoration:none;display:block}
+.mn button:hover,.mn button:focus-visible,.mn a:hover,.mn a:focus-visible{background:#f3eedb;color:#1d1a17;outline:none}
+.mn .ctl{font-size:calc(var(--s)*4px);color:#8f96b8;line-height:2;margin-top:calc(var(--s)*6px)}
+#pause{background:#000b}
+#rot{display:none}
+/* controles tactiles */
+#touch{display:none}
+.touch #touch{display:block}
+#touch button{position:absolute;bottom:calc(var(--s)*8px);width:calc(var(--s)*28px);height:calc(var(--s)*28px);border-radius:50%;border:2px solid #fff6;background:#0006;color:#fffc;font-family:var(--px);font-size:calc(var(--s)*7px);touch-action:none}
+#touch [data-k=left]{left:calc(var(--s)*8px)}
+#touch [data-k=right]{left:calc(var(--s)*42px)}
+#touch [data-k=jump]{right:calc(var(--s)*8px);width:calc(var(--s)*34px);height:calc(var(--s)*34px)}
+#touch [data-k=act]{right:calc(var(--s)*48px)}
+#touch [data-k=menu]{top:calc(var(--s)*6px);bottom:auto;right:calc(var(--s)*6px);width:calc(var(--s)*18px);height:calc(var(--s)*18px);font-size:calc(var(--s)*5px)}
+@media (orientation:portrait) and (pointer:coarse){
+ #rot{display:flex;position:fixed;inset:0;z-index:9;background:#000;color:#f3eedb;font-family:var(--px);font-size:12px;line-height:2;padding:24px;text-align:center;align-items:center;justify-content:center}
+}
+</style></head><body>
+<div id="stage">
+ <canvas id="cv" aria-label="Modo Historia"></canvas>
+ <div id="sname"></div>
+ <div id="prompt"></div>
+ <div id="touch" aria-hidden="true">
+  <button data-k="left">◀</button><button data-k="right">▶</button>
+  <button data-k="act">E</button><button data-k="jump">▲</button><button data-k="menu">II</button>
+ </div>
+ <div id="fade"></div>
+ <div id="loading" hidden>Cargando</div>
+ <div id="card" class="ov" hidden></div>
+ <div id="menu" class="ov mn" hidden>
+  <h1>Ethan life tycoon</h1>
+  <h2>MODO HISTORIA</h2>
+  <button id="mcont" hidden>Continuar</button>
+  <button id="mnew">Nueva partida</button>
+  <a href="./">Volver al tycoon</a>
+  <div class="ctl">A / D andar · W o Espacio saltar · Mayús correr<br>E interactuar · S + salto bajar · Esc pausa</div>
+ </div>
+ <div id="pause" class="ov mn" hidden>
+  <h2>PAUSA</h2>
+  <button id="pcont">Seguir</button>
+  <button id="pmenu">Menú del Modo Historia</button>
+  <a href="./">Volver al tycoon</a>
+ </div>
+</div>
+<div id="rot">Gira el móvil<br>para jugar en horizontal</div>
+<script src="story/scenes.js"></script>
+<script src="story/engine.js"></script>
+</body></html>
