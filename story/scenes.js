@@ -24,7 +24,7 @@
 //   await s.choose(quien, texto, [..])   devuelve el indice elegido
 //   s.flag(k) / s.flag(k, valor)         leer / poner una marca de la partida (null la borra)
 //   s.has(id) / s.give(id) / s.take(id)  inventario (STORY.items)
-//   s.mission(id) / s.complete(id)       empezar / terminar una mision (STORY.missions)
+//   s.mission(id) / s.complete(id)       empezar / terminar una mision (STORY.missions: name, type, desc, steps, extra)
 //   await s.cine(true|false)             bandas negras de cine
 //   await s.walkTo(x) · s.face(1|-1) · s.sit(x|null) · s.eat(true|false)
 //   await s.wait(seg) · await s.fade(1|0, ms) · s.toast(texto)
@@ -45,6 +45,7 @@ window.STORY = {
   missions: {
     cena: {
       name: 'La cena de Nochevieja', type: 'principal',   // principal | secundaria
+      desc: 'Es Nochevieja y la familia ya está a la mesa. Lourdes quiere que saques su tortilla de la nevera para la cena.',
       steps: [
         { text: 'Saca la tortilla de la nevera', done: function (g) { return g.flag('nevera:tortilla'); } },
         { text: 'Siéntate a cenar en tu silla', done: function (g) { return g.flag('cena_hecha'); } }
@@ -126,7 +127,7 @@ window.STORY_SCENES = {
     ],
     npcs: [
       { id: 'hermanastra', name: 'Hermanastra', sprite: 'sprites/story/npc-hermanastra.png', x: 398, top: 144, run: 'hermanastra', voice: 560 },
-      { id: 'padre', name: 'Padre', sprite: 'sprites/story/npc-padre.png', x: 444, top: 144, run: 'padre', voice: 170 },
+      { id: 'padre', name: 'Aita', sprite: 'sprites/story/npc-padre.png', x: 444, top: 144, run: 'padre', voice: 170 },
       { id: 'lourdes', name: 'Lourdes', sprite: 'sprites/story/npc-lourdes.png', x: 490, top: 144, run: 'lourdes', voice: 420 }
     ],
     objects: [

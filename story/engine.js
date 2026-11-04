@@ -27,7 +27,7 @@
     KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right',
     KeyW: 'jump', ArrowUp: 'jump', Space: 'jump', KeyS: 'down', ArrowDown: 'down',
     KeyE: 'act', Enter: 'ok', Escape: 'menu', KeyP: 'menu', ShiftLeft: 'run', ShiftRight: 'run', F2: 'debug',
-    Backquote: 'dev', F1: 'dev', F3: 'edit', KeyI: 'inv', Tab: 'inv'
+    Backquote: 'dev', F1: 'dev', F3: 'edit', KeyI: 'inv', Tab: 'inv', KeyJ: 'diary'
   };
   var DEV = !!window.STORY_DEV;
   var keys = {}, pressed = {};
@@ -76,18 +76,78 @@
   // ---------------- partidas (ranuras) ----------------
   // Cada ranura guarda: escenario y posicion, tiempo jugado y, para lo que venga
   // (misiones, inventario), flags e inv.
-  var SLOTS = 3, slot = 0, game = null, saveT = 0;
+  var SLOTS = 3, slot = 0, game = null, saveT = 0, lastSaved = '';
   function slotKey(n) { return 'elt-historia-slot' + n; }
-  function readSlot(n) {
-    try { var d = JSON.parse(localStorage.getItem(slotKey(n))); return d && SCENES[d.scene] ? d : null; } catch (e) { return null; }
-  }
+  function rawSlot(n) { try { return JSON.parse(localStorage.getItem(slotKey(n))); } catch (e) { return null; } }
+  function readSlot(n) { var d = rawSlot(n); return d && !d.del && SCENES[d.scene] ? d : null; }
   function newData() { return { v: 2, scene: null, x: null, y: null, dir: 1, created: Date.now(), t: Date.now(), play: 0, flags: {}, inv: [] }; }
   function writeSave() {
     if (!slot || !game || !sceneId) return;
-    game.scene = sceneId; game.x = Math.round(P.x); game.y = Math.round(P.y); game.dir = P.dir; game.t = Date.now();
+    game.scene = sceneId; game.x = Math.round(P.x); game.y = Math.round(P.y); game.dir = P.dir;
+    var body = slot + JSON.stringify(Object.assign({}, game, { t: 0, play: Math.round(game.play || 0) }));
+    if (body === lastSaved) return;          // nada ha cambiado: no se toca la hora (asi un borrado en otro dispositivo no "resucita")
+    lastSaved = body; game.t = Date.now();
     try { localStorage.setItem(slotKey(slot), JSON.stringify(game)); } catch (e) { }
+    cloudSoon();
   }
-  function deleteSlot(n) { try { localStorage.removeItem(slotKey(n)); } catch (e) { } if (n === slot) { slot = 0; game = null; } }
+  function deleteSlot(n) { // se deja una "lapida" con la hora para que el borrado tambien llegue a la nube
+    try { localStorage.setItem(slotKey(n), JSON.stringify({ del: 1, t: Date.now() })); } catch (e) { }
+    if (n === slot) { slot = 0; game = null; }
+    cloudSoon(1);
+  }
+
+  // ---------------- nube: las partidas se guardan tambien en tu cuenta ----------------
+  // Usa la sesion del tycoon (misma web) y la tabla "historia" de Supabase (ver story/historia.sql).
+  // Sin sesion, sin conexion o sin la tabla, se sigue guardando en este navegador.
+  var SB_URL = 'https://cpmkytdzdnpwbasolawe.supabase.co', SB_KEY = 'sb_publishable_-0W9FnZULlBbz8kQRfL5bQ_uBA5bkY8'; // los mismos que index.html
+  var SB = null, uid = null, cst = 'local', cBusy = null, cAgain = false, cTimer = 0;
+  function kaFetch(u, o) { try { if (o && typeof o.body === 'string' && document.visibilityState === 'hidden') o = Object.assign({}, o, { keepalive: true }); } catch (e) { } return fetch(u, o); }
+  try { if (window.supabase) SB = supabase.createClient(SB_URL, SB_KEY, { global: { fetch: kaFetch } }); } catch (e) { SB = null; }
+  var CST = {
+    local: 'Se guarda en este navegador.',
+    nologin: 'Sin sesión: entra en el tycoon con tu cuenta para guardar también en la nube.',
+    ok: '☁ Guardado en tu cuenta.',
+    off: 'Sin conexión: se guarda aquí y se subirá al volver.',
+    notable: 'Falta crear la tabla "historia" en Supabase (story/historia.sql). De momento, solo en este navegador.',
+    err: 'No se pudo sincronizar con la nube. Se guarda en este navegador.'
+  };
+  function setCst(k) { cst = k; var el = $('sst'); if (el) { el.textContent = CST[k] || ''; el.className = 'sst ' + k; } }
+  function cloudSoon(now) {
+    if (!SB || !uid) return;
+    clearTimeout(cTimer); cTimer = setTimeout(cloudSync, now ? 300 : 8000);
+  }
+  function cloudSync() {
+    if (!SB || !uid) return Promise.resolve();
+    if (cBusy) { cAgain = true; return cBusy; }
+    clearTimeout(cTimer);
+    cBusy = SB.from('historia').select('slots').eq('id', uid).maybeSingle().then(function (r) {
+      if (r.error) throw r.error;
+      var remote = (r.data && r.data.slots) || {}, out = {}, changed = false, push = !r.data;
+      for (var n = 1; n <= SLOTS; n++) {
+        var L = rawSlot(n), R = remote[n];
+        if (R && (!L || (+R.t || 0) > (+L.t || 0))) {              // la de la nube es mas nueva
+          if (n === slot && game && state !== 'menu') { push = true; out[n] = L; continue; } // la partida en juego manda
+          try { localStorage.setItem(slotKey(n), JSON.stringify(R)); } catch (e) { }
+          out[n] = R; changed = true;
+        } else { out[n] = L || R || null; if (L && (!R || (+L.t || 0) > (+R.t || 0))) push = true; }
+      }
+      if (changed && !$('slots').hidden) showSlots();
+      if (!push) return;
+      return SB.from('historia').upsert({ id: uid, slots: out, ts: Date.now() }).then(function (w) { if (w.error) throw w.error; });
+    }).then(function () { setCst('ok'); }, function (e) {
+      var m = String((e && (e.message || e.code)) || e);
+      setCst(/PGRST205|42P01|does not exist|schema cache/i.test(m + (e && e.code)) ? 'notable' : /fetch|network|timeout|abort|load failed/i.test(m) ? 'off' : 'err');
+      if (cst === 'err') console.warn('[historia] nube:', m);
+    }).then(function () { cBusy = null; if (cAgain) { cAgain = false; return cloudSync(); } });
+    return cBusy;
+  }
+  if (SB) {
+    SB.auth.getSession().then(function (r) {
+      var ses = r && r.data && r.data.session; uid = ses ? ses.user.id : null;
+      if (uid) cloudSync(); else setCst('nologin');
+    }, function () { setCst('local'); });
+    addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') { if (state === 'play' || state === 'talk') writeSave(); if (uid) cloudSync(); } });
+  } else setCst('local');
   try { // el guardado antiguo (una sola partida) pasa a la ranura 1
     var old = localStorage.getItem(SAVE_KEY);
     if (old) {
@@ -174,7 +234,7 @@
   function screen(id) { ['menu', 'slots', 'pause'].forEach(function (k) { $(k).hidden = k !== id; }); }
   function showMenu() {
     if (state === 'dev') closeDev();
-    stopScript(); closeEditor(); $('inv').hidden = true; $('mis').hidden = true; hudSig = ''; thoughts = {};
+    stopScript(); closeEditor(); $('inv').hidden = true; $('diario').hidden = true; $('mis').hidden = true; hudSig = ''; thoughts = {};
     state = 'menu'; scene = null; sceneId = null; slot = 0; game = null; setFade(1); hidePrompt();
     screen('menu'); $('mplay').focus();
   }
@@ -209,6 +269,7 @@
       }
       box.appendChild(row);
     })(n);
+    setCst(cst);
     box.querySelector('button').focus();
   }
   async function startAt(n, cp) { // empieza una partida en la ranura n desde un punto de la historia
@@ -226,13 +287,13 @@
     screen(null); goScene(d.scene, null, { x: d.x, y: d.y, dir: d.dir });
   }
   function pause(on) {
-    if (on && state === 'play') { state = 'pause'; writeSave(); screen('pause'); $('pcont').focus(); keys = {}; }
+    if (on && state === 'play') { state = 'pause'; writeSave(); cloudSoon(1); screen('pause'); $('pcont').focus(); keys = {}; }
     else if (!on && state === 'pause') { state = 'play'; screen(null); pressed = {}; }
   }
   $('card').addEventListener('pointerdown', function () { skipCard = true; });
   $('mplay').onclick = showSlots; $('sback').onclick = showMenu;
   $('pcont').onclick = function () { pause(false); };
-  $('pmenu').onclick = function () { writeSave(); showMenu(); };
+  $('pmenu').onclick = function () { writeSave(); cloudSoon(1); showMenu(); };
   $('mdev').onclick = $('pdev').onclick = function () { openDev(); };
   $('ped').onclick = function () { pause(false); toggleEdit(true); };
   if (!DEV) ['mdev', 'pdev', 'ped'].forEach(function (id) { $(id).hidden = true; });
@@ -503,6 +564,36 @@
   $('invx').onclick = function () { toggleInv(false); };
   $('pinv').onclick = function () { pause(false); toggleInv(true); };
 
+  // ---------------- diario de misiones (J o desde la pausa) ----------------
+  function toggleDiary(on) {
+    var el = $('diario');
+    if (on === undefined) on = el.hidden;
+    if (on && state !== 'play') return;
+    if (!on) { el.hidden = true; if (state === 'diary') state = 'play'; pressed = {}; return; }
+    state = 'diary'; keys = {}; el.hidden = false;
+    var box = $('dial'); box.innerHTML = '';
+    [['activa', 'En curso'], ['hecha', 'Completadas']].forEach(function (g) {
+      var ids = Object.keys(MIS).filter(function (id) { return game && game.flags['mision:' + id] === g[0]; });
+      var h = document.createElement('div'); h.className = 'dgt'; h.textContent = g[1] + ' (' + ids.length + ')'; box.appendChild(h);
+      if (!ids.length) { var e = document.createElement('p'); e.className = 'iv0'; e.textContent = g[0] === 'activa' ? 'No tienes misiones en curso.' : 'Todavía ninguna.'; box.appendChild(e); }
+      ids.forEach(function (id) {
+        var m = MIS[id], c = document.createElement('div'); c.className = 'dgm ' + (m.type === 'secundaria' ? 'side' : 'main') + (g[0] === 'hecha' ? ' done' : '');
+        var t = document.createElement('b'); t.innerHTML = '<i></i>'; t.appendChild(document.createTextNode(m.name));
+        var k = document.createElement('small'); k.textContent = m.type === 'secundaria' ? 'Misión secundaria' : 'Misión principal';
+        c.appendChild(t); c.appendChild(k);
+        if (m.desc) { var d = document.createElement('p'); d.textContent = m.desc; c.appendChild(d); }
+        (m.steps || []).concat(m.extra || []).forEach(function (st, i) {
+          var ok = g[0] === 'hecha' && i < (m.steps || []).length || avail({ when: st.done });
+          var r = document.createElement('div'); r.className = 'ms' + (ok ? ' ok' : '') + (i >= (m.steps || []).length ? ' ex' : '');
+          r.innerHTML = '<i></i>'; r.appendChild(document.createTextNode(st.text)); c.appendChild(r);
+        });
+        box.appendChild(c);
+      });
+    });
+  }
+  $('diax').onclick = function () { toggleDiary(false); };
+  $('pdia').onclick = function () { pause(false); toggleDiary(true); };
+
   // ---------------- sonido (sintetizado, sin archivos) ----------------
   // Comparte el silencio con el tycoon (elt_mute).
   var AC = null, master = null, muted = false;
@@ -725,17 +816,33 @@
     if (P.x < hw + 4) { P.x = hw + 4; P.vx = 0; }
     if (P.x > scene.w - hw - 4) { P.x = scene.w - hw - 4; P.vx = 0; }
 
-    var py = P.y; P.y += P.vy * dt; P.ground = false; P.onPlat = false;
+    var py = P.y, vyIn = P.vy, wasG = P.ground; P.y += P.vy * dt; P.ground = false; P.onPlat = false;
     if (P.vy >= 0) {
       if (P.y >= scene.floor) { P.y = scene.floor; P.vy = 0; P.ground = true; }
       if (P.drop <= 0) (scene.platforms || []).forEach(function (p) {
         if (P.x + hw > p.x && P.x - hw < p.x + p.w && py <= p.y + 0.5 && P.y >= p.y) { P.y = p.y; P.vy = 0; P.ground = true; P.onPlat = true; }
       });
     }
+    if (!wasG && P.ground && vyIn > 150) dust(P.x, P.y, Math.min(1, (vyIn - 150) / 250));
     // animacion: 4 fotogramas de paseo (1 y 3 = piernas juntas)
     if (!P.ground) P.frame = 2;
     else if (Math.abs(P.vx) > 4) { P.dist += Math.abs(P.vx) * dt; P.frame = Math.floor(P.dist / 7) % 4; }
     else { P.frame = 1; P.dist = 0; }
+  }
+  // polvo discreto al aterrizar: unas motas que se abren a los lados y se desvanecen
+  var motes = [];
+  function dust(x, y, k) {
+    var n = 4 + Math.round(k * 4);
+    for (var i = 0; i < n; i++) {
+      var sd = i % 2 ? 1 : -1;
+      motes.push({ x: x + sd * (2 + Math.random() * 4), y: y - Math.random() * 1.5, vx: sd * (14 + Math.random() * 26 * (0.5 + k)), vy: -(4 + Math.random() * 10), l: 0.3 + Math.random() * 0.2, ml: 0.5 });
+    }
+  }
+  function dustStep(dt) {
+    for (var i = motes.length - 1; i >= 0; i--) {
+      var m = motes[i]; m.l -= dt; if (m.l <= 0) { motes.splice(i, 1); continue; }
+      m.vx *= 1 - 5 * dt; m.vy += 30 * dt; m.x += m.vx * dt; m.y = Math.min(m.y + m.vy * dt, P.ground ? P.y : m.y + m.vy * dt);
+    }
   }
   function clampCam(x) { return Math.max(0, Math.min(scene.w - VW, x)); }
   function camStep(dt) {
@@ -836,7 +943,12 @@
       if (!avail(pr) || !ITEMS[pr.item]) return;
       ctx.drawImage(ob, ITEMS[pr.item].icon * 16, 0, 16, 16, Math.round(pr.x) - 8 - cx, pr.y - 16, 16, 16);
     });
-    // Ethan
+    // polvo y Ethan
+    if (motes.length) {
+      ctx.fillStyle = scene.dust || '#d8cbb2';
+      motes.forEach(function (m) { ctx.globalAlpha = Math.max(0, m.l / m.ml) * 0.55; ctx.fillRect(Math.round(m.x) - cx, Math.round(m.y) - 1, 1, 1); });
+      ctx.globalAlpha = 1;
+    }
     var e = img(ETHAN), es = img(SIT);
     if (P.sit && es) ctx.drawImage(es, (P.eatF || 0) * 48, 0, 48, 48, Math.round(P.x) - 24 - cx, Math.round(P.y) - 46, 48, 48);
     else if (e) {
@@ -876,8 +988,9 @@
     if (pressed.debug) debug = !debug;
     if (pressed.edit) toggleEdit();
     if (pressed.inv && (state === 'play' || state === 'inv')) toggleInv();
+    if (pressed.diary && (state === 'play' || state === 'diary')) toggleDiary();
     if (pressed.dev) { if (state === 'dev') closeDev(); else openDev(); }
-    else if (pressed.menu) { if (state === 'edit') closeEditor(); else if (state === 'inv') toggleInv(false); else if (state === 'dev') closeDev(); else if (state === 'play') pause(true); else if (state === 'pause') pause(false); }
+    else if (pressed.menu) { if (state === 'edit') closeEditor(); else if (state === 'inv') toggleInv(false); else if (state === 'diary') toggleDiary(false); else if (state === 'dev') closeDev(); else if (state === 'play') pause(true); else if (state === 'pause') pause(false); }
     if (state === 'play' && scene) {
       // la pulsacion se guarda en el buffer aqui (no dentro del paso fijo) para no perderla
       // en pantallas de mas de 60 Hz, donde hay fotogramas sin ningun paso de fisica
@@ -888,7 +1001,7 @@
       if (game) { game.play = (game.play || 0) + dt; saveT += dt; if (saveT > 10) { saveT = 0; writeSave(); } }
     } else if (state === 'talk' && run) { acc = 0; P.vx = 0; scriptStep(dt); camStep(dt); if (game) game.play = (game.play || 0) + dt; }
     else acc = 0;
-    if (scene) thinkStep(dt);
+    if (scene) { thinkStep(dt); if (state === 'play' || state === 'talk') dustStep(dt); }
     npcs.forEach(function (o) { o.blinkT -= dt; if (o.blinkT <= 0) { o.blink = 0.13; o.blinkT = 2 + Math.random() * 3.5; } o.blink -= dt; });
     if (scene && state !== 'menu') { time += dt; fx.forEach(function (o) { fxStep(o, dt); }); }
     draw();

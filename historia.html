@@ -119,6 +119,26 @@ body{display:flex;align-items:center;justify-content:center;font-family:var(--px
 #mis .mt i{display:inline-block;width:calc(var(--s)*3px);height:calc(var(--s)*3px);margin-right:calc(var(--s)*2px);background:#ffd75e;transform:rotate(45deg) translateY(calc(var(--s)*-.5px))}
 #mis .mt.side{color:#7ee0ff}
 #mis .mt.side i{background:transparent;border:calc(var(--s)*.6px) solid #7ee0ff}
+.sst{margin:0;font-size:calc(var(--s)*3.8px);color:#8f96b8;max-width:calc(var(--s)*230px);line-height:1.6}
+.sst.ok{color:#8fdf6e}.sst.notable,.sst.err,.sst.off{color:#ffd75e}
+/* diario */
+#diario{background:#000b}
+.dib{width:calc(var(--s)*220px);max-height:86%;overflow:auto}
+.dgt{color:#9fb1ff;font-size:calc(var(--s)*4.4px);margin:calc(var(--s)*3px) 0 calc(var(--s)*2px)}
+.dgm{background:#2b2620;border-left:calc(var(--s)*1.2px) solid #ffd75e;padding:calc(var(--s)*3px) calc(var(--s)*4px);margin-bottom:calc(var(--s)*3px);display:flex;flex-direction:column;gap:calc(var(--s)*1.6px);font-size:calc(var(--s)*3.8px);line-height:1.6}
+.dgm.side{border-left-color:#7ee0ff}
+.dgm.done{opacity:.7}
+.dgm b{font-weight:400;font-size:calc(var(--s)*5px);color:#ffd75e;display:flex;align-items:center;gap:calc(var(--s)*2px)}
+.dgm.side b{color:#7ee0ff}
+.dgm b i{width:calc(var(--s)*3px);height:calc(var(--s)*3px);background:currentColor;transform:rotate(45deg)}
+.dgm.side b i{background:transparent;border:calc(var(--s)*.6px) solid currentColor}
+.dgm small{color:#b9bfd8;font-size:calc(var(--s)*3.3px)}
+.dgm p{margin:0;color:#e8e2d0}
+.dgm .ms{display:flex;gap:calc(var(--s)*2.5px);align-items:baseline}
+.dgm .ms i{flex:none;width:calc(var(--s)*3px);height:calc(var(--s)*3px);border:calc(var(--s)*.7px) solid #f3eedb}
+.dgm .ms.ok{color:#8fa08a;text-decoration:line-through}
+.dgm .ms.ok i{background:#8fdf6e;border-color:#8fdf6e}
+.dgm .ms.ex{color:#b9bfd8}
 kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--s)*1.2px)}
 /* menus */
 .mn{background:radial-gradient(ellipse at 50% 35%,#1b2140 0%,#05060c 70%);gap:calc(var(--s)*6px)}
@@ -175,6 +195,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
  <div id="think"><span></span></div>
  <div id="quest" hidden><i class="ql"></i><small id="qlab"></small><b id="qtit"></b><i class="ql"></i></div>
  <div id="dlg" hidden><div id="dport"></div><div class="dtx"><b id="dname"></b><p id="dtext"></p><div id="dopts"></div></div><i id="dnext">▼</i></div>
+ <div id="diario" class="ov" hidden><div class="ivb dib"><div class="dh"><b>Diario de misiones</b><button id="diax" aria-label="Cerrar">✕</button></div><div id="dial"></div></div></div>
  <div id="inv" class="ov" hidden><div class="ivb"><div class="dh"><b>Inventario</b><button id="invx" aria-label="Cerrar">✕</button></div><div id="invl"></div></div></div>
  <div id="touch" aria-hidden="true">
   <button data-k="left">◀</button><button data-k="right">▶</button>
@@ -189,16 +210,18 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
   <button id="mplay">Jugar</button>
   <button id="mdev" class="dv">Desarrollador</button>
   <a href="./">Volver al tycoon</a>
-  <div class="ctl">A / D andar · W o Espacio saltar · Mayús correr<br>E interactuar · I inventario · S + salto bajar · Esc pausa · º desarrollador</div>
+  <div class="ctl">A / D andar · W o Espacio saltar · Mayús correr<br>E interactuar · I inventario · J diario · S + salto bajar · Esc pausa · º desarrollador</div>
  </div>
  <div id="slots" class="ov mn" hidden>
   <h2>PARTIDAS</h2>
   <div id="slist"></div>
+  <p id="sst" class="sst"></p>
   <button id="sback">Atrás</button>
  </div>
  <div id="pause" class="ov mn" hidden>
   <h2>PAUSA</h2>
   <button id="pcont">Seguir</button>
+  <button id="pdia">Diario de misiones</button>
   <button id="pinv">Inventario</button>
   <button id="psnd">Sonido: Sí</button>
   <button id="pdev" class="dv">Desarrollador</button>
@@ -227,6 +250,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
  </div>
 </div>
 <div id="rot">Gira el móvil<br>para jugar en horizontal</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="story/dialogos.js"></script>
 <script src="story/scenes.js"></script>
 <script src="story/engine.js"></script>
