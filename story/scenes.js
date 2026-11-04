@@ -9,7 +9,8 @@
 //    S + salto para bajarse). {x, y, w}.
 //  - spawns: puntos donde aparece Ethan. exits: zonas con [E] que llevan a otro escenario
 //    (when(g) para abrirlas solo a partir de un momento; locked = guion si aun no se puede).
-//  - fx: efectos animados. z = indice de la capa tras la que se pintan.
+//  - fx: efectos animados. z = indice de la capa tras la que se pintan. when(g) para que solo salgan
+//    a partir de un momento. Los fuegos con light iluminan la escena con el color de cada explosion.
 //  - Una capa con front: true se pinta delante de los personajes (p. ej. la mesa).
 //  - npcs: personajes. x = centro, top = y de la parte de arriba del sprite (48x48, 7 fotogramas),
 //    run = guion que se ejecuta al hablarle, reach = distancia para poder hablarle,
@@ -56,7 +57,7 @@ window.STORY = {
   // Reloj de la partida: aparece despues de la cena. rate = segundos reales por minuto de juego.
   // events: guiones que saltan a una hora (una sola vez; se rearman borrando la flag "hora:<id>").
   clock: {
-    rate: 1.5,
+    rate: 0.8,
     events: [
       { id: 'campanadas', at: '23:59', run: 'campanadas', when: function (g) { return g.flag('cena_hecha'); } },
       { id: 'quedada', at: '00:30', run: 'quedada', when: function (g) { return g.flag('ano_nuevo'); } },
@@ -229,7 +230,7 @@ window.STORY_SCENES = {
     spawns: { inicio: { x: 150, dir: 1 }, puerta: { x: 606, dir: -1 }, mesa: { x: 520, dir: -1 }, nevera: { x: 76, dir: 1 }, silla: { x: 340, dir: 1 } },
     exits: [{ x: 588, w: 42, to: 'calle', spawn: 'portal', label: 'Salir', when: function (g) { return g.flag('ano_nuevo'); }, locked: 'puerta_cerrada' }],
     fx: [
-      { type: 'fireworks', z: 0, x0: 40, x1: 340, y0: 58, y1: 100, rate: 1.1 },
+      { type: 'fireworks', z: 0, x0: 40, x1: 340, y0: 58, y1: 100, rate: 1.1, when: function (g) { return g.flag('ano_nuevo'); }, light: { x: 279, y: 86, r: 240, a: 0.09 } },
       { type: 'tv', x: 539, y: 85, w: 40, h: 25 },
       { type: 'glow', x: 559, y: 97, r: 46, c: '120,160,255', a: 0.16, flicker: 1 },
       { type: 'glow', x: 314, y: 14, r: 90, c: '255,250,225', a: 0.10 },
@@ -238,8 +239,8 @@ window.STORY_SCENES = {
   },
 
   calle: {
-    name: 'Calle', sub: 'Sestao · provisional',
-    w: 1100, floor: 200,
+    name: 'Calle', sub: 'Portal 3 · Sestao',
+    w: 1300, floor: 200,
     layers: [
       { src: 'sprites/story/calle-cielo.png', f: 0.08 },
       { src: 'sprites/story/calle-lejos.png', f: 0.3 },
@@ -247,24 +248,28 @@ window.STORY_SCENES = {
       { src: 'sprites/story/calle.png', f: 1 }
     ],
     platforms: [
-      { x: 420, y: 186, w: 44 },  // banco
-      { x: 718, y: 172, w: 46 }   // contenedor
+      { x: 148, y: 157, w: 82 },   // techo del monovolumen azul
+      { x: 336, y: 161, w: 54 },   // techo del todoterreno gris
+      { x: 772, y: 167, w: 60 },   // techo del coche rojo
+      { x: 1018, y: 172, w: 86 },  // contenedores
+      { x: 1112, y: 184, w: 40 }   // banco
     ],
-    spawns: { portal: { x: 87, dir: 1 } },
-    exits: [{ x: 66, w: 42, to: 'cocina', spawn: 'puerta', label: 'Entrar a casa' }],
+    spawns: { portal: { x: 276, dir: 1 } },
+    exits: [{ x: 252, w: 48, to: 'cocina', spawn: 'puerta', label: 'Entrar al portal' }],
     objects: [
-      { id: 'metro', name: 'Metro', x: 1066, reach: 24, py: 150, label: 'Bajar al metro', run: 'metro', when: function (g) { return g.flag('mision:metro') === 'activa'; } }
+      { id: 'metro', name: 'Metro', x: 1206, reach: 24, py: 150, label: 'Bajar al metro', run: 'metro', when: function (g) { return g.flag('mision:metro') === 'activa'; } }
     ],
     fx: [
-      { type: 'fireworks', z: 0, x0: 20, x1: 460, y0: 25, y1: 110, rate: 1.6 },
+      { type: 'fireworks', z: 0, x0: 20, x1: 460, y0: 20, y1: 80, rate: 1.4, when: function (g) { return g.flag('ano_nuevo'); }, light: { x: 0, y: 0, r: 0, a: 0.07 } },
       { type: 'blink', x: 304, y: 57, f: 0.3, z: 1 },
       { type: 'blink', x: 322, y: 69, f: 0.3, z: 1, phase: 0.5 },
-      { type: 'glow', x: 312, y: 126, r: 44, c: '255,225,150', a: 0.22 },
-      { type: 'glow', x: 652, y: 126, r: 44, c: '255,225,150', a: 0.22 },
-      { type: 'glow', x: 992, y: 126, r: 44, c: '255,225,150', a: 0.22 },
-      { type: 'glow', x: 87, y: 138, r: 30, c: '255,235,180', a: 0.14 },
-      { type: 'glow', x: 917, y: 120, r: 34, c: '255,90,110', a: 0.25, flicker: 0.4 },
-      { type: 'glow', x: 926, y: 168, r: 60, c: '255,200,110', a: 0.14 }
+      { type: 'glow', x: 664, y: 126, r: 46, c: '255,225,150', a: 0.24 },
+      { type: 'glow', x: 1012, y: 126, r: 46, c: '255,225,150', a: 0.24 },
+      { type: 'glow', x: 276, y: 168, r: 40, c: '255,220,150', a: 0.2 },
+      { type: 'glow', x: 497, y: 152, r: 30, c: '255,90,110', a: 0.25, flicker: 0.4 },
+      { type: 'glow', x: 500, y: 178, r: 56, c: '255,200,110', a: 0.16 },
+      { type: 'glow', x: 160, y: 154, r: 12, c: '255,120,140', a: 0.2 },
+      { type: 'glow', x: 1164, y: 125, r: 24, c: '255,80,80', a: 0.18 }
     ]
   }
 };

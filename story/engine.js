@@ -190,7 +190,7 @@
   var busy = false;
   async function goScene(id, spawn, at, keep) {   // keep: lo pide un guion, que sigue en marcha
     if (busy) return; busy = true;
-    var prev = state; state = 'loading'; hidePrompt(); if (!keep) stopScript(); thoughts = {}; motes = [];
+    var prev = state; state = 'loading'; hidePrompt(); if (!keep) stopScript(); thoughts = {}; motes = []; flashes = [];
     if (prev !== 'card' && prev !== 'menu') await fadeTo(1, 280); else setFade(1);
     loading.hidden = false;
     var t0 = performance.now();
@@ -841,11 +841,58 @@
   function saveText() {
     try { localStorage.setItem(TEXT_KEY, JSON.stringify(TEXT)); } catch (e) { }
     edStatus();
+    if (fileH && filePerm) { clearTimeout(fileT); fileT = setTimeout(function () { writeFile(false); }, 600); }
   }
-  function edStatus() {
-    var dirty = serializeText(TEXT) !== serializeText(TEXT_FILE);
-    $('edst').textContent = dirty ? 'Hay cambios guardados en este navegador que aún no están en el proyecto.' : 'Sin cambios: igual que story/dialogos.js.';
-    $('edst').classList.toggle('dirty', dirty);
+  function edStatus(msg) {
+    var dirty = serializeText(TEXT) !== serializeText(TEXT_FILE), el = $('edst');
+    el.textContent = msg || (fileH && filePerm ? (dirty ? 'Guardando en ' + fileH.name + '…' : '✓ Guardado en el archivo ' + fileH.name + '. Solo falta subirlo con git.')
+      : dirty ? 'Hay cambios guardados solo en este navegador. Pulsa "Guardar en el archivo" para pasarlos a story/dialogos.js.' : 'Sin cambios: igual que story/dialogos.js.');
+    el.classList.toggle('dirty', dirty && !(fileH && filePerm));
+    var b = $('edfile'); if (b) { b.hidden = !FS; b.textContent = fileH && filePerm ? '📁 ' + fileH.name + ' ✓' : '📁 Guardar en el archivo'; }
+  }
+  // Acceso al archivo (File System Access API): se elige una vez story/dialogos.js y el navegador
+  // recuerda el permiso; desde entonces cada cambio se escribe en el archivo al momento.
+  var FS = DEV && 'showOpenFilePicker' in window, fileH = null, filePerm = false, fileT = 0;
+  function idb(mode, fn) {
+    return new Promise(function (res) {
+      try {
+        var rq = indexedDB.open('elt-historia', 1);
+        rq.onupgradeneeded = function () { rq.result.createObjectStore('h'); };
+        rq.onsuccess = function () { var tx = rq.result.transaction('h', mode), st = tx.objectStore('h'), r; try { r = fn(st); } catch (e) { res(null); return; } tx.oncomplete = function () { res(r && r.result); }; tx.onerror = function () { res(null); }; };
+        rq.onerror = function () { res(null); };
+      } catch (e) { res(null); }
+    });
+  }
+  if (FS) idb('readonly', function (st) { return st.get('dialogos'); }).then(function (h) {
+    if (!h) return; fileH = h;
+    h.queryPermission({ mode: 'readwrite' }).then(function (p) { filePerm = p === 'granted'; if (!$('ed').hidden) edStatus(); });
+  });
+  async function writeFile(ask) {
+    try {
+      if (!filePerm) {
+        if (!ask) return false;
+        filePerm = (await fileH.requestPermission({ mode: 'readwrite' })) === 'granted';
+        if (!filePerm) { edStatus('No se dio permiso para escribir el archivo.'); return false; }
+        // si el archivo cambio desde que se abrio el juego (git pull, editado a mano...), avisar antes de pisarlo
+        var disk = await (await fileH.getFile()).text();
+        if (disk !== serializeText(TEXT_FILE) && disk !== serializeText(TEXT) &&
+          !confirm('El archivo ' + fileH.name + ' ha cambiado desde que abriste el juego (quizá por un git pull o editado a mano).\n\n¿Sobrescribirlo con lo que hay en el editor? Si dices que no, recarga la página para cargar el archivo nuevo.')) { filePerm = false; edStatus(); return false; }
+      }
+      var w = await fileH.createWritable(); await w.write(serializeText(TEXT)); await w.close();
+      TEXT_FILE = JSON.parse(JSON.stringify(TEXT));
+      try { localStorage.removeItem(TEXT_KEY); } catch (e) { }
+      edStatus(); return true;
+    } catch (e) { console.warn('[historia] no se pudo escribir el archivo', e); edStatus('No se pudo escribir el archivo: ' + (e.message || e)); return false; }
+  }
+  async function linkFile() {
+    if (fileH) { filePerm = filePerm || (await fileH.queryPermission({ mode: 'readwrite' })) === 'granted'; if (filePerm) return writeFile(false); return writeFile(true); }
+    try {
+      var hs = await window.showOpenFilePicker({ types: [{ description: 'dialogos.js', accept: { 'text/javascript': ['.js'] } }], multiple: false });
+      var h = hs[0];
+      if (h.name !== 'dialogos.js' && !confirm('Has elegido "' + h.name + '", no dialogos.js. ¿Escribir los diálogos en ese archivo igualmente?')) return;
+      fileH = h; filePerm = false; await idb('readwrite', function (st) { return st.put(h, 'dialogos'); });
+      await writeFile(true);
+    } catch (e) { if (e && e.name !== 'AbortError') edStatus('No se pudo abrir el archivo: ' + (e.message || e)); }
   }
   function whoChoices() {
     var l = [['ethan', 'Ethan']];
@@ -885,7 +932,8 @@
           b.onclick = function () { var j = i + m[1]; if (j < 0 || j >= d.lines.length) return; var t = d.lines[i]; d.lines[i] = d.lines[j]; d.lines[j] = t; saveText(); renderEditor(); };
           tools.appendChild(b);
         });
-        var rb = document.createElement('button'); rb.textContent = '✕'; rb.className = 'del'; rb.onclick = function () { d.lines.splice(i, 1); saveText(); renderEditor(); }; tools.appendChild(rb);
+        var rb = document.createElement('button'); rb.textContent = '✕'; rb.className = 'del'; rb.title = 'Borrar esta línea';
+        rb.onclick = function () { if (!confirm('¿Borrar esta línea?\n\n' + (L.text || '(vacía)'))) return; d.lines.splice(i, 1); saveText(); renderEditor(); }; tools.appendChild(rb);
         row.appendChild(sel); row.appendChild(ta); row.appendChild(tools); sec.appendChild(row);
       });
       var add = document.createElement('button'); add.textContent = '+ Línea'; add.className = 'edadd';
@@ -908,6 +956,7 @@
     TEXT[k] = { lines: [{ who: edOwner.npc ? edOwner.id : 'ethan', text: '' }] }; saveText(); renderEditor();
   };
   $('edx').onclick = closeEditor;
+  $('edfile').onclick = linkFile;
   $('eddl').onclick = function () {
     var b = new Blob([serializeText(TEXT)], { type: 'text/javascript' }), a = document.createElement('a');
     a.href = URL.createObjectURL(b); a.download = 'dialogos.js'; document.body.appendChild(a); a.click(); a.remove();
@@ -1013,6 +1062,7 @@
     var d = o.d; o.t += dt;
     if (d.type !== 'fireworks') return;
     o.next -= dt;
+    if (o.next <= 0 && d.when && !avail(d)) o.next = 0.5;   // aun no es la hora: no salen
     if (o.next <= 0) {
       o.next = (0.4 + Math.random() * 1.2) / ((d.rate || 1) * (party() ? 3.5 : 1));
       var x = d.x0 + Math.random() * (d.x1 - d.x0), ty = d.y0 + Math.random() * (d.y1 - d.y0);
@@ -1025,6 +1075,7 @@
         if (p.y <= p.ty) {
           o.parts.splice(i, 1);
           if (party() && Math.random() < 0.7) pum(Math.random() * 0.15);
+          if (d.light) flashes.push({ c: p.c, t: 0, d: 0.9, L: d.light, x: p.x, f: d.f == null ? 1 : d.f });
           var n = 22 + (Math.random() * 14 | 0), sp = 30 + Math.random() * 25, c2 = Math.random() < 0.4 ? FW_COLS[Math.random() * FW_COLS.length | 0] : p.c;
           for (var k = 0; k < n; k++) {
             var a = k / n * Math.PI * 2, v = sp * (0.7 + Math.random() * 0.3);
@@ -1037,6 +1088,22 @@
         if (p.l <= 0) o.parts.splice(i, 1);
       }
     }
+  }
+  var flashes = []; // destellos de los fuegos sobre la escena
+  function drawFlashes(cx) {
+    if (!flashes.length) return;
+    ctx.globalCompositeOperation = 'lighter';
+    flashes = flashes.filter(function (fl) {
+      fl.t += 1 / 60; var k = 1 - fl.t / fl.d; if (k <= 0) return false;
+      ctx.globalAlpha = fl.L.a * k * k; ctx.fillStyle = fl.c; ctx.fillRect(0, 0, VW, VH);
+      if (fl.L.r) {
+        var x = fl.L.x - cx, g = ctx.createRadialGradient(x, fl.L.y, 0, x, fl.L.y, fl.L.r);
+        g.addColorStop(0, fl.c); g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.globalAlpha = Math.min(1, fl.L.a * 3.2) * k * k; ctx.fillStyle = g; ctx.fillRect(x - fl.L.r, fl.L.y - fl.L.r, fl.L.r * 2, fl.L.r * 2);
+      }
+      return true;
+    });
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
   }
   function party() { return !!(game && game.flags.ano_nuevo && game.clock != null && game.clock < toMin('00:25')); }
   function fxDraw(o, cx) {
@@ -1127,6 +1194,7 @@
       if (P.dir > 0) ctx.drawImage(e, P.frame * 48, 0, 48, 48, dx - 24, dy, 48, 48);
       else { ctx.save(); ctx.translate(dx + 24, dy); ctx.scale(-1, 1); ctx.drawImage(e, P.frame * 48, 0, 48, 48, 0, 0, 48, 48); ctx.restore(); }
     }
+    drawFlashes(cx);
     if (debug) drawDebug(cx);
     if (editing) {
       ctx.setLineDash([2, 2]); ctx.strokeStyle = '#ff5ad1'; ctx.lineWidth = 1; ctx.font = '7px monospace'; ctx.textBaseline = 'bottom'; ctx.fillStyle = '#ff5ad1';
@@ -1182,5 +1250,5 @@
   loadImg(ETHAN);
   showMenu();
   requestAnimationFrame(frame);
-  window.__historia = { P: P, cam: cam, get state() { return state; }, get scene() { return sceneId; }, get slot() { return slot; }, go: goScene }; // para pruebas
+  window.__historia = { P: P, cam: cam, get state() { return state; }, get scene() { return sceneId; }, get slot() { return slot; }, get fx() { return fx; }, get flashes() { return flashes.length; }, go: goScene }; // para pruebas
 })();

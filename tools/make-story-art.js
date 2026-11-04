@@ -43,11 +43,15 @@ FB.prototype.vgrad = function (x, y, w, h, stops) { // degradado vertical con tr
   }
 };
 // fuente mini 3x5
-var GL = {
-  '0': '111101101101111', '1': '010110010010111', '2': '111001111100111', '3': '111001111001111',
-  '7': '111001010010010', 'A': '010101111101101', 'B': '110101110101110', 'C': '111100100100111',
-  'D': '110101101101110', 'I': '111010010010111', 'R': '110101110101101', ' ': '000000000000000',
-  'M': '101111111101101', 'E': '111100110100111', 'T': '111010010010010', 'O': '111101101101111'
+var GL = { // fuente mini 3x5 (mayusculas y numeros)
+  '0': '111101101101111', '1': '010110010010111', '2': '111001111100111', '3': '111001111001111', '4': '101101111001001',
+  '5': '111100111001111', '6': '111100111101111', '7': '111001010010010', '8': '111101111101111', '9': '111101111001111',
+  'A': '010101111101101', 'B': '110101110101110', 'C': '111100100100111', 'D': '110101101101110', 'E': '111100110100111',
+  'F': '111100110100100', 'G': '011100101101011', 'H': '101101111101101', 'I': '111010010010111', 'J': '001001001101010',
+  'K': '101101110101101', 'L': '100100100100111', 'M': '101111111101101', 'N': '110101101101101', 'O': '111101101101111',
+  'P': '110101110100100', 'Q': '010101101110011', 'R': '110101110101101', 'S': '011100010001110', 'T': '111010010010010',
+  'U': '101101101101111', 'V': '101101101101010', 'W': '101101111111101', 'X': '101101010101101', 'Y': '101101010010010',
+  'Z': '111001010100111', '.': '000000000000010', '-': '000000111000000', '/': '001001010100100', ' ': '000000000000000'
 };
 FB.prototype.text = function (x, y, s, c, sc) {
   sc = sc || 1;
@@ -439,9 +443,9 @@ function calleCielo() {
   save(f, 'calle-cielo.png');
 }
 function calleLejos() { // margen izquierda: altos hornos, chimeneas y gruas
-  var f = new FB(620, 216), r = rng(5), c = '#1d2342', e = '#2b3256';
-  f.rect(0, 156, 620, 60, c);
-  for (var x = 0; x < 620; x++) { var y = 150 + Math.round(4 * Math.sin(x / 37) + 3 * Math.sin(x / 11)); f.rect(x, y, 1, 216 - y, c); f.px(x, y, e); }
+  var f = new FB(680, 216), r = rng(5), c = '#1d2342', e = '#2b3256';
+  f.rect(0, 156, 680, 60, c);
+  for (var x = 0; x < 680; x++) { var y = 150 + Math.round(4 * Math.sin(x / 37) + 3 * Math.sin(x / 11)); f.rect(x, y, 1, 216 - y, c); f.px(x, y, e); }
   // alto horno
   f.rect(140, 70, 28, 90, c); f.rect(132, 110, 44, 50, c); f.rect(150, 40, 8, 30, c); f.rect(146, 36, 16, 4, c);
   f.rect(168, 90, 50, 4, c); f.rect(214, 90, 4, 70, c); f.rect(118, 120, 14, 3, c);
@@ -460,8 +464,8 @@ function calleLejos() { // margen izquierda: altos hornos, chimeneas y gruas
   save(f, 'calle-lejos.png');
 }
 function calleMedio() { // bloques de pisos
-  var f = new FB(840, 216), r = rng(21), x = 0;
-  while (x < 840) {
+  var f = new FB(960, 216), r = rng(21), x = 0;
+  while (x < 960) {
     var w = 56 + (r() * 56 | 0), top = 104 + (r() * 46 | 0), col = r() < 0.5 ? '#2c3550' : '#33304f';
     f.rect(x, top, w, 216 - top, col); f.rect(x, top, w, 2, '#3d4870'); f.rect(x + w - 1, top, 1, 216 - top, '#1e2438');
     f.rect(x + 4, top - 6, 8, 6, col); // caseton
@@ -477,67 +481,175 @@ function calleMedio() { // bloques de pisos
   }
   save(f, 'calle-medio.png');
 }
-function calle() {
-  var W = 1100, f = new FB(W, 216), r = rng(9), wood = '#a9733f', woodD = '#7f5229';
-  // acera y calzada
-  f.rect(0, 200, W, 6, '#9a9a94'); f.rect(0, 200, W, 1, '#b8b8b0');
-  for (var x = 0; x < W; x += 24) f.rect(x, 200, 1, 6, '#7e7e78');
-  f.rect(0, 206, W, 2, '#c8c8c0'); f.rect(0, 208, W, 8, '#34343a');
-  for (var x = 10; x < W; x += 60) f.rect(x, 212, 24, 1, '#d8d8cc');
-  // edificio del portal de Ethan
-  f.rect(0, 18, 172, 182, '#8c7a66'); f.rect(170, 18, 2, 182, '#5e5040'); f.rect(0, 18, 172, 3, '#a8957e');
-  for (var y = 24; y < 130; y += 4) for (var x = (y / 4) % 2 ? 0 : 6; x < 170; x += 12) f.rect(x, y, 1, 4, '#7a6a58');
-  for (var fl = 0; fl < 3; fl++) for (var wn = 0; wn < 3; wn++) {
-    var wx = 14 + wn * 54, wy = 30 + fl * 34;
-    f.rect(wx, wy, 26, 22, '#e8e2d2'); f.rect(wx + 2, wy + 2, 22, 18, r() < 0.5 ? '#f2c860' : '#252a3c');
-    for (var y = wy + 2; y < wy + 2 + (r() * 14 | 0); y += 2) f.rect(wx + 2, y, 22, 1, '#cbbf9f');
-    f.rect(wx - 2, wy + 22, 30, 3, '#d8d2c2'); f.rect(wx - 2, wy + 25, 30, 1, '#3a3a3a');
-    for (var b = wx - 2; b < wx + 28; b += 3) f.rect(b, wy + 18, 1, 4, '#3a3a3a');
+// La calle de Ethan, sacada de la foto del portal 3 (Sestao). Se dibuja con los colores
+// de dia y luego se pasa a noche; las luces (ventanas, portal, letreros) se pintan despues.
+var CALLE_W = 1300;
+function nightPass(f) {
+  for (var i = 0; i < f.d.length; i += 4) {
+    if (!f.d[i + 3]) continue;
+    f.d[i] = Math.round(f.d[i] * 0.42 + 10); f.d[i + 1] = Math.round(f.d[i + 1] * 0.45 + 12); f.d[i + 2] = Math.round(f.d[i + 2] * 0.58 + 30);
   }
-  f.rect(0, 130, 172, 4, '#d8d2c2');
-  f.rect(0, 134, 172, 66, '#6b6258');
-  f.rect(66, 140, 42, 60, '#a9acb0'); f.rect(70, 144, 34, 56, '#1f2b38'); f.rect(86, 144, 2, 56, '#a9acb0');
-  for (var k = 0; k < 8; k++) f.px(74 + k, 160 - k, '#6f8aa6');
-  f.rect(81, 170, 2, 6, '#e3b341'); f.rect(90, 170, 2, 6, '#e3b341');
-  f.rect(112, 150, 10, 8, '#2a5bd0'); f.text(115, 151, '7', '#ffffff');
-  f.rect(20, 150, 30, 40, '#4e4a44'); f.box(20, 150, 30, 40, '#3a3732'); // persiana del bajo
-  for (var y = 152; y < 190; y += 3) f.rect(21, y, 28, 1, '#5d5850');
-  // farolas
-  [300, 640, 980].forEach(function (x) {
-    f.rect(x, 118, 3, 82, '#3d4248'); f.rect(x - 2, 196, 7, 4, '#2d3136');
-    f.rect(x, 118, 12, 2, '#3d4248'); f.rect(x + 8, 120, 8, 3, '#3d4248'); f.rect(x + 9, 123, 6, 2, '#fbefb2');
+}
+function persiana(f, x, y, w, h, bajada, r) { // ventana con marco granate y persiana blanca
+  f.rect(x - 2, y - 2, w + 4, h + 4, '#d6cbbd'); f.rect(x, y, w, h, '#5a1f1c');
+  f.rect(x + 2, y + 2, w - 4, h - 4, '#2a2a33');
+  f.rect(x + Math.floor(w / 2) - 1, y + 2, 2, h - 4, '#5a1f1c');
+  var bh = Math.round((h - 4) * bajada);
+  for (var yy = 0; yy < bh; yy++) f.rect(x + 2, y + 2 + yy, w - 4, 1, yy % 2 ? '#dcdad3' : '#ecebe6');
+  f.rect(x + 2, y + 2 + bh, w - 4, 1, '#a9a59a');
+  f.rect(x - 4, y + h + 2, w + 8, 3, '#e2d8ca'); f.rect(x - 4, y + h + 5, w + 8, 1, '#9e9486'); // alfeizar
+  return { x: x + 2, y: y + 2 + bh + 1, w: w - 4, h: h - 4 - bh - 1 };
+}
+function ladrillo(f, x, y, w, h) {
+  f.rect(x, y, w, h, '#c4775e');
+  for (var yy = y; yy < y + h; yy += 3) {
+    f.rect(x, yy, w, 1, '#dcb29c');
+    for (var xx = x + ((yy - y) / 3 % 2 ? 0 : 3); xx < x + w; xx += 6) f.px(xx, yy + 1, '#a8604a');
+  }
+}
+function persianaMetal(f, x, y, w, h, col, colD) {
+  f.rect(x, y, w, h, col);
+  for (var yy = y; yy < y + h; yy += 2) f.rect(x, yy, w, 1, colD);
+  f.rect(x, y + h - 2, w, 2, '#5c5a55');
+}
+function coche(f, x, w, h, col, colD, colL, suv) { // coche aparcado visto de lado (morro a la derecha)
+  var y0 = 200 - h, cab = suv ? 0.5 : 0.62;
+  f.rect(x + 4, y0 + Math.round(h * 0.45), w - 8, Math.round(h * 0.4), col);             // carroceria
+  f.rect(x + 2, y0 + Math.round(h * 0.55), w - 4, Math.round(h * 0.25), col);
+  f.rect(x + 4, y0 + Math.round(h * 0.45), w - 8, 1, colL);
+  var cx0 = x + Math.round(w * (suv ? 0.18 : 0.1)), cx1 = x + Math.round(w * (suv ? 0.68 : 0.78));
+  for (var yy = 0; yy < Math.round(h * 0.45); yy++) {                                       // cabina y lunas
+    var k = yy / (h * 0.45), a = cx0 + Math.round((1 - k) * 6), b = cx1 - Math.round((1 - k) * (suv ? 10 : 8));
+    f.rect(a, y0 + yy, b - a, 1, yy < 2 ? colL : col);
+    if (yy > 2) f.rect(a + 3, y0 + yy, b - a - 6, 1, '#3d4b5c');
+  }
+  f.rect(Math.round((cx0 + cx1) / 2), y0 + 3, 2, Math.round(h * 0.42) - 3, col);             // pilar
+  f.rect(x + 8, y0 + Math.round(h * 0.6), w - 16, 1, colD);                                   // linea de puertas
+  f.rect(x + w - 4, y0 + Math.round(h * 0.5), 3, 3, '#f2e8c0'); f.rect(x + 1, y0 + Math.round(h * 0.52), 2, 3, '#c0302a');
+  [x + Math.round(w * 0.2), x + Math.round(w * 0.78)].forEach(function (wx) { f.disc(wx, 200 - 6, 6, '#1b1b1f'); f.disc(wx, 200 - 6, 3, '#9a9ea4'); f.px(wx, 194, '#cfd3d8'); });
+  f.rect(x + 2, 196, w - 4, 1, colD);
+}
+function calle() {
+  var W = CALLE_W, f = new FB(W, 216), r = rng(9);
+  // acera y calzada
+  f.rect(0, 200, W, 6, '#a8a49c'); f.rect(0, 200, W, 1, '#c6c2b8');
+  for (var x = 0; x < W; x += 24) f.rect(x, 200, 1, 6, '#86827a');
+  f.rect(0, 206, W, 2, '#d0ccc2'); f.rect(0, 208, W, 8, '#3a3a40');
+  for (var x = 10; x < W; x += 60) f.rect(x, 212, 24, 1, '#d8d8cc');
+
+  // ---- edificio de la izquierda (revoco gris)
+  f.rect(0, 40, 40, 160, '#b8b2a6'); f.rect(38, 40, 2, 160, '#8a8478');
+  persiana(f, 6, 62, 24, 30, 0.8); persiana(f, 6, 104, 24, 30, 0.4);
+  f.rect(0, 142, 40, 58, '#6a625c'); persianaMetal(f, 4, 152, 32, 46, '#8e8c86', '#7a7872');
+
+  // ---- EL EDIFICIO DE ETHAN (portal 3): ladrillo, persianas blancas y bajos de granito
+  var X0 = 40, X1 = 620;
+  ladrillo(f, X0, 52, X1 - X0, 88);
+  f.rect(X0, 48, X1 - X0, 4, '#e0d6c8'); f.rect(X0, 52, X1 - X0, 1, '#9e9486');            // cornisa de arriba
+  f.rect(X0, 94, X1 - X0, 4, '#e0d6c8'); f.rect(X0, 98, X1 - X0, 1, '#9e9486');            // banda entre pisos
+  var luces = [];
+  for (var fl = 0; fl < 2; fl++) for (var k = 0; k < 7; k++) {
+    var wx = X0 + 20 + k * 82, wy = fl ? 104 : 60;
+    var hueco = persiana(f, wx, wy, 46, 28, [0.55, 0.7, 0.45, 0.8, 0.6, 0.35, 0.7][(k + fl * 3) % 7]);
+    if (r() < 0.5) luces.push(hueco);
+  }
+  // losa / voladizo sobre los bajos
+  f.rect(X0 - 2, 136, X1 - X0 + 4, 5, '#e6dccd'); f.rect(X0 - 2, 141, X1 - X0 + 4, 1, '#8e8476');
+  // bajos de granito
+  f.rect(X0, 142, X1 - X0, 58, '#6e6260');
+  for (var i = 0; i < 260; i++) f.px(X0 + r() * (X1 - X0), 142 + r() * 58, r() < 0.5 ? '#7e706c' : '#5e5250');
+  // inmobiliaria
+  f.rect(44, 143, 110, 10, '#3a302a'); f.box(44, 143, 110, 10, '#1f1a16');
+  f.rect(48, 156, 50, 42, '#22262c'); f.rect(102, 156, 50, 42, '#22262c'); f.rect(98, 154, 4, 46, '#2a2420'); f.box(46, 154, 108, 46, '#2a2420');
+  for (var py = 0; py < 3; py++) for (var pxn = 0; pxn < 3; pxn++) {
+    var ax = 106 + pxn * 15, ay = 160 + py * 12;
+    f.rect(ax, ay, 12, 9, '#e8e8e2'); f.rect(ax + 1, ay + 1, 10, 4, ['#6a9ad0', '#8aa86a', '#c0a070'][(py + pxn) % 3]); f.rect(ax + 1, ay + 6, 8, 1, '#9a9a96');
+  }
+  for (var ly = 0; ly < 3; ly++) f.rect(52, 162 + ly * 9, 40, 6, '#5a5650');
+  // poste de barbero
+  f.rect(158, 146, 5, 2, '#c8c8c8'); f.rect(158, 160, 5, 2, '#c8c8c8');
+  for (var yy = 148; yy < 160; yy++) f.rect(158, yy, 5, 1, '#f4f4f0');
+  for (var yy = 148; yy < 160; yy++) { f.px(158 + ((yy * 2) % 5), yy, '#d02a2a'); f.px(158 + ((yy * 2 + 2) % 5), yy, '#2a4ad0'); }
+  // peluqueria (persiana metalica bajada)
+  f.rect(168, 144, 66, 11, '#141416'); f.box(168, 144, 66, 11, '#0a0a0c');
+  persianaMetal(f, 170, 156, 62, 42, '#a6a6a2', '#8c8c88');
+  // portal 3
+  f.rect(246, 144, 60, 56, '#8a7672'); for (var i = 0; i < 60; i++) f.px(246 + r() * 60, 144 + r() * 56, r() < 0.5 ? '#9c8884' : '#76625e');
+  f.rect(252, 151, 48, 49, '#b8bcc0'); f.rect(254, 153, 44, 47, '#20262e'); f.rect(275, 153, 2, 47, '#b8bcc0');
+  f.rect(270, 146, 12, 4, '#2a2a2a');
+  f.rect(302, 166, 3, 10, '#3a3a3e'); f.px(303, 168, '#9adf7a');                             // portero automatico
+  f.rect(256, 199, 40, 1, '#4a4440');
+  // bajo cerrado (persiana beis) y panel de lamas de madera
+  f.rect(316, 142, 80, 8, '#d8ccb4'); f.rect(316, 149, 80, 1, '#a89878');
+  persianaMetal(f, 318, 150, 76, 48, '#bcae8e', '#a8997a');
+  f.rect(398, 146, 52, 52, '#cfc2a2'); for (var x = 400; x < 450; x += 4) f.rect(x, 146, 1, 52, '#a8997a'); f.rect(398, 170, 52, 2, '#b4a684');
+  // bar (en el mismo bloque)
+  f.rect(456, 144, 112, 56, '#4a3a30'); f.box(456, 144, 112, 56, '#2e241e');
+  f.rect(464, 160, 64, 34, '#2a2018'); f.rect(536, 158, 24, 42, '#2a2018');
+  f.rect(470, 146, 54, 11, '#1b1b22'); f.box(470, 146, 54, 11, '#0e0e12');
+  // garaje
+  persianaMetal(f, 574, 150, 42, 48, '#8e8c86', '#7a7872');
+  // cables colgando por la fachada
+  function cable(x0, y0, x1, y1, sag) { for (var x = x0; x <= x1; x++) { var t = (x - x0) / (x1 - x0); f.px(x, Math.round(y0 + (y1 - y0) * t + Math.sin(t * Math.PI) * sag), '#1a1a1a'); } }
+  cable(X0, 100, 330, 101, 4); cable(330, 101, X1, 99, 3); cable(X0, 134, 250, 133, 2); cable(250, 133, X1, 134, 2);
+  for (var yy = 100; yy < 142; yy++) { f.px(300, yy, '#1a1a1a'); f.px(512, yy, '#1a1a1a'); }
+  cable(286, 142, 316, 146, 4);
+
+  // ---- hueco: edificio bajo (se ve el fondo por encima)
+  f.rect(620, 128, 90, 72, '#a29a8c'); f.rect(620, 128, 90, 3, '#c8c0b0');
+  persianaMetal(f, 628, 150, 74, 48, '#8e8c86', '#7a7872');
+  // ---- segundo bloque (revoco beis)
+  f.rect(710, 56, 300, 144, '#cbbfa6'); f.rect(710, 56, 300, 4, '#e2d8c4'); f.rect(1008, 56, 2, 144, '#9a8e78');
+  for (var fl = 0; fl < 2; fl++) for (var k = 0; k < 4; k++) {
+    var hx = persiana(f, 726 + k * 72, fl ? 104 : 66, 40, 26, [0.5, 0.75, 0.3, 0.6][(k + fl) % 4]);
+    if (r() < 0.45) luces.push(hx);
+  }
+  f.rect(710, 140, 300, 60, '#5c5650');
+  persianaMetal(f, 718, 150, 90, 48, '#8e8c86', '#7a7872');
+  f.rect(816, 148, 60, 52, '#2a2e36'); f.box(816, 148, 60, 52, '#1c1f24');                // estanco/kiosko cerrado
+  persianaMetal(f, 884, 150, 118, 48, '#a6a6a2', '#8c8c88');
+  // ---- plaza del metro (provisional)
+  f.rect(1010, 196, 290, 4, '#9a968e');
+  f.rect(1250, 70, 50, 130, '#b8b2a6'); persiana(f, 1262, 92, 28, 26, 0.6);
+  // contenedores (verde y azul)
+  [[1020, '#2f6b3f', '#24532f'], [1062, '#2f5a9a', '#244878']].forEach(function (c) {
+    f.rect(c[0], 176, 38, 22, c[1]); f.rect(c[0] - 2, 172, 42, 5, c[2]); f.box(c[0], 176, 38, 22, '#1a2a20');
+    f.disc(c[0] + 6, 198, 2, '#1b1b1f'); f.disc(c[0] + 32, 198, 2, '#1b1b1f');
   });
   // banco
-  f.rect(420, 176, 44, 3, wood); f.rect(420, 179, 44, 1, woodD); f.rect(420, 186, 44, 3, wood); f.rect(420, 189, 44, 1, woodD);
-  [422, 458].forEach(function (x) { f.rect(x, 174, 3, 26, '#3d4248'); });
-  // contenedor
-  f.rect(720, 176, 42, 22, '#2f6b3f'); f.rect(718, 172, 46, 5, '#24532f'); f.box(720, 176, 42, 22, '#1d4226');
-  for (var x = 726; x < 760; x += 6) f.rect(x, 180, 2, 14, '#3a8350');
-  f.disc(726, 198, 2, '#1b1b1f'); f.disc(756, 198, 2, '#1b1b1f');
-  // bar
-  f.rect(862, 34, 238, 166, '#6d5a4e'); f.rect(862, 34, 238, 3, '#8a7364'); f.rect(860, 34, 2, 166, '#4b3d34');
-  for (var fl = 0; fl < 2; fl++) for (var wn = 0; wn < 4; wn++) {
-    var wx = 878 + wn * 56, wy = 48 + fl * 38;
-    f.rect(wx, wy, 26, 24, '#e2dccb'); f.rect(wx + 2, wy + 2, 22, 20, r() < 0.55 ? '#f2c860' : '#252a3c');
-    f.rect(wx - 2, wy + 24, 30, 2, '#d8d2c2');
-  }
-  f.rect(862, 128, 238, 4, '#3a2f29');
-  f.rect(890, 112, 54, 16, '#1b1b22'); f.box(890, 112, 54, 16, '#0e0e12'); f.text(897, 115, 'BAR', '#ff5a6e', 2);
-  f.rect(880, 146, 92, 44, '#5a3a1f'); f.rect(884, 150, 84, 36, '#f4c35c'); f.rect(884, 150, 84, 4, '#ffe38f');
-  for (var x = 896; x < 968; x += 20) { f.rect(x, 168, 8, 18, '#6a3a1c'); f.disc(x + 4, 166, 3, '#6a3a1c'); } // siluetas
-  f.rect(926, 150, 2, 36, '#5a3a1f');
-  f.rect(986, 140, 28, 60, '#3a2f29'); f.rect(990, 144, 20, 56, '#f4c35c'); f.rect(990, 144, 20, 3, '#ffe38f');
-  f.rect(1004, 170, 2, 6, '#3a2f29');
-  f.rect(1030, 140, 60, 50, '#4e4a44'); for (var y = 142; y < 190; y += 3) f.rect(1031, y, 58, 1, '#5d5850');
-  // boca de metro PROVISIONAL: marquesina de cristal curvo y cartel (hasta tener la calle de verdad)
-  for (var x = 1036; x <= 1094; x++) {
-    var t = (x - 1036) / 58, y = Math.round(200 - 46 * Math.sqrt(Math.max(0, 1 - Math.pow(2 * t - 1, 2) * 0.55)) );
+  f.rect(1112, 184, 40, 3, '#a9733f'); f.rect(1112, 176, 40, 3, '#a9733f'); [1114, 1146].forEach(function (x) { f.rect(x, 174, 3, 26, '#3d4248'); });
+  // boca de metro: marquesina de cristal curvo y cartel
+  for (var x = 1176; x <= 1234; x++) {
+    var t = (x - 1176) / 58, y = Math.round(200 - 46 * Math.sqrt(Math.max(0, 1 - Math.pow(2 * t - 1, 2) * 0.55)));
     for (var yy = y; yy < 200; yy++) f.px(x, yy, yy - y < 2 ? '#d8eef5' : '#9ccbe0', yy - y < 2 ? 230 : 110);
     if (x % 8 === 4) for (var yy2 = y; yy2 < 200; yy2++) f.px(x, yy2, '#7f8a92');
   }
-  for (var k = 0; k < 7; k++) f.rect(1052 + k * 3, 186 + k * 2, 26 - k * 3, 2, k % 2 ? '#3a3f48' : '#2b3038'); // escaleras
-  f.rect(1022, 130, 3, 70, '#3d4248'); f.rect(1008, 118, 32, 14, '#c8202a'); f.box(1008, 118, 32, 14, '#7a1016');
-  f.text(1011, 122, 'METRO', '#ffffff');
+  for (var k = 0; k < 7; k++) f.rect(1192 + k * 3, 186 + k * 2, 26 - k * 3, 2, k % 2 ? '#3a3f48' : '#2b3038');
+  f.rect(1162, 130, 3, 70, '#3d4248');
+  // farolas
+  [652, 1000].forEach(function (x) { f.rect(x, 118, 3, 82, '#3d4248'); f.rect(x - 2, 196, 7, 4, '#2d3136'); f.rect(x, 118, 12, 2, '#3d4248'); f.rect(x + 8, 120, 8, 3, '#3d4248'); });
+  // coches aparcados (azul monovolumen y gris todoterreno, como en la foto) y uno rojo mas adelante
+  coche(f, 140, 104, 44, '#2f5fb8', '#1f4486', '#5a86d8', false);
+  coche(f, 318, 98, 40, '#b8bcc2', '#8a8e94', '#e0e3e6', true);
+  coche(f, 760, 88, 34, '#a8302a', '#7a201c', '#d05048', false);
+
+  // ---- de noche
+  nightPass(f);
+  // luces: ventanas encendidas, portal, letreros, bar
+  luces.forEach(function (h) { if (h.h > 1) { f.rect(h.x, h.y, h.w, h.h, '#f0c060'); f.rect(h.x, h.y, h.w, 1, '#ffe08a'); f.rect(h.x + Math.floor(h.w / 2) - 1, h.y, 2, h.h, '#7a4a20'); } });
+  f.rect(254, 153, 21, 47, '#e8c070'); f.rect(277, 153, 21, 47, '#e8c070'); f.rect(254, 153, 44, 3, '#fff0b0');   // portal encendido
+  f.rect(258, 170, 14, 1, '#b08840'); f.rect(280, 170, 14, 1, '#b08840'); f.rect(272, 176, 2, 6, '#8a8e94'); f.rect(278, 176, 2, 6, '#8a8e94');
+  f.text(274, 146, '3', '#f0f0f0');
+  f.text(50, 146, 'AGENCIA INMOBILIARIA', '#e8e4da');
+  f.text(171, 147, 'PELUQUERIA', '#ff5a5a'); f.text(222, 147, '', '#5a8aff');
+  for (var yy = 148; yy < 160; yy++) { f.px(158 + ((yy * 2) % 5), yy, '#ff4a4a'); f.px(158 + ((yy * 2 + 2) % 5), yy, '#6a8aff'); }
+  f.rect(466, 162, 60, 30, '#f4c35c'); f.rect(466, 162, 60, 3, '#ffe38f');
+  for (var x = 472; x < 524; x += 14) { f.rect(x, 178, 7, 14, '#6a3a1c'); f.disc(x + 3, 176, 3, '#6a3a1c'); }
+  f.rect(538, 160, 20, 40, '#f4c35c'); f.rect(552, 178, 2, 5, '#3a2f29');
+  f.text(477, 149, 'BAR', '#ff5a6e', 2);
+  f.rect(818, 150, 56, 3, '#3a6a9a'); f.text(824, 156, 'ESTANCO', '#c8a060');
+  [652, 1000].forEach(function (x) { f.rect(x + 9, 123, 6, 2, '#fbefb2'); });
+  f.rect(1148, 118, 32, 14, '#c8202a'); f.box(1148, 118, 32, 14, '#7a1016'); f.text(1151, 122, 'METRO', '#ffffff');
   save(f, 'calle.png');
 }
 
