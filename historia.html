@@ -74,6 +74,51 @@ body{display:flex;align-items:center;justify-content:center;font-family:var(--px
 .ivr b{font-weight:400;font-size:calc(var(--s)*4.6px)}
 .ivr span{font-size:calc(var(--s)*3.6px);color:#b9bfd8;line-height:1.5}
 .iv0{font-size:calc(var(--s)*4.2px);color:#b9bfd8;margin:calc(var(--s)*2px) 0}
+/* aviso de mision */
+#quest{position:absolute;left:0;right:0;top:calc(var(--s)*58px);padding:calc(var(--s)*4px) 0;background:linear-gradient(90deg,transparent,#000a 25%,#000a 75%,transparent);display:flex;flex-direction:column;align-items:center;gap:calc(var(--s)*3.5px);pointer-events:none;z-index:3;--qc:#ffd75e;text-shadow:0 0 calc(var(--s)*4px) #000,0 calc(var(--s)*1px) 0 #000}
+#quest.side{--qc:#7ee0ff}
+#quest .ql{display:block;width:calc(var(--s)*190px);max-width:86%;height:calc(var(--s)*.8px);background:linear-gradient(90deg,transparent,var(--qc) 25%,var(--qc) 75%,transparent);transform:scaleX(0);box-shadow:0 0 calc(var(--s)*3px) var(--qc)}
+#quest small{font-size:calc(var(--s)*4.6px);color:var(--qc);letter-spacing:.25em;opacity:0}
+#quest b{font-weight:400;font-size:calc(var(--s)*10px);color:#fffaf0;letter-spacing:.6em;opacity:0;filter:blur(calc(var(--s)*1.5px));white-space:nowrap}
+#quest.hecha small{font-size:calc(var(--s)*7px);color:#fffaf0}
+#quest.hecha b{font-size:calc(var(--s)*6px);color:var(--qc)}
+#quest.go .ql{transition:transform .7s cubic-bezier(.2,.8,.2,1);transform:scaleX(1)}
+#quest.go small{transition:opacity .5s .25s;opacity:1}
+#quest.go b{transition:opacity .9s .35s,letter-spacing 1.3s .35s cubic-bezier(.2,.8,.2,1),filter .9s .35s;opacity:1;letter-spacing:.06em;filter:none}
+#quest.hecha.go small{animation:stamp .45s .2s both}
+@keyframes stamp{from{transform:scale(1.8);opacity:0}to{transform:scale(1);opacity:1}}
+#quest.out{transition:opacity .6s;opacity:0}
+/* bocadillo de pensamiento */
+#think{position:absolute;transform:translate(-8%,-100%);max-width:calc(var(--s)*120px);background:#fffdf4;color:#3a3530;border:calc(var(--s)*.8px) solid #3a3530;border-radius:calc(var(--s)*9px);padding:calc(var(--s)*3px) calc(var(--s)*5px);font-size:calc(var(--s)*4.1px);line-height:1.6;opacity:0;transition:opacity .35s;pointer-events:none;z-index:2}
+#think::before,#think::after{content:'';position:absolute;background:#fffdf4;border:calc(var(--s)*.8px) solid #3a3530;border-radius:50%}
+#think::before{width:calc(var(--s)*4px);height:calc(var(--s)*4px);left:calc(var(--s)*5px);bottom:calc(var(--s)*-5px)}
+#think::after{width:calc(var(--s)*2.2px);height:calc(var(--s)*2.2px);left:calc(var(--s)*2.5px);bottom:calc(var(--s)*-8.5px)}
+#think.on{opacity:1;animation:flo 2.4s ease-in-out infinite}
+@keyframes flo{50%{margin-top:calc(var(--s)*-1px)}}
+/* editor rapido */
+.editing #cv{cursor:crosshair}
+#ed{position:absolute;top:0;right:0;bottom:0;width:min(100%,calc(var(--s)*190px));background:#140d1ef5;border-left:calc(var(--s)*1px) solid #ff5ad1;padding:calc(var(--s)*5px);overflow:auto;display:flex;flex-direction:column;gap:calc(var(--s)*3px);font-size:calc(var(--s)*4px);color:#f3e6ff;z-index:4}
+#ed .dh{display:flex;align-items:center;justify-content:space-between;color:#ff8ae0;font-size:calc(var(--s)*5.4px)}
+#ed .dh b{font-weight:400}
+#ed button,#ed select,#ed textarea{font-family:var(--px);font-size:calc(var(--s)*3.7px);background:#24183a;color:#f3e6ff;border:calc(var(--s)*.6px) solid #ff5ad188;padding:calc(var(--s)*1.6px) calc(var(--s)*2.4px)}
+#ed button{cursor:pointer}
+#ed button:hover,#ed button:focus-visible{background:#ff5ad1;color:#140d1e;outline:none}
+#ed button.del{color:#ff9a9a;border-color:#ff9a9a88}
+#ed textarea{width:100%;resize:vertical;line-height:1.6;font-family:ui-monospace,monospace;font-size:calc(var(--s)*4.2px);user-select:text}
+.eds{background:#0006;border:calc(var(--s)*.6px) solid #ff5ad144;padding:calc(var(--s)*3px);display:flex;flex-direction:column;gap:calc(var(--s)*2px)}
+.edk{display:flex;gap:calc(var(--s)*2px);align-items:center}
+.edk b{flex:1;font-weight:400;color:#ffd75e}
+.edr{display:grid;grid-template-columns:calc(var(--s)*40px) 1fr auto;gap:calc(var(--s)*1.5px);align-items:start}
+.edr span{display:flex;flex-direction:column;gap:calc(var(--s)*1px)}
+#ed label{display:flex;flex-direction:column;gap:calc(var(--s)*1.2px);color:#c9b8e0}
+#ed .edadd{align-self:flex-start}
+#ed .edh{margin:0;color:#c9b8e0;line-height:1.6}
+#edst{margin:calc(var(--s)*2px) 0 0;color:#8fdf6e;line-height:1.6}
+#edst.dirty{color:#ffd75e}
+#ed .drow{display:flex;gap:calc(var(--s)*1.5px);flex-wrap:wrap}
+#mis .mt i{display:inline-block;width:calc(var(--s)*3px);height:calc(var(--s)*3px);margin-right:calc(var(--s)*2px);background:#ffd75e;transform:rotate(45deg) translateY(calc(var(--s)*-.5px))}
+#mis .mt.side{color:#7ee0ff}
+#mis .mt.side i{background:transparent;border:calc(var(--s)*.6px) solid #7ee0ff}
 kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--s)*1.2px)}
 /* menus */
 .mn{background:radial-gradient(ellipse at 50% 35%,#1b2140 0%,#05060c 70%);gap:calc(var(--s)*6px)}
@@ -127,6 +172,8 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
  <div id="cbt" class="cb"></div><div id="cbb" class="cb"></div>
  <div id="mis" hidden></div>
  <div id="toasts"></div>
+ <div id="think"><span></span></div>
+ <div id="quest" hidden><i class="ql"></i><small id="qlab"></small><b id="qtit"></b><i class="ql"></i></div>
  <div id="dlg" hidden><div id="dport"></div><div class="dtx"><b id="dname"></b><p id="dtext"></p><div id="dopts"></div></div><i id="dnext">▼</i></div>
  <div id="inv" class="ov" hidden><div class="ivb"><div class="dh"><b>Inventario</b><button id="invx" aria-label="Cerrar">✕</button></div><div id="invl"></div></div></div>
  <div id="touch" aria-hidden="true">
@@ -153,9 +200,18 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
   <h2>PAUSA</h2>
   <button id="pcont">Seguir</button>
   <button id="pinv">Inventario</button>
+  <button id="psnd">Sonido: Sí</button>
   <button id="pdev" class="dv">Desarrollador</button>
+  <button id="ped" class="dv">Editor de diálogos</button>
   <button id="pmenu">Menú del Modo Historia</button>
   <a href="./">Volver al tycoon</a>
+ </div>
+ <div id="ed" hidden>
+  <div class="dh"><b>✎ <span id="edt"></span></b><button id="edx" aria-label="Cerrar">✕</button></div>
+  <div id="edl"></div>
+  <button id="ednew" class="edadd">+ Nuevo diálogo</button>
+  <p id="edst"></p>
+  <div class="drow"><button id="eddl">Descargar dialogos.js</button><button id="edcp">Copiar</button><button id="edrs" class="del">Descartar</button></div>
  </div>
  <div id="dev" hidden>
   <div class="dh"><b>Panel de desarrollador</b><button id="dclose" aria-label="Cerrar">✕</button></div>
@@ -171,6 +227,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
  </div>
 </div>
 <div id="rot">Gira el móvil<br>para jugar en horizontal</div>
+<script src="story/dialogos.js"></script>
 <script src="story/scenes.js"></script>
 <script src="story/engine.js"></script>
 </body></html>

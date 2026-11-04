@@ -11,13 +11,15 @@
 //  - fx: efectos animados. z = indice de la capa tras la que se pintan.
 //  - Una capa con front: true se pinta delante de los personajes (p. ej. la mesa).
 //  - npcs: personajes. x = centro, top = y de la parte de arriba del sprite (48x48, 7 fotogramas),
-//    run = guion que se ejecuta al hablarle, reach = distancia para poder hablarle.
+//    run = guion que se ejecuta al hablarle, reach = distancia para poder hablarle,
+//    voice = tono de la voz (Hz) de los pitidos al hablar.
 //  - objects: cosas con las que se interactua. label = texto del [E], run = guion,
 //    when(g) = condicion para que aparezca (g.flag('x'), g.has('objeto')).
 //  - props: objetos de STORY.items pintados en el escenario cuando se cumple when(g).
 // Con F2 dentro del juego se ven las plataformas, las salidas y la X de Ethan.
 //
 // GUIONES: funciones async que reciben "s":
+//   await s.talk('dueño.momento')        dice el dialogo de story/dialogos.js (y su "piensa")
 //   await s.say(quien, texto)            quien: 'ethan', id de personaje, otro nombre o null
 //   await s.choose(quien, texto, [..])   devuelve el indice elegido
 //   s.flag(k) / s.flag(k, valor)         leer / poner una marca de la partida (null la borra)
@@ -26,6 +28,10 @@
 //   await s.cine(true|false)             bandas negras de cine
 //   await s.walkTo(x) · s.face(1|-1) · s.sit(x|null) · s.eat(true|false)
 //   await s.wait(seg) · await s.fade(1|0, ms) · s.toast(texto)
+
+// Modo desarrollador: panel (º/F1), editor rapido de dialogos (F3) y depuracion (F2).
+// En produccion: false, y desaparece todo eso.
+window.STORY_DEV = true;
 
 window.STORY = {
   intro: { cards: ['31 de diciembre de 2022'], scene: 'cocina', spawn: 'inicio' },
@@ -38,7 +44,7 @@ window.STORY = {
 
   missions: {
     cena: {
-      name: 'La cena de Nochevieja',
+      name: 'La cena de Nochevieja', type: 'principal',   // principal | secundaria
       steps: [
         { text: 'Saca la tortilla de la nevera', done: function (g) { return g.flag('nevera:tortilla'); } },
         { text: 'Siéntate a cenar en tu silla', done: function (g) { return g.flag('cena_hecha'); } }
@@ -51,38 +57,26 @@ window.STORY = {
   },
 
   scripts: {
-    hermanastra: async function (s) {
-      await s.say('hermanastra', 'Tengo hambre. Ethan, trae ya los langostinos.');
-    },
-    padre: async function (s) {
-      await s.say('padre', 'Feliz año y próspera 3DS, Hyrule Edition.');
-    },
+    hermanastra: async function (s) { await s.talk('hermanastra.hambre'); },
+    padre: async function (s) { await s.talk('padre.3ds'); },
     lourdes: async function (s) {
-      if (!s.flag('mision:cena')) {
-        await s.say('lourdes', 'Ethan, saca la tortilla de la nevera.');
-        s.mission('cena');
-      } else if (!s.flag('nevera:tortilla')) {
-        await s.say('lourdes', 'La tortilla, Ethan. Que está en la nevera.');        // PROVISIONAL
-      } else if (!s.flag('cena_hecha')) {
-        await s.say('lourdes', 'Venga, siéntate, que vamos a cenar.');              // PROVISIONAL
-      } else {
-        await s.say('lourdes', '¿Qué tal la tortilla?');                            // PROVISIONAL
-      }
+      if (!s.flag('mision:cena')) { await s.talk('lourdes.mision'); s.mission('cena'); }
+      else if (!s.flag('nevera:tortilla')) await s.talk('lourdes.sin_tortilla');
+      else if (!s.flag('cena_hecha')) await s.talk('lourdes.antes_cena');
+      else await s.talk('lourdes.despues_cena');
     },
     nevera: async function (s) {
       for (;;) {
         var ids = ['tortilla', 'jamon', 'langostinos'].filter(function (id) { return !s.flag('nevera:' + id); });
-        if (!ids.length) { await s.say(null, 'Ya no queda nada más que sacar.'); return; }
+        if (!ids.length) { await s.talk('nevera.vacia'); return; }
         var c = await s.choose('Nevera', '¿Qué sacas?', ids.map(function (id) { return STORY.items[id].name; }).concat(['Cerrar']));
         if (c >= ids.length) return;
         s.flag('nevera:' + ids[c], 1); s.give(ids[c]);
       }
     },
-    vitro: async function (s) {
-      await s.say('ethan', 'La vitro sigue rota.');                                 // PROVISIONAL
-    },
+    vitro: async function (s) { await s.talk('vitro.mirar'); },
     silla: async function (s) {
-      if (!s.has('tortilla')) { await s.say('ethan', 'Falta la tortilla de Lourdes.'); return; } // PROVISIONAL
+      if (!s.has('tortilla')) { await s.talk('silla.sin_tortilla'); return; }
       var c = await s.choose(null, '¿Empezar a cenar?', ['Sí, a cenar', 'Todavía no']);
       if (c !== 0) return;
       // --- cinematica de la cena ---
@@ -131,14 +125,14 @@ window.STORY_SCENES = {
       { src: 'sprites/story/cocina-mesa.png', f: 1, front: true }
     ],
     npcs: [
-      { id: 'hermanastra', name: 'Hermanastra', sprite: 'sprites/story/npc-hermanastra.png', x: 398, top: 144, run: 'hermanastra' },
-      { id: 'padre', name: 'Padre', sprite: 'sprites/story/npc-padre.png', x: 444, top: 144, run: 'padre' },
-      { id: 'lourdes', name: 'Lourdes', sprite: 'sprites/story/npc-lourdes.png', x: 490, top: 144, run: 'lourdes' }
+      { id: 'hermanastra', name: 'Hermanastra', sprite: 'sprites/story/npc-hermanastra.png', x: 398, top: 144, run: 'hermanastra', voice: 560 },
+      { id: 'padre', name: 'Padre', sprite: 'sprites/story/npc-padre.png', x: 444, top: 144, run: 'padre', voice: 170 },
+      { id: 'lourdes', name: 'Lourdes', sprite: 'sprites/story/npc-lourdes.png', x: 490, top: 144, run: 'lourdes', voice: 420 }
     ],
     objects: [
-      { id: 'nevera', x: 44, reach: 22, py: 124, label: 'Abrir la nevera', run: 'nevera', when: function (g) { return g.flag('mision:cena'); } },
-      { id: 'silla', x: 358, reach: 12, py: 150, label: 'Sentarse a cenar', run: 'silla', when: function (g) { return g.flag('mision:cena') === 'activa'; } },
-      { id: 'vitro', x: 202, reach: 14, py: 156, label: 'Mirar la vitro', run: 'vitro' }
+      { id: 'nevera', name: 'Nevera', x: 44, reach: 22, py: 124, label: 'Abrir la nevera', run: 'nevera', when: function (g) { return g.flag('mision:cena'); } },
+      { id: 'silla', name: 'Silla de Ethan', x: 358, reach: 12, py: 150, label: 'Sentarse a cenar', run: 'silla', when: function (g) { return g.flag('mision:cena') === 'activa'; } },
+      { id: 'vitro', name: 'Vitro', x: 202, reach: 14, py: 156, label: 'Mirar la vitro', run: 'vitro' }
     ],
     props: [
       { item: 'jamon', x: 382, y: 178, when: function (g) { return g.flag('mesa:jamon'); } },

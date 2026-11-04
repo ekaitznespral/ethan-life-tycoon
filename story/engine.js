@@ -27,15 +27,17 @@
     KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right',
     KeyW: 'jump', ArrowUp: 'jump', Space: 'jump', KeyS: 'down', ArrowDown: 'down',
     KeyE: 'act', Enter: 'ok', Escape: 'menu', KeyP: 'menu', ShiftLeft: 'run', ShiftRight: 'run', F2: 'debug',
-    Backquote: 'dev', F1: 'dev', KeyI: 'inv', Tab: 'inv'
+    Backquote: 'dev', F1: 'dev', F3: 'edit', KeyI: 'inv', Tab: 'inv'
   };
+  var DEV = !!window.STORY_DEV;
   var keys = {}, pressed = {};
   var skipCard = false;
   function press(a) { if (!keys[a]) pressed[a] = true; keys[a] = true; if (a === 'jump' || a === 'ok' || a === 'act') skipCard = true; }
   addEventListener('keydown', function (e) {
     var a = MAP[e.code]; if (!a) return;
     var tag = e.target && e.target.tagName;
-    if ((tag === 'SELECT' || tag === 'INPUT') && a !== 'dev' && a !== 'menu') return;             // deja usar los desplegables
+    if (tag === 'TEXTAREA' || ((tag === 'SELECT' || tag === 'INPUT') && a !== 'dev' && a !== 'menu')) return; // deja escribir y usar los desplegables
+    if (!DEV && (a === 'dev' || a === 'debug' || a === 'edit')) return;
     if (tag === 'BUTTON' && (a === 'ok' || a === 'jump') && state !== 'play') return;               // y los botones de los menus
     e.preventDefault(); if (!e.repeat) press(a); else keys[a] = true;
   });
@@ -128,7 +130,7 @@
   var busy = false;
   async function goScene(id, spawn, at) {
     if (busy) return; busy = true;
-    var prev = state; state = 'loading'; hidePrompt(); stopScript();
+    var prev = state; state = 'loading'; hidePrompt(); stopScript(); thoughts = {};
     if (prev !== 'card' && prev !== 'menu') await fadeTo(1, 280); else setFade(1);
     loading.hidden = false;
     var t0 = performance.now();
@@ -172,7 +174,7 @@
   function screen(id) { ['menu', 'slots', 'pause'].forEach(function (k) { $(k).hidden = k !== id; }); }
   function showMenu() {
     if (state === 'dev') closeDev();
-    stopScript(); $('inv').hidden = true; $('mis').hidden = true; hudSig = '';
+    stopScript(); closeEditor(); $('inv').hidden = true; $('mis').hidden = true; hudSig = ''; thoughts = {};
     state = 'menu'; scene = null; sceneId = null; slot = 0; game = null; setFade(1); hidePrompt();
     screen('menu'); $('mplay').focus();
   }
@@ -232,10 +234,13 @@
   $('pcont').onclick = function () { pause(false); };
   $('pmenu').onclick = function () { writeSave(); showMenu(); };
   $('mdev').onclick = $('pdev').onclick = function () { openDev(); };
+  $('ped').onclick = function () { pause(false); toggleEdit(true); };
+  if (!DEV) ['mdev', 'pdev', 'ped'].forEach(function (id) { $(id).hidden = true; });
 
   // ---------------- panel de desarrollador (tecla º o F1) ----------------
   var devPrev = null;
   function openDev() {
+    if (!DEV) return;
     if (state === 'dev' || state === 'loading' || state === 'card') return;
     devPrev = state; state = 'dev'; keys = {}; $('dev').hidden = false; renderDev();
   }
@@ -343,7 +348,10 @@
   function runScript(name, npc) {
     var fn = (STORY.scripts || {})[name];
     if (!fn) { console.warn('[historia] falta el guion', name); return; }
-    run = { line: null, walk: null, waits: [], eat: false };
+    runFn(fn, npc, name);
+  }
+  function runFn(fn, npc, name) {
+    run = { line: null, walk: null, waits: [], eat: false, think: [] };
     state = 'talk'; hidePrompt(); P.vx = 0; dAdv = false; $('sname').classList.remove('on');
     if (npc) {
       P.dir = npc.d.x < P.x ? -1 : 1;
@@ -355,6 +363,7 @@
   }
   function endScript() {
     if (!run) return;
+    run.think.forEach(function (t) { thoughts[t.owner] = { text: t.text, t: THINK_SECS }; });
     run = null; dlg.hidden = true; stage.classList.remove('talking'); $('dopts').innerHTML = ''; npcs.forEach(function (o) { o.mouth = false; });
     if (state === 'talk') state = 'play';
     P.buf = 0; pressed = {}; writeSave(); refreshHud();
@@ -363,11 +372,17 @@
   var API = {
     flag: GS.flag, has: GS.has,
     say: function (who, text) { return new Promise(function (res) { showLine(who, text, null, res); }); },
+    talk: async function (key) {   // dialogo de story/dialogos.js
+      var d = TEXT[key];
+      if (!d) { console.warn('[historia] falta el dialogo', key); return; }
+      for (var i = 0; i < (d.lines || []).length; i++) await API.say(d.lines[i].who, d.lines[i].text);
+      if (d.piensa && run) run.think.push({ owner: key.split('.')[0], text: d.piensa });
+    },
     choose: function (who, text, opts) { return new Promise(function (res) { showLine(who, text, opts, res); }); },
-    give: function (id) { if (!game || GS.has(id)) return; game.inv.push(id); toast('+ ' + (ITEMS[id] ? ITEMS[id].name : id), id); refreshHud(); },
+    give: function (id) { if (!game || GS.has(id)) return; game.inv.push(id); toast('+ ' + (ITEMS[id] ? ITEMS[id].name : id), id); sfx('objeto'); refreshHud(); },
     take: function (id) { if (!game) return; var i = game.inv.indexOf(id); if (i >= 0) game.inv.splice(i, 1); refreshHud(); },
-    mission: function (id) { if (GS.flag('mision:' + id)) return; GS.flag('mision:' + id, 'activa'); toast('Nueva misión: ' + (MIS[id] ? MIS[id].name : id)); },
-    complete: function (id) { GS.flag('mision:' + id, 'hecha'); toast('Misión completada: ' + (MIS[id] ? MIS[id].name : id)); },
+    mission: function (id) { if (GS.flag('mision:' + id)) return; GS.flag('mision:' + id, 'activa'); questBanner('nueva', id); },
+    complete: function (id) { GS.flag('mision:' + id, 'hecha'); questBanner('hecha', id); },
     toast: function (t) { toast(t); },
     wait: function (sec) { var r = run; return new Promise(function (res) { if (r) r.waits.push({ t: sec, res: res }); else res(); }); },
     walkTo: function (x) { var r = run; return new Promise(function (res) { if (r) r.walk = { x: clampX(x), done: res }; else res(); }); },
@@ -378,7 +393,7 @@
     fade: function (o, ms) { return fadeTo(o, ms || 600); }
   };
   function whoOf(id) {
-    if (id === 'ethan') return { name: 'Ethan', src: 'sprites/ethan-sheet.png', sw: 384, fr: 0 };
+    if (id === 'ethan') return { name: 'Ethan', src: 'sprites/ethan-sheet.png', sw: 384, fr: 0, voice: 300 };
     for (var i = 0; i < npcs.length; i++) if (npcs[i].d.id === id) return { name: npcs[i].d.name, src: npcs[i].d.sprite, sw: 336, fr: 1, npc: npcs[i] };
     return { name: id || '' };
   }
@@ -401,7 +416,10 @@
     var L = run.line, len = L.text.length;
     L.t += dt;
     var n = Math.min(len, Math.floor(L.t * 42));
-    if (n !== L.n) { L.n = n; $('dtext').textContent = L.text.slice(0, n); }
+    if (n !== L.n) {
+      if (n > L.n && n % 2 === 0 && /\S/.test(L.text[n - 1] || '')) voice(L.w);
+      L.n = n; $('dtext').textContent = L.text.slice(0, n);
+    }
     var typing = L.n < len, w = L.w, adv = pressed.act || pressed.jump || pressed.ok || dAdv;
     if (w.npc) w.npc.mouth = typing && Math.floor(L.t / 0.11) % 2 === 0;
     if (w.src) portrait(w, w.npc ? w.npc.mouth : false);
@@ -412,14 +430,14 @@
         L.opts.forEach(function (t, i) {
           var b = document.createElement('button'); b.textContent = t;
           b.onpointerenter = function () { L.sel = i; mark(); };
-          b.onclick = function () { if (run && run.line === L) finishLine(i); };
+          b.onclick = function () { if (run && run.line === L) { sfx('ok'); finishLine(i); } };
           box.appendChild(b);
         });
         mark(); return;
       }
-      if (pressed.jump) { L.sel = (L.sel + L.opts.length - 1) % L.opts.length; mark(); }
-      if (pressed.down) { L.sel = (L.sel + 1) % L.opts.length; mark(); }
-      if (pressed.act || pressed.ok) finishLine(L.sel);
+      if (pressed.jump) { L.sel = (L.sel + L.opts.length - 1) % L.opts.length; mark(); sfx('sel'); }
+      if (pressed.down) { L.sel = (L.sel + 1) % L.opts.length; mark(); sfx('sel'); }
+      if (pressed.act || pressed.ok) { sfx('ok'); finishLine(L.sel); }
       dAdv = false; return;
     }
     $('dnext').classList.toggle('on', !typing);
@@ -459,7 +477,7 @@
     if (game) Object.keys(MIS).forEach(function (id) {
       if (game.flags['mision:' + id] !== 'activa') return;
       var m = MIS[id];
-      h += '<div class="mt">' + esc(m.name) + '</div>';
+      h += '<div class="mt ' + (m.type === 'secundaria' ? 'side' : 'main') + '"><i></i>' + esc(m.name) + '</div>';
       (m.steps || []).forEach(function (st) { h += '<div class="ms' + (avail({ when: st.done }) ? ' ok' : '') + '"><i></i>' + esc(st.text) + '</div>'; });
       (m.extra || []).forEach(function (st) { h += '<div class="ms ex' + (avail({ when: st.done }) ? ' ok' : '') + '"><i></i>' + esc(st.text) + '</div>'; });
     });
@@ -484,6 +502,203 @@
   }
   $('invx').onclick = function () { toggleInv(false); };
   $('pinv').onclick = function () { pause(false); toggleInv(true); };
+
+  // ---------------- sonido (sintetizado, sin archivos) ----------------
+  // Comparte el silencio con el tycoon (elt_mute).
+  var AC = null, master = null, muted = false;
+  try { muted = localStorage.getItem('elt_mute') === '1'; } catch (e) { }
+  function ac() {
+    if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = 0.9; master.connect(AC.destination); } catch (e) { AC = null; } }
+    if (AC && AC.state === 'suspended') AC.resume();
+    return AC;
+  }
+  addEventListener('pointerdown', ac); addEventListener('keydown', ac);
+  function tn(f, t, d, type, v, f2) {
+    var a = ac(); if (!a || muted) return;
+    var o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime + t;
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f, t0); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + d);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(v, t0 + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+    o.connect(g); g.connect(master); o.start(t0); o.stop(t0 + d + 0.05);
+  }
+  function bell(f, t, d, v) { tn(f, t, d, 'triangle', v); tn(f * 2, t, d * 0.7, 'sine', v * 0.35); tn(f * 3.01, t, d * 0.4, 'sine', v * 0.12); }
+  var SFX = {
+    principal: function () { [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) { bell(f, i * 0.12, 1.1, 0.14); }); bell(1318.5, 0.36, 1.4, 0.09); tn(261.63, 0.34, 1.8, 'sine', 0.09); tn(392, 0.34, 1.8, 'sine', 0.05); },
+    secundaria: function () { bell(783.99, 0, 0.8, 0.12); bell(1174.66, 0.13, 1.1, 0.11); tn(392, 0.12, 1.2, 'sine', 0.05); },
+    hecha: function () { [392, 523.25, 659.25].forEach(function (f, i) { bell(f, i * 0.1, 0.5, 0.12); }); [523.25, 659.25, 783.99, 1046.5].forEach(function (f) { bell(f, 0.38, 1.7, 0.08); }); tn(130.81, 0.38, 1.9, 'sine', 0.12); },
+    objeto: function () { tn(880, 0, 0.12, 'triangle', 0.1, 1320); tn(1760, 0.09, 0.25, 'sine', 0.06); },
+    sel: function () { tn(660, 0, 0.05, 'triangle', 0.05); },
+    ok: function () { tn(880, 0, 0.07, 'triangle', 0.07); tn(1320, 0.05, 0.09, 'triangle', 0.05); }
+  };
+  function sfx(k) { if (SFX[k] && !muted) SFX[k](); }
+  function voice(w) { // pitidos al hablar: cada personaje con su tono
+    var f = w.voice || (w.npc && w.npc.d.voice); if (!f || muted) return;
+    tn(f * (0.92 + Math.random() * 0.16), 0, 0.05, 'square', 0.022);
+  }
+  function setMute(m) { muted = m; try { localStorage.setItem('elt_mute', m ? '1' : '0'); } catch (e) { } $('psnd').textContent = 'Sonido: ' + (m ? 'No' : 'Sí'); }
+  $('psnd').onclick = function () { setMute(!muted); if (!muted) sfx('ok'); };
+  setMute(muted);
+
+  // ---------------- aviso de mision (estilo "nueva mision" centrado) ----------------
+  var questQ = [], questOn = false;
+  function questBanner(kind, id) { questQ.push({ kind: kind, id: id }); if (!questOn) nextQuest(); }
+  function nextQuest() {
+    var q = questQ.shift(), el = $('quest');
+    if (!q) { questOn = false; return; }
+    questOn = true;
+    var m = MIS[q.id] || { name: q.id }, main = m.type !== 'secundaria';
+    el.className = (main ? 'main' : 'side') + ' ' + q.kind;
+    $('qlab').textContent = q.kind === 'hecha' ? 'Misión completada' : main ? 'Misión principal' : 'Misión secundaria';
+    $('qtit').textContent = m.name;
+    el.hidden = false; void el.offsetWidth; el.classList.add('go');
+    sfx(q.kind === 'hecha' ? 'hecha' : main ? 'principal' : 'secundaria');
+    setTimeout(function () { el.classList.add('out'); }, 3400);
+    setTimeout(function () { el.hidden = true; el.className = ''; nextQuest(); }, 4100);
+  }
+
+  // ---------------- pensamientos (bocadillo despues de hablar) ----------------
+  var thoughts = {}, THINK_SECS = 8, thinkEl = $('think'), thinkCur = null;
+  function thinkStep(dt) {
+    var show = null;
+    Object.keys(thoughts).forEach(function (k) { thoughts[k].t -= dt; if (thoughts[k].t <= 0) delete thoughts[k]; });
+    if (state === 'play') npcs.forEach(function (n) {
+      var th = thoughts[n.d.id]; if (th && Math.abs(P.x - n.d.x) < 90 && Math.abs(P.y - scene.floor) < 40) show = { n: n, th: th };
+    });
+    if (show) {
+      if (thinkCur !== show.th) { thinkCur = show.th; thinkEl.firstChild.textContent = show.th.text; }
+      thinkEl.style.left = ((show.n.d.x + 6 - Math.round(cam.x)) * SCALE) + 'px';
+      thinkEl.style.top = ((show.n.d.top + 6) * SCALE) + 'px';
+      thinkEl.classList.add('on');
+    } else { thinkEl.classList.remove('on'); thinkCur = null; }
+  }
+
+  // ---------------- editor rapido de dialogos (solo desarrollador, F3) ----------------
+  // Clic en un personaje u objeto para editar sus textos. Los cambios se guardan en este
+  // navegador al momento; "Descargar dialogos.js" da el archivo para sustituir en story/.
+  var TEXT_KEY = 'elt-historia-textos', TEXT_FILE = JSON.parse(JSON.stringify(window.STORY_TEXT || {})), TEXT = JSON.parse(JSON.stringify(TEXT_FILE));
+  if (DEV) try { var ov = localStorage.getItem(TEXT_KEY); if (ov) TEXT = JSON.parse(ov); } catch (e) { }
+  var editing = false, edOwner = null, edPrev = null;
+  function toggleEdit(on) {
+    if (!DEV) return;
+    editing = on === undefined ? !editing : on;
+    stage.classList.toggle('editing', editing);
+    if (!editing) closeEditor();
+    toast(editing ? 'Editor de diálogos: haz clic en un personaje u objeto' : 'Editor de diálogos cerrado');
+  }
+  cv.addEventListener('pointerdown', function (e) {
+    if (!editing || !scene || (state !== 'play' && state !== 'edit')) return;
+    var r = cv.getBoundingClientRect(), wx = (e.clientX - r.left) / SCALE + Math.round(cam.x), wy = (e.clientY - r.top) / SCALE, hit = null;
+    npcs.forEach(function (n) { if (Math.abs(wx - n.d.x) < 14 && wy > n.d.top + 6 && wy < n.d.top + 36) hit = { id: n.d.id, name: n.d.name, npc: n }; });
+    if (!hit) (scene.objects || []).forEach(function (o) { var rr = o.reach || 16; if (Math.abs(wx - o.x) < rr && wy > scene.floor - 70 && wy < scene.floor + 4) hit = { id: o.id, name: o.name || o.id }; });
+    if (hit) { e.preventDefault(); openEditor(hit); }
+  });
+  function openEditor(h) {
+    if (state !== 'edit') { edPrev = state; state = 'edit'; keys = {}; }
+    edOwner = h; $('ed').hidden = false; renderEditor();
+  }
+  function closeEditor() {
+    $('ed').hidden = true; edOwner = null;
+    if (state === 'edit') { state = edPrev || 'play'; edPrev = null; pressed = {}; }
+  }
+  function saveText() {
+    try { localStorage.setItem(TEXT_KEY, JSON.stringify(TEXT)); } catch (e) { }
+    edStatus();
+  }
+  function edStatus() {
+    var dirty = serializeText(TEXT) !== serializeText(TEXT_FILE);
+    $('edst').textContent = dirty ? 'Hay cambios guardados en este navegador que aún no están en el proyecto.' : 'Sin cambios: igual que story/dialogos.js.';
+    $('edst').classList.toggle('dirty', dirty);
+  }
+  function whoChoices() {
+    var l = [['ethan', 'Ethan']];
+    npcs.forEach(function (n) { l.push([n.d.id, n.d.name]); });
+    (scene.objects || []).forEach(function (o) { if (o.name) l.push([o.name, o.name]); });
+    l.push(['', '(sin nombre)']);
+    return l;
+  }
+  function renderEditor() {
+    var box = $('edl'), own = edOwner, keysOf = Object.keys(TEXT).filter(function (k) { return k.split('.')[0] === own.id; });
+    $('edt').textContent = own.name; box.innerHTML = '';
+    if (!keysOf.length) box.innerHTML = '<p class="edh">Todavía no tiene diálogos. Crea uno abajo y dime en qué momento debe decirlo.</p>';
+    keysOf.forEach(function (k) {
+      var d = TEXT[k]; if (!d.lines) d.lines = [];
+      var sec = document.createElement('div'); sec.className = 'eds';
+      var hd = document.createElement('div'); hd.className = 'edk';
+      var kb = document.createElement('b'); kb.textContent = k.split('.').slice(1).join('.'); hd.appendChild(kb);
+      var pb = document.createElement('button'); pb.textContent = '▶ Probar'; pb.onclick = function () { closeEditor(); runFn(function (s) { return s.talk(k); }, own.npc, 'editor'); }; hd.appendChild(pb);
+      var xb = document.createElement('button'); xb.textContent = '✕'; xb.title = 'Borrar este diálogo'; xb.className = 'del';
+      xb.onclick = function () { if (confirm('¿Borrar el diálogo "' + k + '"?')) { delete TEXT[k]; saveText(); renderEditor(); } }; hd.appendChild(xb);
+      sec.appendChild(hd);
+      d.lines.forEach(function (L, i) {
+        var row = document.createElement('div'); row.className = 'edr';
+        var sel = document.createElement('select'), wc = whoChoices();
+        if (L.who && !wc.some(function (w) { return w[0] === L.who; })) wc.unshift([L.who, L.who]);
+        wc.forEach(function (w) { var o = document.createElement('option'); o.value = w[0]; o.textContent = w[1]; sel.appendChild(o); });
+        sel.value = L.who || ''; sel.onchange = function () { L.who = sel.value || null; saveText(); };
+        var ta = document.createElement('textarea'); ta.rows = 2; ta.value = L.text; ta.oninput = function () { L.text = ta.value; saveText(); };
+        var tools = document.createElement('span');
+        [['↑', -1], ['↓', 1]].forEach(function (m) {
+          var b = document.createElement('button'); b.textContent = m[0];
+          b.onclick = function () { var j = i + m[1]; if (j < 0 || j >= d.lines.length) return; var t = d.lines[i]; d.lines[i] = d.lines[j]; d.lines[j] = t; saveText(); renderEditor(); };
+          tools.appendChild(b);
+        });
+        var rb = document.createElement('button'); rb.textContent = '✕'; rb.className = 'del'; rb.onclick = function () { d.lines.splice(i, 1); saveText(); renderEditor(); }; tools.appendChild(rb);
+        row.appendChild(sel); row.appendChild(ta); row.appendChild(tools); sec.appendChild(row);
+      });
+      var add = document.createElement('button'); add.textContent = '+ Línea'; add.className = 'edadd';
+      add.onclick = function () { d.lines.push({ who: own.npc ? own.id : 'ethan', text: '' }); saveText(); renderEditor(); };
+      sec.appendChild(add);
+      if (own.npc) {
+        var tl = document.createElement('label'); tl.textContent = 'Piensa después (bocadillo, opcional)';
+        var tt = document.createElement('textarea'); tt.rows = 2; tt.value = d.piensa || ''; tt.placeholder = 'p. ej. Pues una hamburguesa ya me metía...';
+        tt.oninput = function () { if (tt.value.trim()) d.piensa = tt.value; else delete d.piensa; saveText(); };
+        tl.appendChild(tt); sec.appendChild(tl);
+      }
+      box.appendChild(sec);
+    });
+    edStatus();
+  }
+  $('ednew').onclick = function () {
+    var n = prompt('Nombre del nuevo diálogo (por ejemplo: tras_cena)'); if (!n) return;
+    n = n.trim().replace(/\s+/g, '_').replace(/[^\wáéíóúñü.-]/gi, ''); if (!n) return;
+    var k = edOwner.id + '.' + n; if (TEXT[k]) { alert('Ya existe ' + k); return; }
+    TEXT[k] = { lines: [{ who: edOwner.npc ? edOwner.id : 'ethan', text: '' }] }; saveText(); renderEditor();
+  };
+  $('edx').onclick = closeEditor;
+  $('eddl').onclick = function () {
+    var b = new Blob([serializeText(TEXT)], { type: 'text/javascript' }), a = document.createElement('a');
+    a.href = URL.createObjectURL(b); a.download = 'dialogos.js'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+  };
+  $('edcp').onclick = function () {
+    var t = serializeText(TEXT);
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { toast('Copiado al portapapeles'); }, function () { prompt('Copia el texto:', t); });
+  };
+  $('edrs').onclick = function () {
+    if (!confirm('¿Descartar los cambios de este navegador y volver a story/dialogos.js?')) return;
+    try { localStorage.removeItem(TEXT_KEY); } catch (e) { }
+    TEXT = JSON.parse(JSON.stringify(TEXT_FILE)); renderEditor();
+  };
+  var TEXT_HEAD = [
+    '// Textos del Modo Historia. Se pueden editar a mano o con el editor rapido',
+    '// (modo desarrollador: tecla F3 y clic en un personaje u objeto). El editor descarga',
+    '// este mismo archivo con los cambios: basta con sustituirlo en story/.',
+    '//',
+    '// Cada clave es "dueño.momento" (el dueño es un personaje u objeto del escenario).',
+    '//  - lines: lo que se dice. who = \'ethan\', el id de un personaje, o null (narrador / sin nombre).',
+    '//  - piensa: (opcional) bocadillo de pensamiento que el personaje muestra unos segundos',
+    '//    despues de la conversacion, cuando Ethan esta cerca. No se puede interactuar con el.',
+    '// Los guiones (story/scenes.js) deciden que clave toca en cada momento.'
+  ].join('\n');
+  function serializeText(T) {
+    var ks = Object.keys(T);
+    return TEXT_HEAD + '\nwindow.STORY_TEXT = {\n' + ks.map(function (k, i) {
+      var d = T[k], out = '  ' + JSON.stringify(k) + ': {\n    "lines": [\n' +
+        (d.lines || []).map(function (L) { return '      { "who": ' + JSON.stringify(L.who == null ? null : L.who) + ', "text": ' + JSON.stringify(L.text) + ' }'; }).join(',\n') +
+        '\n    ]' + (d.piensa ? ',\n    "piensa": ' + JSON.stringify(d.piensa) : '') + '\n  }';
+      return out + (i < ks.length - 1 ? ',' : '');
+    }).join('\n') + '\n};\n';
+  }
+  window.__serializeText = function () { return serializeText(TEXT); }; // para pruebas
 
   // ---------------- fisica de Ethan ----------------
   var WALK = 82, RUN = 132, ACC = 950, AIR = 620, FRIC = 1100, G = 920, FALLG = 1.5, JUMP = 312, CUT = 190, MAXF = 480, JBUF = 0.15;
@@ -631,6 +846,12 @@
       else { ctx.save(); ctx.translate(dx + 24, dy); ctx.scale(-1, 1); ctx.drawImage(e, P.frame * 48, 0, 48, 48, 0, 0, 48, 48); ctx.restore(); }
     }
     if (debug) drawDebug(cx);
+    if (editing) {
+      ctx.setLineDash([2, 2]); ctx.strokeStyle = '#ff5ad1'; ctx.lineWidth = 1; ctx.font = '7px monospace'; ctx.textBaseline = 'bottom'; ctx.fillStyle = '#ff5ad1';
+      npcs.forEach(function (n) { var x = Math.round(n.d.x) - 13 - cx + 0.5, y = n.d.top + 8.5; ctx.strokeRect(x, y, 26, 26); ctx.fillText('✎ ' + n.d.name, x, y - 1); });
+      (scene.objects || []).forEach(function (o) { var rr = o.reach || 16, x = Math.round(o.x - rr) - cx + 0.5, y = scene.floor - 60.5; ctx.strokeRect(x, y, rr * 2, 60); ctx.fillText('✎ ' + (o.name || o.id), x, y - 1); });
+      ctx.setLineDash([]);
+    }
   }
   function drawDebug(cx) {
     ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 1;
@@ -653,9 +874,10 @@
     var dt = Math.min(0.1, (now - last) / 1000); last = now;
     fc++; ft += dt; if (ft >= 1) { fps = fc; fc = 0; ft = 0; }
     if (pressed.debug) debug = !debug;
+    if (pressed.edit) toggleEdit();
     if (pressed.inv && (state === 'play' || state === 'inv')) toggleInv();
     if (pressed.dev) { if (state === 'dev') closeDev(); else openDev(); }
-    else if (pressed.menu) { if (state === 'inv') toggleInv(false); else if (state === 'dev') closeDev(); else if (state === 'play') pause(true); else if (state === 'pause') pause(false); }
+    else if (pressed.menu) { if (state === 'edit') closeEditor(); else if (state === 'inv') toggleInv(false); else if (state === 'dev') closeDev(); else if (state === 'play') pause(true); else if (state === 'pause') pause(false); }
     if (state === 'play' && scene) {
       // la pulsacion se guarda en el buffer aqui (no dentro del paso fijo) para no perderla
       // en pantallas de mas de 60 Hz, donde hay fotogramas sin ningun paso de fisica
@@ -666,6 +888,7 @@
       if (game) { game.play = (game.play || 0) + dt; saveT += dt; if (saveT > 10) { saveT = 0; writeSave(); } }
     } else if (state === 'talk' && run) { acc = 0; P.vx = 0; scriptStep(dt); camStep(dt); if (game) game.play = (game.play || 0) + dt; }
     else acc = 0;
+    if (scene) thinkStep(dt);
     npcs.forEach(function (o) { o.blinkT -= dt; if (o.blinkT <= 0) { o.blink = 0.13; o.blinkT = 2 + Math.random() * 3.5; } o.blink -= dt; });
     if (scene && state !== 'menu') { time += dt; fx.forEach(function (o) { fxStep(o, dt); }); }
     draw();
