@@ -189,10 +189,9 @@ function cocina() {
   f.text(332, 66, 'DIC', white); f.px(342, 62, K); f.px(342, 63, K);
   for (var j = 0; j < 4; j++) for (var i = 0; i < 6; i++) f.rect(333 + i * 3, 76 + j * 4, 2, 2, '#bcb6a6');
   f.box(347, 87, 6, 5, red); f.rect(349, 89, 2, 1, red);
-  // reloj de pared: 23:55
+  // reloj de pared (las agujas las pinta el motor con la hora de la partida)
   var cx = 442, cy = 42; f.disc(cx, cy, 11, K); f.disc(cx, cy, 10, white);
-  for (var h = 0; h < 12; h++) { var a = h / 12 * Math.PI * 2; f.px(cx + Math.round(Math.sin(a) * 8), cy - Math.round(Math.cos(a) * 8), '#8c8778'); }
-  f.line(cx, cy, cx - 1, cy - 6, K); f.line(cx, cy, cx - 4, cy - 7, red); f.px(cx, cy, K);
+  for (var h = 0; h < 12; h++) { var a = h / 12 * Math.PI * 2; f.px(cx + Math.round(Math.sin(a) * 8), cy - Math.round(Math.cos(a) * 8), h % 3 ? '#b4ae9e' : '#6c6758'); }
 
   // respaldos de las sillas de la familia (detras de cada uno; la mesa va en otra capa)
   MESA.seats.forEach(function (x) {
@@ -226,9 +225,6 @@ function cocinaMesa() {
   f.rect(X + 8, T + 13, 3, 196 - T - 13, woodD); f.rect(X + Wd - 11, T + 13, 3, 196 - T - 13, woodD);
   MESA.seats.forEach(function (x, n) {
     f.rect(x - 7, T - 2, 15, 2, white); f.rect(x - 5, T - 1, 11, 1, '#cfccc3');         // plato
-    var g = x + (n === 1 ? -14 : 12);                                                 // copa con las 12 uvas
-    f.rect(g - 3, T - 8, 7, 6, '#e8f2f6', 200); f.box(g - 3, T - 8, 7, 6, '#a9c3cf'); f.rect(g, T - 2, 1, 2, '#a9c3cf');
-    for (var k = 0; k < 6; k++) f.px(g - 2 + (k % 3) * 2, T - 7 + (k > 2 ? 2 : 0), k % 2 ? '#8fbf3e' : '#a8d455');
   });
   var bx = 465; // cava
   f.rect(bx, T - 24, 7, 24, '#1f4a2c'); f.rect(bx + 1, T - 23, 1, 20, '#3a7a4c'); f.rect(bx + 1, T - 30, 5, 7, gold); f.rect(bx + 1, T - 30, 5, 1, goldD);
@@ -355,9 +351,9 @@ var LOURDES = {
 };
 
 // ======================= OBJETOS (iconos 16x16) =======================
-// 0 tortilla de Lourdes · 1 jamon · 2 langostinos
+// 0 tortilla de Lourdes · 1 jamon · 2 langostinos · 3 copa de uvas · 4 tubo de lacasitos · 5 nuggets
 function objetos() {
-  var f = new FB(48, 16);
+  var f = new FB(96, 16);
   // tortilla en su plato
   f.rect(1, 12, 14, 2, '#f6f4ee'); f.rect(2, 14, 12, 1, '#cfccc3');
   f.rect(2, 6, 12, 6, '#f0c34a'); f.rect(3, 5, 10, 1, '#d99a2e'); f.rect(2, 6, 12, 1, '#d99a2e'); f.rect(2, 11, 12, 1, '#c98a28');
@@ -375,6 +371,19 @@ function objetos() {
     f.rect(p[0], p[1], 5, 3, '#f07a4a'); f.rect(p[0], p[1], 5, 1, '#ff9e70'); f.px(p[0] + 5, p[1] + 1, '#f07a4a'); f.px(p[0] + 5, p[1] + 2, '#d85a32');
     f.px(p[0] - 1, p[1] + 1, '#d85a32'); f.px(p[0] + 1, p[1] + 1, '#1f241e'); f.line(p[0] - 1, p[1], p[0] - 3, p[1] - 2, '#d85a32');
   });
+  // copa con las 12 uvas
+  o = 48;
+  f.rect(o + 4, 5, 8, 6, '#e8f2f6', 210); f.rect(o + 5, 11, 6, 1, '#cfe0e8'); f.rect(o + 7, 12, 2, 2, '#cfe0e8'); f.rect(o + 5, 14, 6, 1, '#cfe0e8');
+  [[5, 8], [7, 8], [9, 8], [6, 6], [8, 6], [10, 6], [6, 10], [8, 10], [10, 9], [5, 6], [9, 4], [7, 4]].forEach(function (g, i) { f.rect(o + g[0], g[1], 2, 2, i % 3 ? '#8fbf3e' : '#b0d85a'); });
+  // tubo de lacasitos (chocolatinas de colores)
+  o = 64;
+  f.rect(o + 5, 2, 6, 12, '#f2b632'); f.rect(o + 5, 2, 6, 2, '#d8392b'); f.rect(o + 5, 13, 6, 1, '#d8392b'); f.rect(o + 6, 4, 1, 9, '#ffe08a');
+  [['#e8463a', 6, 6], ['#3f8fe0', 8, 7], ['#4fb34a', 9, 10], ['#f07ab0', 7, 10], ['#ffd23f', 8, 4]].forEach(function (c) { f.rect(o + c[1], c[2], 2, 2, c[0]); });
+  f.rect(o + 11, 12, 2, 2, '#e8463a'); f.rect(o + 2, 13, 2, 2, '#3f8fe0'); f.rect(o + 13, 13, 2, 1, '#4fb34a');
+  // caja de nuggets (sin marca)
+  o = 80;
+  f.rect(o + 2, 7, 12, 8, '#d8392b'); f.rect(o + 2, 7, 12, 1, '#ff6a50'); f.rect(o + 3, 10, 10, 2, '#f2b632');
+  f.rect(o + 3, 4, 4, 3, '#d99a3e'); f.rect(o + 7, 3, 4, 4, '#c98a30'); f.rect(o + 10, 5, 3, 2, '#e0a848'); f.px(o + 4, 5, '#f0c070'); f.px(o + 8, 4, '#e8b860');
   outline(f);
   save(f, 'objetos.png');
 }

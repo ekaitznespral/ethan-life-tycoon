@@ -59,6 +59,24 @@ window.STORY_TEXT = {
       { "who": "ethan", "text": "Primero, la cena." }
     ]
   },
+  "puerta.antes_campanadas": {
+    "lines": [
+      { "who": "ethan", "text": "Primero las campanadas." }
+    ]
+  },
+  "lourdes.uvas": {
+    "lines": [
+      { "who": "lourdes", "text": "¡Las uvas, que empiezan los cuartos!" }
+    ]
+  },
+  "familia.feliz_ano": {
+    "lines": [
+      { "who": "lourdes", "text": "¡Feliz año nuevo!" },
+      { "who": "padre", "text": "¡Feliz 2023!" },
+      { "who": "hermanastra", "text": "¡Feliz año!" },
+      { "who": "ethan", "text": "¡Feliz año!" }
+    ]
+  },
   "movil.quedada": {
     "lines": [
       { "who": "Sadaba", "text": "¿qué, a qué hora?" },

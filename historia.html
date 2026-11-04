@@ -222,6 +222,12 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
 @media (orientation:portrait) and (pointer:coarse){
  #rot{display:flex;position:fixed;inset:0;z-index:9;background:#000;color:#f3eedb;font-family:var(--px);font-size:12px;line-height:2;padding:24px;text-align:center;align-items:center;justify-content:center}
 }
+/* campanadas */
+#camp{position:absolute;left:50%;top:calc(var(--s)*46px);transform:translateX(-50%);pointer-events:none;z-index:3;text-align:center}
+#camp b{display:block;font-weight:400;font-size:calc(var(--s)*26px);color:#ffd75e;text-shadow:0 calc(var(--s)*1.5px) 0 #8a5a10,0 0 calc(var(--s)*8px) #000}
+#camp.q b{font-size:calc(var(--s)*9px);color:#fffaf0;letter-spacing:.2em;animation:blinkr 1.3s steps(2) infinite}
+#camp.hit b{animation:campa .5s ease-out}
+@keyframes campa{from{transform:scale(1.7);opacity:.2}to{transform:scale(1);opacity:1}}
 </style></head><body>
 <div id="stage">
  <canvas id="cv" aria-label="Modo Historia"></canvas>
@@ -231,6 +237,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
  <div id="mis" hidden></div>
  <div id="clk" hidden></div>
  <div id="toasts"></div>
+ <div id="camp" hidden><b id="campn"></b></div>
  <div id="think"><span></span></div>
  <div id="quest" hidden><i class="ql"></i><small id="qlab"></small><b id="qtit"></b><i class="ql"></i></div>
  <div id="dlg" hidden><div id="dport"></div><div class="dtx"><b id="dname"></b><p id="dtext"></p><div id="dopts"></div></div><i id="dnext">▼</i></div>

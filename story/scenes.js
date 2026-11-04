@@ -33,6 +33,8 @@
 //   await s.phone('movil.x', 'Titulo')  el movil a pantalla completa con un chat
 //   await s.go(escenario, aparicion)    cambia de escenario sin cortar el guion
 //   s.fail(id)                           mision fallida (aviso en rojo)
+//   await s.serve(objeto, x, flag)       Lourdes lo lleva volando a la mesa (x) y pone la flag
+//   await s.chimes()                     los cuartos y las 12 campanadas (todos comen en cada una)
 
 // Modo desarrollador: panel (º/F1), editor rapido de dialogos (F3) y depuracion (F2).
 // En produccion: false, y desaparece todo eso.
@@ -44,7 +46,11 @@ window.STORY = {
   items: {
     tortilla: { name: 'Tortilla de Lourdes', icon: 0, desc: 'La tortilla de Lourdes. Para la cena.' },
     jamon: { name: 'Jamón', icon: 1, desc: 'Un jamón con su jamonero.' },
-    langostinos: { name: 'Langostinos', icon: 2, desc: 'Los que pide la hermanastra.' }
+    langostinos: { name: 'Langostinos', icon: 2, desc: 'Los que pide la hermanastra.' },
+    // solo se ven en la mesa (no van al inventario)
+    uvas: { name: 'Uvas', icon: 3 },
+    lacasitos: { name: 'Lacasitos', icon: 4 },
+    nuggets: { name: 'Nuggets del Burger King', icon: 5 }
   },
 
   // Reloj de la partida: aparece despues de la cena. rate = segundos reales por minuto de juego.
@@ -52,7 +58,8 @@ window.STORY = {
   clock: {
     rate: 1.5,
     events: [
-      { id: 'quedada', at: '00:30', run: 'quedada', when: function (g) { return g.flag('cena_hecha'); } },
+      { id: 'campanadas', at: '23:59', run: 'campanadas', when: function (g) { return g.flag('cena_hecha'); } },
+      { id: 'quedada', at: '00:30', run: 'quedada', when: function (g) { return g.flag('ano_nuevo'); } },
       { id: 'metro_perdido', at: '01:15', run: 'metro_perdido', when: function (g) { return g.flag('mision:metro') === 'activa'; } }
     ]
   },
@@ -117,15 +124,32 @@ window.STORY = {
       await s.fade(1, 900);
       s.flag('cena_hecha', 1); s.complete('cena');
       s.sit(null); s.face(1);
-      s.clock('00:20');                        // a partir de aqui hay reloj
+      s.clock('23:30');                        // acaban de cenar: a partir de aqui hay reloj
       await s.wait(0.5);
       await s.fade(0, 900);
       await s.cine(false);
     },
-    puerta_cerrada: async function (s) { await s.talk('puerta.antes_cena'); },
+    puerta_cerrada: async function (s) { await s.talk(s.flag('cena_hecha') ? 'puerta.antes_campanadas' : 'puerta.antes_cena'); },
+    // 23:59: los cuartos, las uvas (Ethan con nuggets y la hermanastra con Lacasitos) y las campanadas
+    campanadas: async function (s) {
+      await s.cine(true);
+      await s.walkTo(357); s.face(1); s.sit(357);
+      await s.talk('lourdes.uvas');
+      await s.serve('uvas', 502, 'mesa:uvas_lourdes');
+      await s.serve('uvas', 430, 'mesa:uvas_aita');
+      await s.serve('lacasitos', 412, 'mesa:lacasitos');
+      await s.serve('nuggets', 381, 'mesa:nuggets');
+      await s.wait(0.6);
+      await s.chimes();
+      s.clock('00:00'); s.flag('ano_nuevo', 1);  // a partir de aqui, fuegos artificiales a lo grande
+      await s.wait(1.4);
+      await s.talk('familia.feliz_ano');
+      s.sit(null); s.face(1);
+      await s.cine(false);
+    },
     // 00:30: el movil con la quedada
     quedada: async function (s) {
-      await s.phone('movil.quedada', 'Nochevieja');
+      await s.phone('movil.quedada', 'Calentaos 4.0');
       s.mission('metro');
     },
     // 01:15 sin haber llegado: PROVISIONAL (se vuelve a la puerta de casa a las 00:30)
@@ -158,10 +182,12 @@ window.STORY = {
     { id: 'mision', name: 'Misión de la cena activa', scene: 'cocina', spawn: 'mesa', flags: { 'mision:cena': 'activa' } },
     { id: 'tortilla', name: 'Con la tortilla en la mano', scene: 'cocina', spawn: 'nevera', flags: { 'mision:cena': 'activa', 'nevera:tortilla': 1 }, inv: ['tortilla'] },
     { id: 'todo', name: 'Con tortilla, jamón y langostinos', scene: 'cocina', spawn: 'silla', flags: { 'mision:cena': 'activa', 'nevera:tortilla': 1, 'nevera:jamon': 1, 'nevera:langostinos': 1 }, inv: ['tortilla', 'jamon', 'langostinos'] },
-    { id: 'trascena', name: 'Después de la cena (00:20)', scene: 'cocina', spawn: 'silla', clock: '00:20', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1 } },
-    { id: 'quedada', name: 'Justo antes del móvil (00:29)', scene: 'cocina', spawn: 'puerta', clock: '00:29', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1 } },
-    { id: 'metro', name: 'Misión del metro, en la calle (00:40)', scene: 'calle', spawn: 'portal', clock: '00:40', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
-    { id: 'metro_justo', name: 'Metro: a punto de perderlo (01:13)', scene: 'calle', spawn: 'portal', clock: '01:13', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
+    { id: 'trascena', name: 'Después de la cena (23:30)', scene: 'cocina', spawn: 'silla', clock: '23:30', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1 } },
+    { id: 'campanadas', name: 'Justo antes de las campanadas (23:58)', scene: 'cocina', spawn: 'silla', clock: '23:58', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1 } },
+    { id: 'anonuevo', name: 'Año nuevo recién empezado (00:01)', scene: 'cocina', spawn: 'silla', clock: '00:01', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1 } },
+    { id: 'quedada', name: 'Justo antes del móvil (00:29)', scene: 'cocina', spawn: 'puerta', clock: '00:29', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1 } },
+    { id: 'metro', name: 'Misión del metro, en la calle (00:40)', scene: 'calle', spawn: 'portal', clock: '00:40', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
+    { id: 'metro_justo', name: 'Metro: a punto de perderlo (01:13)', scene: 'calle', spawn: 'portal', clock: '01:13', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
     { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' }
   ]
 };
@@ -186,7 +212,11 @@ window.STORY_SCENES = {
       { id: 'vitro', name: 'Vitro', x: 202, reach: 14, py: 156, label: 'Mirar la vitro', run: 'vitro' }
     ],
     props: [
-      { item: 'jamon', x: 382, y: 178, when: function (g) { return g.flag('mesa:jamon'); } },
+      { item: 'jamon', x: 510, y: 178, when: function (g) { return g.flag('mesa:jamon'); } },
+      { item: 'uvas', x: 502, y: 178, when: function (g) { return g.flag('mesa:uvas_lourdes'); } },
+      { item: 'uvas', x: 430, y: 178, when: function (g) { return g.flag('mesa:uvas_aita'); } },
+      { item: 'lacasitos', x: 412, y: 178, when: function (g) { return g.flag('mesa:lacasitos'); } },
+      { item: 'nuggets', x: 381, y: 178, when: function (g) { return g.flag('mesa:nuggets'); } },
       { item: 'langostinos', x: 428, y: 178, when: function (g) { return g.flag('mesa:langostinos'); } },
       { item: 'tortilla', x: 457, y: 178, when: function (g) { return g.flag('mesa:tortilla'); } }
     ],
@@ -197,12 +227,13 @@ window.STORY_SCENES = {
       { x: 372, y: 177, w: 144 }  // mesa
     ],
     spawns: { inicio: { x: 150, dir: 1 }, puerta: { x: 606, dir: -1 }, mesa: { x: 520, dir: -1 }, nevera: { x: 76, dir: 1 }, silla: { x: 340, dir: 1 } },
-    exits: [{ x: 588, w: 42, to: 'calle', spawn: 'portal', label: 'Salir', when: function (g) { return g.flag('cena_hecha'); }, locked: 'puerta_cerrada' }],
+    exits: [{ x: 588, w: 42, to: 'calle', spawn: 'portal', label: 'Salir', when: function (g) { return g.flag('ano_nuevo'); }, locked: 'puerta_cerrada' }],
     fx: [
       { type: 'fireworks', z: 0, x0: 40, x1: 340, y0: 58, y1: 100, rate: 1.1 },
       { type: 'tv', x: 539, y: 85, w: 40, h: 25 },
       { type: 'glow', x: 559, y: 97, r: 46, c: '120,160,255', a: 0.16, flicker: 1 },
-      { type: 'glow', x: 314, y: 14, r: 90, c: '255,250,225', a: 0.10 }
+      { type: 'glow', x: 314, y: 14, r: 90, c: '255,250,225', a: 0.10 },
+      { type: 'wallclock', x: 442, y: 42 }
     ]
   },
 
