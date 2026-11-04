@@ -182,7 +182,7 @@
   }
   function place(spawn, at) {
     var sp = (at && at.x != null) ? at : (scene.spawns[spawn] || { x: 40, dir: 1 });
-    P.x = sp.x; P.y = at && at.y != null ? at.y : scene.floor; P.dir = sp.dir || 1;
+    P.x = sp.x; P.y = at && at.y != null ? at.y : floorAt(sp.x); P.dir = sp.dir || 1;
     P.vx = P.vy = 0; P.ground = true; P.buf = 0; P.drop = 0;
     cam.x = clampCam(P.x - VW / 2 + P.dir * 28);
   }
@@ -476,7 +476,7 @@
       var from = null; npcs.forEach(function (n) { if (n.d.id === 'lourdes') from = n; });
       return new Promise(function (res) {
         r.fly = r.fly || [];
-        r.fly.push({ item: item, x0: from ? from.d.x : x, y0: from ? from.d.top + 30 : 150, x1: x, y1: scene.floor - 18, t: 0, d: 0.6, flag: flag, res: res });
+        r.fly.push({ item: item, x0: from ? from.d.x : x, y0: from ? from.d.top + 30 : 150, x1: x, y1: floorAt(x) - 18, t: 0, d: 0.6, flag: flag, res: res });
         if (from) from.mouth = true;
         sfx('sel');
       });
@@ -809,7 +809,7 @@
     var show = null;
     Object.keys(thoughts).forEach(function (k) { thoughts[k].t -= dt; if (thoughts[k].t <= 0) delete thoughts[k]; });
     if (state === 'play') npcs.forEach(function (n) {
-      var th = thoughts[n.d.id]; if (th && Math.abs(P.x - n.d.x) < 90 && Math.abs(P.y - scene.floor) < 40) show = { n: n, th: th };
+      var th = thoughts[n.d.id]; if (th && Math.abs(P.x - n.d.x) < 90 && Math.abs(P.y - floorAt(n.d.x)) < 40) show = { n: n, th: th };
     });
     if (show) {
       if (thinkCur !== show.th) { thinkCur = show.th; thinkEl.firstChild.textContent = show.th.text; }
@@ -836,7 +836,7 @@
     if (!editing || !scene || (state !== 'play' && state !== 'edit')) return;
     var r = cv.getBoundingClientRect(), wx = (e.clientX - r.left) / SCALE + Math.round(cam.x), wy = (e.clientY - r.top) / SCALE, hit = null;
     npcs.forEach(function (n) { if (Math.abs(wx - n.d.x) < 14 && wy > n.d.top + 6 && wy < n.d.top + 36) hit = { id: n.d.id, name: n.d.name, npc: n }; });
-    if (!hit) (scene.objects || []).forEach(function (o) { var rr = o.reach || 16; if (Math.abs(wx - o.x) < rr && wy > scene.floor - 70 && wy < scene.floor + 4) hit = { id: o.id, name: o.name || o.id }; });
+    if (!hit) (scene.objects || []).forEach(function (o) { var rr = o.reach || 16; if (Math.abs(wx - o.x) < rr && wy > floorAt(o.x) - 70 && wy < floorAt(o.x) + 4) hit = { id: o.id, name: o.name || o.id }; });
     if (hit) { e.preventDefault(); openEditor(hit); }
   });
   function openEditor(h) {
@@ -1029,7 +1029,8 @@
 
     var py = P.y, vyIn = P.vy, wasG = P.ground; P.y += P.vy * dt; P.ground = false; P.onPlat = false;
     if (P.vy >= 0) {
-      if (P.y >= scene.floor) { P.y = scene.floor; P.vy = 0; P.ground = true; }
+      var fl = floorAt(P.x);
+      if (P.y >= fl || (wasG && !P.onPlat && fl - P.y < 3)) { P.y = fl; P.vy = 0; P.ground = true; }   // en rampa de bajada se queda pegado al suelo
       if (P.drop <= 0) (scene.platforms || []).forEach(function (p) {
         if (P.x + hw > p.x && P.x - hw < p.x + p.w && py <= p.y + 0.5 && P.y >= p.y) { P.y = p.y; P.vy = 0; P.ground = true; P.onPlat = true; }
       });
@@ -1054,6 +1055,12 @@
       var m = motes[i]; m.l -= dt; if (m.l <= 0) { motes.splice(i, 1); continue; }
       m.vx *= 1 - 5 * dt; m.vy += 30 * dt; m.x += m.vx * dt; m.y = Math.min(m.y + m.vy * dt, P.ground ? P.y : m.y + m.vy * dt);
     }
+  }
+  function floorAt(x) {
+    var g = scene && scene.ground; if (!g || !g.length) return scene.floor;
+    if (x <= g[0][0]) return g[0][1];
+    for (var i = 1; i < g.length; i++) if (x <= g[i][0]) { var a = g[i - 1], b = g[i], t = (x - a[0]) / (b[0] - a[0] || 1); return a[1] + (b[1] - a[1]) * t; }
+    return g[g.length - 1][1];
   }
   function clampCam(x) { return Math.max(0, Math.min(scene.w - VW, x)); }
   function camStep(dt) {
@@ -1208,19 +1215,20 @@
     if (editing) {
       ctx.setLineDash([2, 2]); ctx.strokeStyle = '#ff5ad1'; ctx.lineWidth = 1; ctx.font = '7px monospace'; ctx.textBaseline = 'bottom'; ctx.fillStyle = '#ff5ad1';
       npcs.forEach(function (n) { var x = Math.round(n.d.x) - 13 - cx + 0.5, y = n.d.top + 8.5; ctx.strokeRect(x, y, 26, 26); ctx.fillText('✎ ' + n.d.name, x, y - 1); });
-      (scene.objects || []).forEach(function (o) { var rr = o.reach || 16, x = Math.round(o.x - rr) - cx + 0.5, y = scene.floor - 60.5; ctx.strokeRect(x, y, rr * 2, 60); ctx.fillText('✎ ' + (o.name || o.id), x, y - 1); });
+      (scene.objects || []).forEach(function (o) { var rr = o.reach || 16, x = Math.round(o.x - rr) - cx + 0.5, y = floorAt(o.x) - 60.5; ctx.strokeRect(x, y, rr * 2, 60); ctx.fillText('✎ ' + (o.name || o.id), x, y - 1); });
       ctx.setLineDash([]);
     }
   }
   function drawDebug(cx) {
     ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 1;
     (scene.platforms || []).forEach(function (p) { ctx.beginPath(); ctx.moveTo(p.x - cx, p.y + 0.5); ctx.lineTo(p.x + p.w - cx, p.y + 0.5); ctx.stroke(); });
+    if (scene.ground) { ctx.strokeStyle = '#ffae00'; ctx.beginPath(); scene.ground.forEach(function (g, i) { ctx[i ? 'lineTo' : 'moveTo'](g[0] - cx, g[1] + 0.5); }); ctx.stroke(); }
     ctx.fillStyle = 'rgba(0,255,120,0.25)';
-    (scene.exits || []).forEach(function (e) { ctx.fillRect(e.x - cx, scene.floor - 70, e.w, 70); });
+    (scene.exits || []).forEach(function (e) { ctx.fillRect(e.x - cx, floorAt(e.x) - 70, e.w, 70); });
     ctx.fillStyle = 'rgba(255,200,0,0.22)';
-    npcs.forEach(function (o) { var r = o.d.reach || 22; ctx.fillRect(o.d.x - r - cx, scene.floor - 8, r * 2, 8); });
+    npcs.forEach(function (o) { var r = o.d.reach || 22; ctx.fillRect(o.d.x - r - cx, floorAt(o.d.x) - 8, r * 2, 8); });
     ctx.fillStyle = 'rgba(255,90,255,0.3)';
-    (scene.objects || []).forEach(function (o) { var r = o.reach || 16; ctx.fillRect(o.x - r - cx, scene.floor - 4, r * 2, 4); });
+    (scene.objects || []).forEach(function (o) { var r = o.reach || 16; ctx.fillRect(o.x - r - cx, floorAt(o.x) - 4, r * 2, 4); });
     ctx.strokeStyle = '#ff3355'; ctx.strokeRect(Math.round(P.x - P.w / 2) - cx + 0.5, Math.round(P.y - P.h) + 0.5, P.w, P.h);
     ctx.fillStyle = '#000a'; ctx.fillRect(0, 0, 150, 11);
     ctx.fillStyle = '#0f0'; ctx.font = '8px monospace'; ctx.textBaseline = 'top';

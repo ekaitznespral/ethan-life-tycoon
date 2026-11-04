@@ -239,8 +239,10 @@ window.STORY_SCENES = {
   },
 
   calle: {
-    name: 'Calle', sub: 'Portal 3 · Sestao',
-    w: 1300, floor: 200,
+    name: 'Calle', sub: 'Dr. Fleming · Sestao',
+    w: 1600, floor: 200,
+    // suelo: acera y plaza a 200, rampa de 1070 a 1170 y aparcamiento a 212
+    ground: [[0, 200], [1070, 200], [1170, 212], [1600, 212]],
     layers: [
       { src: 'sprites/story/calle-cielo.png', f: 0.08 },
       { src: 'sprites/story/calle-lejos.png', f: 0.3 },
@@ -250,26 +252,31 @@ window.STORY_SCENES = {
     platforms: [
       { x: 148, y: 157, w: 82 },   // techo del monovolumen azul
       { x: 336, y: 161, w: 54 },   // techo del todoterreno gris
-      { x: 772, y: 167, w: 60 },   // techo del coche rojo
-      { x: 1018, y: 172, w: 86 },  // contenedores
-      { x: 1112, y: 184, w: 40 }   // banco
+      { x: 830, y: 150, w: 84 },   // techo de la caseta blanca
+      { x: 1192, y: 174, w: 56 },  // coches del aparcamiento
+      { x: 1288, y: 176, w: 58 },
+      { x: 1350, y: 174, w: 54 },
+      { x: 1498, y: 164, w: 62 }   // encima de la boca de metro
     ],
-    spawns: { portal: { x: 276, dir: 1 } },
+    spawns: { portal: { x: 276, dir: 1 }, metro: { x: 1470, dir: -1 } },
     exits: [{ x: 252, w: 48, to: 'cocina', spawn: 'puerta', label: 'Entrar al portal' }],
     objects: [
-      { id: 'metro', name: 'Metro', x: 1206, reach: 24, py: 150, label: 'Bajar al metro', run: 'metro', when: function (g) { return g.flag('mision:metro') === 'activa'; } }
+      { id: 'metro', name: 'Metro', x: 1528, reach: 30, py: 160, label: 'Bajar al metro', run: 'metro', when: function (g) { return g.flag('mision:metro') === 'activa'; } }
     ],
     fx: [
-      { type: 'fireworks', z: 0, x0: 20, x1: 460, y0: 20, y1: 80, rate: 1.4, when: function (g) { return g.flag('ano_nuevo'); }, light: { x: 0, y: 0, r: 0, a: 0.07 } },
+      { type: 'fireworks', z: 0, x0: 20, x1: 480, y0: 15, y1: 70, rate: 1.4, when: function (g) { return g.flag('ano_nuevo'); }, light: { x: 0, y: 0, r: 0, a: 0.07 } },
       { type: 'blink', x: 304, y: 57, f: 0.3, z: 1 },
       { type: 'blink', x: 322, y: 69, f: 0.3, z: 1, phase: 0.5 },
       { type: 'glow', x: 664, y: 126, r: 46, c: '255,225,150', a: 0.24 },
-      { type: 'glow', x: 1012, y: 126, r: 46, c: '255,225,150', a: 0.24 },
+      { type: 'glow', x: 991, y: 126, r: 40, c: '255,240,200', a: 0.22 },
+      { type: 'glow', x: 1111, y: 131, r: 40, c: '255,240,200', a: 0.22 },
+      { type: 'glow', x: 1291, y: 138, r: 40, c: '255,240,200', a: 0.22 },
       { type: 'glow', x: 276, y: 168, r: 40, c: '255,220,150', a: 0.2 },
       { type: 'glow', x: 497, y: 152, r: 30, c: '255,90,110', a: 0.25, flicker: 0.4 },
       { type: 'glow', x: 500, y: 178, r: 56, c: '255,200,110', a: 0.16 },
       { type: 'glow', x: 160, y: 154, r: 12, c: '255,120,140', a: 0.2 },
-      { type: 'glow', x: 1164, y: 125, r: 24, c: '255,80,80', a: 0.18 }
+      { type: 'glow', x: 1528, y: 192, r: 50, c: '255,200,120', a: 0.2 },
+      { type: 'glow', x: 1465, y: 191, r: 22, c: '255,70,70', a: 0.2 }
     ]
   }
 };

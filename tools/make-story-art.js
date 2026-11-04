@@ -12,11 +12,12 @@ function hex(c, a) {
   var n = parseInt(c.slice(1), 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255, a === undefined ? 255 : a];
 }
-function FB(w, h) { this.w = w; this.h = h; this.d = new Uint8Array(w * h * 4); }
+function FB(w, h) { this.w = w; this.h = h; this.d = new Uint8Array(w * h * 4); this.em = new Uint8Array(w * h); this.emit = false; }
 FB.prototype.px = function (x, y, c, a) {
   x |= 0; y |= 0; if (x < 0 || y < 0 || x >= this.w || y >= this.h) return;
   var k = typeof c === 'string' ? hex(c, a) : c, i = (y * this.w + x) * 4;
   this.d[i] = k[0]; this.d[i + 1] = k[1]; this.d[i + 2] = k[2]; this.d[i + 3] = k[3];
+  this.em[i >> 2] = this.emit ? 1 : 0;
 };
 FB.prototype.rect = function (x, y, w, h, c, a) {
   for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) this.px(x + i, y + j, c, a);
@@ -436,16 +437,16 @@ function ethanSentado() {
 
 // ======================= CALLE (1100x216, suelo en y=200) =======================
 function calleCielo() {
-  var f = new FB(480, 216), r = rng(11);
-  f.vgrad(0, 0, 480, 216, ['#070d24', '#0f1838', '#1f2250', '#3b2b5a', '#5a3a5c']);
-  for (var i = 0; i < 160; i++) f.px(r() * 480, r() * 150, r() < 0.25 ? '#f7e8b0' : '#d6dcff', 90 + (r() * 165 | 0));
+  var f = new FB(500, 216), r = rng(11);
+  f.vgrad(0, 0, 500, 216, ['#070d24', '#0f1838', '#1f2250', '#3b2b5a', '#5a3a5c']);
+  for (var i = 0; i < 170; i++) f.px(r() * 500, r() * 150, r() < 0.25 ? '#f7e8b0' : '#d6dcff', 90 + (r() * 165 | 0));
   f.disc(392, 38, 11, '#f3eedb'); f.disc(396, 35, 9, '#0f1838'); // luna menguante
   save(f, 'calle-cielo.png');
 }
 function calleLejos() { // margen izquierda: altos hornos, chimeneas y gruas
-  var f = new FB(680, 216), r = rng(5), c = '#1d2342', e = '#2b3256';
-  f.rect(0, 156, 680, 60, c);
-  for (var x = 0; x < 680; x++) { var y = 150 + Math.round(4 * Math.sin(x / 37) + 3 * Math.sin(x / 11)); f.rect(x, y, 1, 216 - y, c); f.px(x, y, e); }
+  var f = new FB(760, 216), r = rng(5), c = '#1d2342', e = '#2b3256';
+  f.rect(0, 156, 760, 60, c);
+  for (var x = 0; x < 760; x++) { var y = 150 + Math.round(4 * Math.sin(x / 37) + 3 * Math.sin(x / 11)); f.rect(x, y, 1, 216 - y, c); f.px(x, y, e); }
   // alto horno
   f.rect(140, 70, 28, 90, c); f.rect(132, 110, 44, 50, c); f.rect(150, 40, 8, 30, c); f.rect(146, 36, 16, 4, c);
   f.rect(168, 90, 50, 4, c); f.rect(214, 90, 4, 70, c); f.rect(118, 120, 14, 3, c);
@@ -464,8 +465,8 @@ function calleLejos() { // margen izquierda: altos hornos, chimeneas y gruas
   save(f, 'calle-lejos.png');
 }
 function calleMedio() { // bloques de pisos
-  var f = new FB(960, 216), r = rng(21), x = 0;
-  while (x < 960) {
+  var f = new FB(1120, 216), r = rng(21), x = 0;
+  while (x < 1120) {
     var w = 56 + (r() * 56 | 0), top = 104 + (r() * 46 | 0), col = r() < 0.5 ? '#2c3550' : '#33304f';
     f.rect(x, top, w, 216 - top, col); f.rect(x, top, w, 2, '#3d4870'); f.rect(x + w - 1, top, 1, 216 - top, '#1e2438');
     f.rect(x + 4, top - 6, 8, 6, col); // caseton
@@ -483,10 +484,12 @@ function calleMedio() { // bloques de pisos
 }
 // La calle de Ethan, sacada de la foto del portal 3 (Sestao). Se dibuja con los colores
 // de dia y luego se pasa a noche; las luces (ventanas, portal, letreros) se pintan despues.
-var CALLE_W = 1300;
+var CALLE_W = 1600;
+// suelo de la calle (igual que "ground" en story/scenes.js): rampa de 1070 a 1170
+function calleSuelo(x) { return x <= 1070 ? 200 : x >= 1170 ? 212 : 200 + 12 * (x - 1070) / 100; }
 function nightPass(f) {
   for (var i = 0; i < f.d.length; i += 4) {
-    if (!f.d[i + 3]) continue;
+    if (!f.d[i + 3] || f.em[i >> 2]) continue;
     f.d[i] = Math.round(f.d[i] * 0.42 + 10); f.d[i + 1] = Math.round(f.d[i + 1] * 0.45 + 12); f.d[i + 2] = Math.round(f.d[i + 2] * 0.58 + 30);
   }
 }
@@ -531,11 +534,11 @@ function coche(f, x, w, h, col, colD, colL, suv) { // coche aparcado visto de la
 }
 function calle() {
   var W = CALLE_W, f = new FB(W, 216), r = rng(9);
-  // acera y calzada
-  f.rect(0, 200, W, 6, '#a8a49c'); f.rect(0, 200, W, 1, '#c6c2b8');
-  for (var x = 0; x < W; x += 24) f.rect(x, 200, 1, 6, '#86827a');
-  f.rect(0, 206, W, 2, '#d0ccc2'); f.rect(0, 208, W, 8, '#3a3a40');
-  for (var x = 10; x < W; x += 60) f.rect(x, 212, 24, 1, '#d8d8cc');
+  // acera de Dr. Fleming (hasta la esquina) y calzada
+  f.rect(0, 200, 700, 6, '#a8a49c'); f.rect(0, 200, 700, 1, '#c6c2b8');
+  for (var x = 0; x < 700; x += 24) f.rect(x, 200, 1, 6, '#86827a');
+  f.rect(0, 206, 1070, 2, '#d0ccc2'); f.rect(0, 208, 1070, 8, '#3a3a40');
+  for (var x = 10; x < 1070; x += 60) f.rect(x, 212, 24, 1, '#d8d8cc');
 
   // ---- edificio de la izquierda (revoco gris)
   f.rect(0, 40, 40, 160, '#b8b2a6'); f.rect(38, 40, 2, 160, '#8a8478');
@@ -595,48 +598,107 @@ function calle() {
   for (var yy = 100; yy < 142; yy++) { f.px(300, yy, '#1a1a1a'); f.px(512, yy, '#1a1a1a'); }
   cable(286, 142, 316, 146, 4);
 
-  // ---- hueco: edificio bajo (se ve el fondo por encima)
-  f.rect(620, 128, 90, 72, '#a29a8c'); f.rect(620, 128, 90, 3, '#c8c0b0');
-  persianaMetal(f, 628, 150, 74, 48, '#8e8c86', '#7a7872');
-  // ---- segundo bloque (revoco beis)
-  f.rect(710, 56, 300, 144, '#cbbfa6'); f.rect(710, 56, 300, 4, '#e2d8c4'); f.rect(1008, 56, 2, 144, '#9a8e78');
-  for (var fl = 0; fl < 2; fl++) for (var k = 0; k < 4; k++) {
-    var hx = persiana(f, 726 + k * 72, fl ? 104 : 66, 40, 26, [0.5, 0.75, 0.3, 0.6][(k + fl) % 4]);
-    if (r() < 0.45) luces.push(hx);
+  // ---- fondo: lo que se ve al final de la calle (mas apagado, esta lejos)
+  // edificio de ladrillo con balcones (el del centro de la foto)
+  f.rect(744, 66, 230, 120, '#9a6e5a'); f.rect(744, 62, 230, 5, '#7a4e3e'); f.rect(760, 56, 40, 6, '#7a4e3e');
+  for (var fl = 0; fl < 5; fl++) for (var k = 0; k < 6; k++) {
+    var bx = 754 + k * 37, by = 72 + fl * 22;
+    f.rect(bx, by, 14, 12, '#3a2e2c'); f.rect(bx - 2, by + 12, 18, 2, '#5a5a5e'); f.rect(bx - 2, by + 8, 1, 4, '#5a5a5e'); f.rect(bx + 15, by + 8, 1, 4, '#5a5a5e');
+    if (r() < 0.35) luces.push({ x: bx + 1, y: by + 1, w: 12, h: 10 });
   }
-  f.rect(710, 140, 300, 60, '#5c5650');
-  persianaMetal(f, 718, 150, 90, 48, '#8e8c86', '#7a7872');
-  f.rect(816, 148, 60, 52, '#2a2e36'); f.box(816, 148, 60, 52, '#1c1f24');                // estanco/kiosko cerrado
-  persianaMetal(f, 884, 150, 118, 48, '#a6a6a2', '#8c8c88');
-  // ---- plaza del metro (provisional)
-  f.rect(1010, 196, 290, 4, '#9a968e');
-  f.rect(1250, 70, 50, 130, '#b8b2a6'); persiana(f, 1262, 92, 28, 26, 0.6);
-  // contenedores (verde y azul)
-  [[1020, '#2f6b3f', '#24532f'], [1062, '#2f5a9a', '#244878']].forEach(function (c) {
-    f.rect(c[0], 176, 38, 22, c[1]); f.rect(c[0] - 2, 172, 42, 5, c[2]); f.box(c[0], 176, 38, 22, '#1a2a20');
-    f.disc(c[0] + 6, 198, 2, '#1b1b1f'); f.disc(c[0] + 32, 198, 2, '#1b1b1f');
+  // el edificio alto y viejo de Zumalacarregui (revoco beis, tejado de teja, ropa tendida)
+  f.rect(1100, 30, 300, 182, '#b8ab8c'); f.rect(1392, 30, 8, 182, '#9a8e72');
+  for (var x = 1096; x < 1404; x++) { var ty = 30 - Math.max(0, 14 - Math.abs(x - 1250) * 0.1); f.rect(x, Math.round(ty) - 6, 1, 7, '#8a4a34'); }
+  f.rect(1300, 10, 8, 14, '#8a4a34');
+  for (var fl = 0; fl < 7; fl++) for (var k = 0; k < 7; k++) {
+    var wx2 = 1114 + k * 40, wy2 = 40 + fl * 24;
+    f.rect(wx2, wy2, 12, 14, '#3a3a40'); f.rect(wx2, wy2 + 14, 12, 1, '#d8ccb0');
+    if ((k + fl) % 5 === 1) { f.rect(wx2 - 2, wy2 - 2, 16, 4, '#c8763a'); f.rect(wx2 - 2, wy2 + 2, 16, 1, '#a85a2a'); }  // toldo
+    if (r() < 0.32) luces.push({ x: wx2 + 1, y: wy2 + 1, w: 10, h: 12 });
+  }
+  f.rect(1342, 108, 18, 10, '#e8e8e4'); f.rect(1346, 118, 4, 6, '#e8e8e4');                      // sabana tendida
+  f.rect(1210, 112, 30, 1, '#4a4a4a'); f.rect(1214, 113, 5, 7, '#c84a4a'); f.rect(1222, 113, 6, 9, '#4a6ac8'); f.rect(1231, 113, 4, 6, '#e8e8e4');
+  // edificio rojo moderno a la derecha
+  f.rect(1420, 60, 180, 152, '#a8402e'); f.rect(1420, 60, 180, 3, '#c85a44');
+  for (var fl = 0; fl < 6; fl++) for (var k = 0; k < 5; k++) { var wx3 = 1432 + k * 34, wy3 = 70 + fl * 22; f.rect(wx3, wy3, 10, 12, '#2e2a30'); if (r() < 0.3) luces.push({ x: wx3 + 1, y: wy3 + 1, w: 8, h: 10 }); }
+  // ventanas encendidas (emiten luz: quedan por debajo de lo que se pinte despues)
+  f.emit = true;
+  luces.forEach(function (h) { if (h.h > 1) { f.rect(h.x, h.y, h.w, h.h, '#f0c060'); f.rect(h.x, h.y, h.w, 1, '#ffe08a'); f.rect(h.x + Math.floor(h.w / 2) - 1, h.y, 2, h.h, '#7a4a20'); } });
+  f.emit = false;
+  // talud de cesped y arboles
+  for (var x = 960; x < W; x++) { var gy = 180 + Math.round(4 * Math.sin(x / 23)); f.rect(x, gy, 1, Math.max(0, calleSuelo(x) - gy), '#4e7a3a'); f.px(x, gy, '#6a9a48'); }
+  [[1150, 150, 22], [1185, 160, 16], [1470, 140, 26], [1520, 132, 30], [1575, 145, 24]].forEach(function (t) {
+    f.rect(t[0] - 2, t[1], 5, 200 - t[1], '#4a3626');
+    for (var i = 0; i < 9; i++) f.disc(t[0] + Math.round(Math.sin(i * 2.1) * t[2] * 0.6), t[1] - Math.round(Math.cos(i * 1.7) * t[2] * 0.4), Math.round(t[2] * 0.55), i % 3 ? '#3e6a30' : '#4e8038');
   });
-  // banco
-  f.rect(1112, 184, 40, 3, '#a9733f'); f.rect(1112, 176, 40, 3, '#a9733f'); [1114, 1146].forEach(function (x) { f.rect(x, 174, 3, 26, '#3d4248'); });
-  // boca de metro: marquesina de cristal curvo y cartel
-  for (var x = 1176; x <= 1234; x++) {
-    var t = (x - 1176) / 58, y = Math.round(200 - 46 * Math.sqrt(Math.max(0, 1 - Math.pow(2 * t - 1, 2) * 0.55)));
-    for (var yy = y; yy < 200; yy++) f.px(x, yy, yy - y < 2 ? '#d8eef5' : '#9ccbe0', yy - y < 2 ? 230 : 110);
-    if (x % 8 === 4) for (var yy2 = y; yy2 < 200; yy2++) f.px(x, yy2, '#7f8a92');
+
+  // ---- esquina: el ultimo portal del bloque (bajo color salmon, persianas azules y pintadas)
+  ladrillo(f, 620, 52, 84, 88); f.rect(620, 48, 84, 4, '#e0d6c8'); f.rect(620, 94, 84, 4, '#e0d6c8'); f.rect(702, 48, 2, 152, '#8a5040');
+  persiana(f, 634, 60, 40, 28, 0.5); persiana(f, 634, 104, 40, 28, 0.7);
+  f.rect(618, 136, 88, 5, '#e6dccd');
+  f.rect(620, 141, 84, 59, '#d07a62'); f.rect(620, 141, 84, 2, '#e8957c');
+  persianaMetal(f, 626, 150, 36, 48, '#3a56a0', '#2c4486'); persianaMetal(f, 668, 156, 22, 26, '#3a56a0', '#2c4486');
+  [[630, 186, '#f0f0f0'], [640, 182, '#e8e8e8']].forEach(function () { });
+  f.line(672, 188, 680, 184, '#f2f2f2'); f.line(680, 184, 686, 190, '#f2f2f2'); f.line(686, 190, 694, 183, '#f2f2f2'); f.line(676, 192, 692, 192, '#e8e8e8'); // pintada
+  f.rect(668, 144, 16, 6, '#e8e4da'); f.text(669, 145, 'DR.F', '#3a3a3a');                    // placa de la calle
+
+  // ---- paso de cebra
+  f.rect(700, 200, 90, 8, '#3a3a40');
+  for (var x = 704; x < 788; x += 12) f.rect(x, 200, 7, 8, '#e8e8e0');
+  // bolardos
+  [694, 796, 812].forEach(function (x) { f.rect(x, 184, 4, 16, '#1e1e22'); f.rect(x, 184, 4, 2, '#8a8a8e'); });
+
+  // ---- plaza de adoquin rojo
+  f.rect(790, 200, 280, 6, '#a8584a');
+  for (var x = 790; x < 1070; x += 6) f.rect(x, 200, 1, 6, '#8e463a');
+  f.rect(790, 203, 280, 1, '#8e463a');
+  // caseta blanca con pintadas
+  f.rect(830, 150, 84, 50, '#e8e6e0'); f.rect(830, 150, 84, 2, '#f8f8f4'); f.box(830, 150, 84, 50, '#b8b6b0');
+  for (var x = 852; x < 914; x += 20) f.rect(x, 152, 1, 48, '#c8c6c0');
+  f.rect(872, 160, 18, 40, '#dcdad4'); f.box(872, 160, 18, 40, '#b0aea8'); f.rect(886, 178, 2, 4, '#2a2a2a');
+  f.text(836, 168, 'BSL', '#d04a6a', 2);
+  f.line(834, 160, 846, 156, '#b8d040'); f.line(846, 156, 860, 162, '#b8d040'); f.line(838, 190, 866, 186, '#b8d040'); f.line(895, 166, 910, 172, '#d04a6a');
+  // barandillas verdes (detras)
+  function barandilla(x0, x1) {
+    for (var x = x0; x <= x1; x++) { var y = calleSuelo(x); f.px(x, Math.round(y) - 14, '#2e6a44'); f.px(x, Math.round(y) - 8, '#2e6a44'); }
+    for (var x = x0; x <= x1; x += 22) { var y2 = calleSuelo(x); f.rect(x, Math.round(y2) - 15, 2, 15, '#2e6a44'); }
   }
-  for (var k = 0; k < 7; k++) f.rect(1192 + k * 3, 186 + k * 2, 26 - k * 3, 2, k % 2 ? '#3a3f48' : '#2b3038');
-  f.rect(1162, 130, 3, 70, '#3d4248');
-  // farolas
-  [652, 1000].forEach(function (x) { f.rect(x, 118, 3, 82, '#3d4248'); f.rect(x - 2, 196, 7, 4, '#2d3136'); f.rect(x, 118, 12, 2, '#3d4248'); f.rect(x + 8, 120, 8, 3, '#3d4248'); });
-  // coches aparcados (azul monovolumen y gris todoterreno, como en la foto) y uno rojo mas adelante
+  barandilla(920, 1050); barandilla(1074, 1166);
+  // papelera
+  f.rect(946, 176, 10, 14, '#6a6e72'); f.rect(946, 176, 10, 2, '#8a8e92'); f.rect(950, 190, 2, 10, '#3d4248');
+  // farolas de bola
+  [990, 1110, 1290].forEach(function (x) { var y = calleSuelo(x); f.rect(x, y - 70, 3, 70, '#3d4248'); f.rect(x - 2, y - 4, 7, 4, '#2d3136'); f.disc(x + 1, y - 74, 5, '#e8e8e2'); });
+
+  // ---- rampa hacia el aparcamiento
+  for (var x = 1070; x <= 1170; x++) { var y = Math.round(calleSuelo(x)); f.rect(x, y, 1, 6, '#a8584a'); if (x % 6 === 0) f.rect(x, y, 1, 6, '#8e463a'); f.rect(x, y + 6, 1, 216 - y - 6, '#7a7670'); }
+  // ---- aparcamiento
+  f.rect(1170, 212, W - 1170, 4, '#404046');
+  // la boca de metro de hormigon (tunel acristalado con reja) y el cartel rojo de Sestao
+  var mx = 1486, mb = 212;
+  for (var x = mx; x <= mx + 84; x++) {
+    var d = Math.min(x - mx, mx + 84 - x), top = d < 12 ? mb - 36 - d : mb - 48;
+    f.rect(x, top, 1, mb - top, '#a4a6a8'); if (d < 2 || x === mx + 42) f.rect(x, top, 1, mb - top, '#7a7c80');
+    f.px(x, top, '#c4c6c8');
+  }
+  f.rect(mx + 10, mb - 38, 64, 38, '#1a1d22');
+  for (var x = mx + 12; x < mx + 74; x += 3) f.rect(x, mb - 36, 1, 36, '#5a5040');
+  f.rect(1448, 186, 34, 10, '#c8202a'); f.box(1448, 186, 34, 10, '#7a1016'); f.rect(1448, 196, 34, 16, '#e8e8e4'); f.box(1448, 196, 34, 16, '#9a9a96');
+  f.rect(1452, 200, 10, 8, '#c8202a'); f.rect(1466, 200, 12, 2, '#5a5a5a'); f.rect(1466, 204, 10, 2, '#5a5a5a');
+  // barrera roja y blanca
+  f.rect(1430, 196, 2, 16, '#e8e8e4'); f.rect(1444, 196, 2, 16, '#e8e8e4'); for (var x = 1430; x < 1446; x += 4) f.rect(x, 196, 2, 2, (x / 4) % 2 ? '#c8202a' : '#e8e8e4');
+  // farolas: una en el hueco de la esquina
+  [652].forEach(function (x) { f.rect(x, 118, 3, 82, '#3d4248'); f.rect(x - 2, 196, 7, 4, '#2d3136'); f.rect(x, 118, 12, 2, '#3d4248'); f.rect(x + 8, 120, 8, 3, '#3d4248'); });
+  // coches del portal (monovolumen azul y todoterreno gris, como en la foto) y los del aparcamiento
   coche(f, 140, 104, 44, '#2f5fb8', '#1f4486', '#5a86d8', false);
   coche(f, 318, 98, 40, '#b8bcc2', '#8a8e94', '#e0e3e6', true);
-  coche(f, 760, 88, 34, '#a8302a', '#7a201c', '#d05048', false);
+  function cocheBajo(x, w, h, c1, c2, c3, suv) { var tmp = new FB(w + 4, 216); coche(tmp, 2, w, h, c1, c2, c3, suv); for (var yy = 0; yy < 216; yy++) for (var xx = 0; xx < w + 4; xx++) { var i = (yy * tmp.w + xx) * 4; if (tmp.d[i + 3] && yy + 12 < 216) f.px(x + xx - 2, yy + 12, [tmp.d[i], tmp.d[i + 1], tmp.d[i + 2], 255]); } }
+  cocheBajo(1182, 88, 38, '#c0c4ca', '#8e9298', '#e4e6e8', false);
+  cocheBajo(1278, 90, 36, '#b8302a', '#7a201c', '#d85048', false);
+  cocheBajo(1340, 86, 38, '#2f6ad0', '#1f4a96', '#5a8ae0', false);
 
   // ---- de noche
   nightPass(f);
   // luces: ventanas encendidas, portal, letreros, bar
-  luces.forEach(function (h) { if (h.h > 1) { f.rect(h.x, h.y, h.w, h.h, '#f0c060'); f.rect(h.x, h.y, h.w, 1, '#ffe08a'); f.rect(h.x + Math.floor(h.w / 2) - 1, h.y, 2, h.h, '#7a4a20'); } });
   f.rect(254, 153, 21, 47, '#e8c070'); f.rect(277, 153, 21, 47, '#e8c070'); f.rect(254, 153, 44, 3, '#fff0b0');   // portal encendido
   f.rect(258, 170, 14, 1, '#b08840'); f.rect(280, 170, 14, 1, '#b08840'); f.rect(272, 176, 2, 6, '#8a8e94'); f.rect(278, 176, 2, 6, '#8a8e94');
   f.text(274, 146, '3', '#f0f0f0');
@@ -647,9 +709,11 @@ function calle() {
   for (var x = 472; x < 524; x += 14) { f.rect(x, 178, 7, 14, '#6a3a1c'); f.disc(x + 3, 176, 3, '#6a3a1c'); }
   f.rect(538, 160, 20, 40, '#f4c35c'); f.rect(552, 178, 2, 5, '#3a2f29');
   f.text(477, 149, 'BAR', '#ff5a6e', 2);
-  f.rect(818, 150, 56, 3, '#3a6a9a'); f.text(824, 156, 'ESTANCO', '#c8a060');
-  [652, 1000].forEach(function (x) { f.rect(x + 9, 123, 6, 2, '#fbefb2'); });
-  f.rect(1148, 118, 32, 14, '#c8202a'); f.box(1148, 118, 32, 14, '#7a1016'); f.text(1151, 122, 'METRO', '#ffffff');
+  [652].forEach(function (x) { f.rect(x + 9, 123, 6, 2, '#fbefb2'); });
+  [990, 1110, 1290].forEach(function (x) { var y = calleSuelo(x); f.disc(x + 1, y - 74, 5, '#fff6d0'); f.disc(x + 1, y - 75, 2, '#ffffff'); });
+  for (var x = 1498; x < 1560; x += 3) f.rect(x, 176, 1, 36, '#e8b060');                      // la reja del metro, iluminada por dentro
+  f.rect(1496, 174, 64, 2, '#ffd890');
+  f.rect(1448, 186, 34, 10, '#e02a32'); f.text(1450, 188, 'SESTAO', '#ffffff');
   save(f, 'calle.png');
 }
 
