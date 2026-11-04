@@ -730,11 +730,17 @@
   }
 
   // ---------------- sonido (sintetizado, sin archivos) ----------------
-  // Comparte el silencio con el tycoon (elt_mute).
+  // Ajuste propio del Modo Historia (independiente del silencio del tycoon); activado por defecto.
   var AC = null, master = null, muted = false;
-  try { muted = localStorage.getItem('elt_mute') === '1'; } catch (e) { }
+  try { muted = localStorage.getItem('elt-historia-sonido') === '0'; } catch (e) { }
   function ac() {
-    if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = 0.9; master.connect(AC.destination); } catch (e) { AC = null; } }
+    if (!AC) {
+      try {
+        AC = new (window.AudioContext || window.webkitAudioContext)();
+        var comp = AC.createDynamicsCompressor(); comp.threshold.value = -14; comp.knee.value = 10; comp.ratio.value = 4;
+        master = AC.createGain(); master.gain.value = 1.8; master.connect(comp); comp.connect(AC.destination);
+      } catch (e) { AC = null; }
+    }
     if (AC && AC.state === 'suspended') AC.resume();
     return AC;
   }
@@ -748,8 +754,8 @@
   }
   function bell(f, t, d, v) { tn(f, t, d, 'triangle', v); tn(f * 2, t, d * 0.7, 'sine', v * 0.35); tn(f * 3.01, t, d * 0.4, 'sine', v * 0.12); }
   var SFX = {
-    principal: function () { [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) { bell(f, i * 0.12, 1.1, 0.14); }); bell(1318.5, 0.36, 1.4, 0.09); tn(261.63, 0.34, 1.8, 'sine', 0.09); tn(392, 0.34, 1.8, 'sine', 0.05); },
-    secundaria: function () { bell(783.99, 0, 0.8, 0.12); bell(1174.66, 0.13, 1.1, 0.11); tn(392, 0.12, 1.2, 'sine', 0.05); },
+    principal: function () { tn(220, 0, 0.5, 'sine', 0.08, 440); [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) { bell(f, 0.08 + i * 0.12, 1.2, 0.18); }); bell(1318.5, 0.44, 1.5, 0.12); bell(1568, 0.56, 1.2, 0.07); tn(261.63, 0.42, 2, 'sine', 0.12); tn(392, 0.42, 2, 'sine', 0.07); },
+    secundaria: function () { bell(783.99, 0, 0.9, 0.16); bell(1174.66, 0.14, 1.2, 0.14); tn(392, 0.12, 1.3, 'sine', 0.07); },
     fallo: function () { [392, 349.23, 293.66].forEach(function (f, i) { tn(f, i * 0.22, 0.5, 'triangle', 0.12); }); tn(146.83, 0.66, 1.2, 'sine', 0.12); },
     cuarto: function () { bell(1318.5, 0, 0.9, 0.08); bell(1046.5, 0.42, 1.1, 0.08); },
     campana: function () { tn(196, 0, 2.4, 'sine', 0.22); tn(392.4, 0, 1.6, 'triangle', 0.06); tn(587.3, 0, 0.9, 'sine', 0.05); tn(98, 0, 2.6, 'sine', 0.09); },
@@ -773,8 +779,11 @@
     var f = w.voice || (w.npc && w.npc.d.voice); if (!f || muted) return;
     tn(f * (0.92 + Math.random() * 0.16), 0, 0.05, 'square', 0.022);
   }
-  function setMute(m) { muted = m; try { localStorage.setItem('elt_mute', m ? '1' : '0'); } catch (e) { } $('psnd').textContent = 'Sonido: ' + (m ? 'No' : 'Sí'); }
-  $('psnd').onclick = function () { setMute(!muted); if (!muted) sfx('ok'); };
+  function setMute(m) {
+    muted = m; try { localStorage.setItem('elt-historia-sonido', m ? '0' : '1'); } catch (e) { }
+    ['psnd', 'msnd'].forEach(function (id) { $(id).textContent = 'Sonido: ' + (m ? 'No' : 'Sí'); });
+  }
+  $('psnd').onclick = $('msnd').onclick = function () { setMute(!muted); if (!muted) { ac(); sfx('principal'); } };
   setMute(muted);
 
   // ---------------- aviso de mision (estilo "nueva mision" centrado) ----------------
