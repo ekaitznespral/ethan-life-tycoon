@@ -77,6 +77,10 @@ body{display:flex;align-items:center;justify-content:center;font-family:var(--px
 /* aviso de mision */
 #quest{position:absolute;left:0;right:0;top:calc(var(--s)*58px);padding:calc(var(--s)*4px) 0;background:linear-gradient(90deg,transparent,#000a 25%,#000a 75%,transparent);display:flex;flex-direction:column;align-items:center;gap:calc(var(--s)*3.5px);pointer-events:none;z-index:3;--qc:#ffd75e;text-shadow:0 0 calc(var(--s)*4px) #000,0 calc(var(--s)*1px) 0 #000}
 #quest.side{--qc:#7ee0ff}
+#quest.fallo{--qc:#ff6b6b}
+#quest.fallo small{font-size:calc(var(--s)*7px);color:#fffaf0}
+#quest.fallo b{font-size:calc(var(--s)*6px);color:var(--qc)}
+#quest.fallo.go small{animation:stamp .45s .2s both}
 #quest .ql{display:block;width:calc(var(--s)*190px);max-width:86%;height:calc(var(--s)*.8px);background:linear-gradient(90deg,transparent,var(--qc) 25%,var(--qc) 75%,transparent);transform:scaleX(0);box-shadow:0 0 calc(var(--s)*3px) var(--qc)}
 #quest small{font-size:calc(var(--s)*4.6px);color:var(--qc);letter-spacing:.25em;opacity:0}
 #quest b{font-weight:400;font-size:calc(var(--s)*10px);color:#fffaf0;letter-spacing:.6em;opacity:0;filter:blur(calc(var(--s)*1.5px));white-space:nowrap}
@@ -139,6 +143,40 @@ body{display:flex;align-items:center;justify-content:center;font-family:var(--px
 .dgm .ms.ok{color:#8fa08a;text-decoration:line-through}
 .dgm .ms.ok i{background:#8fdf6e;border-color:#8fdf6e}
 .dgm .ms.ex{color:#b9bfd8}
+/* reloj */
+#clk{position:absolute;left:calc(var(--s)*8px);top:calc(var(--s)*8px);display:flex;flex-direction:column;gap:calc(var(--s)*1.5px);background:#0b0f22cc;border:calc(var(--s)*.7px) solid #f3eedb88;padding:calc(var(--s)*2.5px) calc(var(--s)*4px);pointer-events:none;transition:opacity .4s}
+#clk b{font-weight:400;font-size:calc(var(--s)*7px);letter-spacing:.08em}
+#clk b::before{content:'';display:inline-block;width:calc(var(--s)*4px);height:calc(var(--s)*4px);border:calc(var(--s)*.7px) solid #f3eedb;border-radius:50%;margin-right:calc(var(--s)*2.5px);vertical-align:calc(var(--s)*.3px);background:linear-gradient(#f3eedb,#f3eedb) 50% 20%/calc(var(--s)*.7px) 40% no-repeat}
+#clk span{font-size:calc(var(--s)*3.6px);color:#ffd75e}
+#clk span.late{color:#ff6b6b;animation:blinkr .8s steps(2) infinite}
+@keyframes blinkr{50%{opacity:.45}}
+.hasclk #sname{top:calc(var(--s)*30px)}
+.cine #clk,.talking #clk{opacity:0}
+/* movil */
+#phone{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0);transition:background .5s}
+#phone.in{background:rgba(5,6,14,.72)}
+#phone .pbody{width:calc(var(--s)*118px);height:calc(var(--s)*196px);background:#15161b;border:calc(var(--s)*1.4px) solid #3a3d47;border-radius:calc(var(--s)*12px);padding:calc(var(--s)*5px) calc(var(--s)*4px);box-shadow:0 calc(var(--s)*4px) calc(var(--s)*16px) #000c,inset 0 0 0 calc(var(--s)*.7px) #000;transform:translateY(110%) rotate(6deg)}
+#phone.in .pbody{animation:phin .65s cubic-bezier(.2,.9,.25,1.15) forwards,phbuzz .12s .7s 4 linear}
+#phone.outp .pbody{animation:phout .45s ease-in forwards}
+@keyframes phin{from{transform:translateY(110%) rotate(6deg)}to{transform:none}}
+@keyframes phout{from{transform:none}to{transform:translateY(115%) rotate(-5deg)}}
+@keyframes phbuzz{0%,100%{transform:none}25%{transform:translateX(calc(var(--s)*-1px)) rotate(-1deg)}75%{transform:translateX(calc(var(--s)*1px)) rotate(1deg)}}
+.pscr{height:100%;background:#eae4d8;border-radius:calc(var(--s)*7px);overflow:hidden;display:flex;flex-direction:column;color:#1d1a17}
+.psb{display:flex;justify-content:space-between;background:#1f3328;color:#eef5e8;font-size:calc(var(--s)*3.4px);padding:calc(var(--s)*1.6px) calc(var(--s)*4px)}
+.pgh{display:flex;gap:calc(var(--s)*3px);align-items:center;background:#2b4636;color:#eef5e8;padding:calc(var(--s)*3px) calc(var(--s)*4px)}
+.pgh i{flex:none;width:calc(var(--s)*9px);height:calc(var(--s)*9px);border-radius:50%;background:#ffd75e;box-shadow:inset 0 0 0 calc(var(--s)*1.6px) #c9a03a}
+.pgh b{display:block;font-weight:400;font-size:calc(var(--s)*4.6px)}
+.pgh small{display:block;font-size:calc(var(--s)*3px);color:#b9d1bf;margin-top:calc(var(--s)*1px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(var(--s)*86px)}
+#phm{flex:1;overflow:auto;padding:calc(var(--s)*3px);display:flex;flex-direction:column;gap:calc(var(--s)*2.5px)}
+.pmsg{align-self:flex-start;max-width:84%;background:#fffdf6;border-radius:calc(var(--s)*3px) calc(var(--s)*3px) calc(var(--s)*3px) 0;padding:calc(var(--s)*2px) calc(var(--s)*3px);box-shadow:0 calc(var(--s)*.6px) 0 #0002;font-size:calc(var(--s)*3.9px);line-height:1.55;animation:msgin .25s ease-out}
+.pmsg.me{align-self:flex-end;background:#d4f0c4;border-radius:calc(var(--s)*3px) calc(var(--s)*3px) 0 calc(var(--s)*3px)}
+.pmsg b{display:block;font-weight:400;font-size:calc(var(--s)*3.3px);margin-bottom:calc(var(--s)*.8px);text-shadow:0 0 1px #0006}
+.pmsg small{display:block;text-align:right;font-size:calc(var(--s)*2.6px);color:#8a8478;margin-top:calc(var(--s)*.6px)}
+@keyframes msgin{from{transform:translateY(calc(var(--s)*3px));opacity:0}}
+#pht{min-height:calc(var(--s)*7px);font-size:calc(var(--s)*3.2px);color:#6a6458;padding:0 calc(var(--s)*4px)}
+#phb{font-size:calc(var(--s)*3.6px);text-align:center;padding:calc(var(--s)*3px);color:#1d1a17;background:#d8d0c0;opacity:0;transition:opacity .3s}
+#phb.on{opacity:1;animation:bob .9s steps(2) infinite}
+#phb kbd{font-size:inherit}
 kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--s)*1.2px)}
 /* menus */
 .mn{background:radial-gradient(ellipse at 50% 35%,#1b2140 0%,#05060c 70%);gap:calc(var(--s)*6px)}
@@ -191,11 +229,19 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
  <div id="prompt"></div>
  <div id="cbt" class="cb"></div><div id="cbb" class="cb"></div>
  <div id="mis" hidden></div>
+ <div id="clk" hidden></div>
  <div id="toasts"></div>
  <div id="think"><span></span></div>
  <div id="quest" hidden><i class="ql"></i><small id="qlab"></small><b id="qtit"></b><i class="ql"></i></div>
  <div id="dlg" hidden><div id="dport"></div><div class="dtx"><b id="dname"></b><p id="dtext"></p><div id="dopts"></div></div><i id="dnext">▼</i></div>
  <div id="diario" class="ov" hidden><div class="ivb dib"><div class="dh"><b>Diario de misiones</b><button id="diax" aria-label="Cerrar">✕</button></div><div id="dial"></div></div></div>
+ <div id="phone" hidden><div class="pbody"><div class="pscr">
+  <div class="psb"><span id="phh"></span><span>▮▮▮ 4G</span></div>
+  <div class="pgh"><i></i><div><b id="phg"></b><small id="phw"></small></div></div>
+  <div id="phm"></div>
+  <div id="pht"></div>
+  <div id="phb"><kbd>E</kbd> Guardar el móvil</div>
+ </div></div></div>
  <div id="inv" class="ov" hidden><div class="ivb"><div class="dh"><b>Inventario</b><button id="invx" aria-label="Cerrar">✕</button></div><div id="invl"></div></div></div>
  <div id="touch" aria-hidden="true">
   <button data-k="left">◀</button><button data-k="right">▶</button>
@@ -243,6 +289,8 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
   <div id="dcps"></div>
   <div class="dt">Ir a un escenario</div>
   <div class="drow"><select id="dscene"></select><select id="dspawn"></select><button id="dgo">Ir</button></div>
+  <div class="dt">Editar textos</div>
+  <div class="drow"><select id="dtxt"></select><button id="dtxo">Abrir en el editor</button></div>
   <label class="dck"><input type="checkbox" id="ddebug"> Ver plataformas, salidas y coordenadas (F2)</label>
   <div class="dt">Datos de la partida</div>
   <pre id="ddata"></pre>

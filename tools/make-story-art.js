@@ -46,7 +46,8 @@ FB.prototype.vgrad = function (x, y, w, h, stops) { // degradado vertical con tr
 var GL = {
   '0': '111101101101111', '1': '010110010010111', '2': '111001111100111', '3': '111001111001111',
   '7': '111001010010010', 'A': '010101111101101', 'B': '110101110101110', 'C': '111100100100111',
-  'D': '110101101101110', 'I': '111010010010111', 'R': '110101110101101', ' ': '000000000000000'
+  'D': '110101101101110', 'I': '111010010010111', 'R': '110101110101101', ' ': '000000000000000',
+  'M': '101111111101101', 'E': '111100110100111', 'T': '111010010010010', 'O': '111101101101111'
 };
 FB.prototype.text = function (x, y, s, c, sc) {
   sc = sc || 1;
@@ -519,6 +520,15 @@ function calle() {
   f.rect(986, 140, 28, 60, '#3a2f29'); f.rect(990, 144, 20, 56, '#f4c35c'); f.rect(990, 144, 20, 3, '#ffe38f');
   f.rect(1004, 170, 2, 6, '#3a2f29');
   f.rect(1030, 140, 60, 50, '#4e4a44'); for (var y = 142; y < 190; y += 3) f.rect(1031, y, 58, 1, '#5d5850');
+  // boca de metro PROVISIONAL: marquesina de cristal curvo y cartel (hasta tener la calle de verdad)
+  for (var x = 1036; x <= 1094; x++) {
+    var t = (x - 1036) / 58, y = Math.round(200 - 46 * Math.sqrt(Math.max(0, 1 - Math.pow(2 * t - 1, 2) * 0.55)) );
+    for (var yy = y; yy < 200; yy++) f.px(x, yy, yy - y < 2 ? '#d8eef5' : '#9ccbe0', yy - y < 2 ? 230 : 110);
+    if (x % 8 === 4) for (var yy2 = y; yy2 < 200; yy2++) f.px(x, yy2, '#7f8a92');
+  }
+  for (var k = 0; k < 7; k++) f.rect(1052 + k * 3, 186 + k * 2, 26 - k * 3, 2, k % 2 ? '#3a3f48' : '#2b3038'); // escaleras
+  f.rect(1022, 130, 3, 70, '#3d4248'); f.rect(1008, 118, 32, 14, '#c8202a'); f.box(1008, 118, 32, 14, '#7a1016');
+  f.text(1011, 122, 'METRO', '#ffffff');
   save(f, 'calle.png');
 }
 

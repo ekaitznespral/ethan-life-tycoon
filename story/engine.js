@@ -188,16 +188,16 @@
   }
 
   var busy = false;
-  async function goScene(id, spawn, at) {
+  async function goScene(id, spawn, at, keep) {   // keep: lo pide un guion, que sigue en marcha
     if (busy) return; busy = true;
-    var prev = state; state = 'loading'; hidePrompt(); stopScript(); thoughts = {};
+    var prev = state; state = 'loading'; hidePrompt(); if (!keep) stopScript(); thoughts = {}; motes = [];
     if (prev !== 'card' && prev !== 'menu') await fadeTo(1, 280); else setFade(1);
     loading.hidden = false;
     var t0 = performance.now();
     try { await loadScene(id); } catch (e) { console.error(e); loading.textContent = 'Error al cargar'; busy = false; return; }
     place(spawn, at);
     var el = performance.now() - t0; if (el < 450) await wait(450 - el);
-    loading.hidden = true; state = 'play'; writeSave(); hudSig = null; refreshHud();
+    loading.hidden = true; state = keep && run ? 'talk' : 'play'; writeSave(); hudSig = null; refreshHud(); clockHud(true);
     await fadeTo(0, 380);
     busy = false;
     if (scene && sceneId === id && state !== 'menu') showSceneName();
@@ -234,7 +234,7 @@
   function screen(id) { ['menu', 'slots', 'pause'].forEach(function (k) { $(k).hidden = k !== id; }); }
   function showMenu() {
     if (state === 'dev') closeDev();
-    stopScript(); closeEditor(); $('inv').hidden = true; $('diario').hidden = true; $('mis').hidden = true; hudSig = ''; thoughts = {};
+    stopScript(); closeEditor(); $('inv').hidden = true; $('diario').hidden = true; $('clk').hidden = true; stage.classList.remove('hasclk'); clkSig = ''; $('mis').hidden = true; hudSig = ''; thoughts = {};
     state = 'menu'; scene = null; sceneId = null; slot = 0; game = null; setFade(1); hidePrompt();
     screen('menu'); $('mplay').focus();
   }
@@ -276,6 +276,7 @@
     slot = n; game = newData();
     if (cp.flags) game.flags = JSON.parse(JSON.stringify(cp.flags));
     if (cp.inv) game.inv = cp.inv.slice();
+    game.clock = cp.clock ? toMin(cp.clock) : null;
     screen(null); scene = null; sceneId = null;
     if (cp.cards) await showCards(STORY.intro.cards);
     await goScene(cp.scene, cp.spawn);
@@ -326,7 +327,7 @@
     var sc = $('dscene'); sc.innerHTML = '';
     Object.keys(SCENES).forEach(function (id) { var o = document.createElement('option'); o.value = id; o.textContent = SCENES[id].name + ' (' + id + ')'; sc.appendChild(o); });
     sc.value = sceneId || Object.keys(SCENES)[0]; fillSpawns();
-    $('ddebug').checked = debug;
+    $('ddebug').checked = debug; fillTextOwners();
     $('ddata').textContent = game ? JSON.stringify(Object.assign({}, game, { play: Math.round(game.play || 0) }, sceneId ? { scene: sceneId, x: Math.round(P.x), y: Math.round(P.y) } : {}), null, 1) : '(no hay partida en juego)';
   }
   function fillSpawns() {
@@ -340,11 +341,23 @@
     else {
       if (cp.flags) game.flags = JSON.parse(JSON.stringify(cp.flags));
       if (cp.inv) game.inv = cp.inv.slice();
+      if (cp.clock !== undefined) game.clock = cp.clock ? toMin(cp.clock) : null;
       screen(null);
       if (cp.cards) { scene = null; sceneId = null; showCards(STORY.intro.cards).then(function () { goScene(cp.scene, cp.spawn); }); }
       else goScene(cp.scene, cp.spawn);
     }
   }
+  function fillTextOwners() {
+    var sel = $('dtxt'); sel.innerHTML = '';
+    Object.keys(TEXT).map(function (k) { return k.split('.')[0]; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).forEach(function (o) {
+      var op = document.createElement('option'); op.value = o; op.textContent = o; sel.appendChild(op);
+    });
+  }
+  $('dtxo').onclick = function () {
+    var id = $('dtxt').value; if (!id) return;
+    var npc = null; npcs.forEach(function (n) { if (n.d.id === id) npc = n; });
+    closeDev(); if (!editing) toggleEdit(true); openEditor({ id: id, name: npc ? npc.d.name : id, npc: npc });
+  };
   $('dscene').onchange = fillSpawns;
   $('dgo').onclick = function () { jumpTo({ scene: $('dscene').value, spawn: $('dspawn').value }); };
   $('ddebug').onchange = function () { debug = this.checked; };
@@ -375,7 +388,7 @@
     var best = null, bd = 1e9;
     function cand(k, o, cx, reach) { var d = Math.abs(P.x - cx); if (d < reach && d < bd) { bd = d; best = { k: k, o: o }; } }
     if (P.ground) {
-      (scene.exits || []).forEach(function (e) { if (P.x > e.x && P.x < e.x + e.w) cand('exit', e, e.x + e.w / 2, 1e9); });
+      (scene.exits || []).forEach(function (e) { if ((avail(e) || e.locked) && P.x > e.x && P.x < e.x + e.w) cand('exit', e, e.x + e.w / 2, 1e9); });
       npcs.forEach(function (n) { if (avail(n.d)) cand('npc', n, n.d.x, n.d.reach || 22); });
       (scene.objects || []).forEach(function (o) { if (avail(o)) cand('obj', o, o.x, o.reach || 16); });
     }
@@ -396,6 +409,7 @@
       if (pressed.act) {
         if (best.k === 'npc') runScript(o.d.run, o);
         else if (best.k === 'obj') runScript(o.run);
+        else if (!avail(o)) runScript(o.locked);
         else goScene(o.to, o.spawn);
       }
     }
@@ -429,7 +443,7 @@
     if (state === 'talk') state = 'play';
     P.buf = 0; pressed = {}; writeSave(); refreshHud();
   }
-  function stopScript() { if (run) { run = null; dlg.hidden = true; $('dopts').innerHTML = ''; } stage.classList.remove('talking'); P.sit = null; cine(false); npcs.forEach(function (o) { o.mouth = false; }); }
+  function stopScript() { if (run) { run = null; dlg.hidden = true; $('dopts').innerHTML = ''; } $('phone').hidden = true; stage.classList.remove('talking'); P.sit = null; cine(false); npcs.forEach(function (o) { o.mouth = false; }); }
   var API = {
     flag: GS.flag, has: GS.has,
     say: function (who, text) { return new Promise(function (res) { showLine(who, text, null, res); }); },
@@ -451,7 +465,12 @@
     cine: function (on) { cine(on); return API.wait(0.7); },
     sit: function (x) { if (x == null) { P.sit = null; P.frame = 1; } else { P.sit = { x: x }; P.x = x; P.vx = 0; P.dir = 1; } },
     eat: function (on) { if (run) run.eat = !!on; if (!on) npcs.forEach(function (o) { o.mouth = false; }); },
-    fade: function (o, ms) { return fadeTo(o, ms || 600); }
+    fade: function (o, ms) { return fadeTo(o, ms || 600); },
+    clock: function (hm) { if (!game) return; game.clock = hm == null ? null : toMin(hm); clockHud(true); },
+    phone: function (key, title) { var r = run; return new Promise(function (res) { if (r) openPhone(key, title, res); else res(); }); },
+    go: function (id, spawn) { return goScene(id, spawn, null, true); },
+    fail: function (id) { questBanner('fallo', id); },
+    card: async function (text) { var prev = state; await showCards([text]); state = prev; }
   };
   function whoOf(id) {
     if (id === 'ethan') return { name: 'Ethan', src: 'sprites/ethan-sheet.png', sw: 384, fr: 0, voice: 300 };
@@ -517,6 +536,7 @@
     if (run.eat) { npcs.forEach(function (o, i) { o.mouth = Math.sin(time * 9 + i * 2.1) > 0.35; }); P.eatF = Math.sin(time * 6.5) > 0.2 ? 1 : 0; }
     else P.eatF = 0;
     if (run.line) lineStep(dt);
+    if (run && run.phone) phoneStep(dt);
   }
 
   // ---------------- cine, avisos, objetivos e inventario ----------------
@@ -594,6 +614,78 @@
   $('diax').onclick = function () { toggleDiary(false); };
   $('pdia').onclick = function () { pause(false); toggleDiary(true); };
 
+  // ---------------- reloj de la partida ----------------
+  // game.clock = minutos desde las 00:00 del 31/12 (las horas de antes de las 12 cuentan como del dia siguiente).
+  var CLK = STORY.clock || {}, clkSig = '';
+  function toMin(hm) { var p = String(hm).split(':'), h = +p[0], m = +p[1] || 0; return h * 60 + m + (h < 12 ? 1440 : 0); }
+  function fmt(v) { v = Math.floor(v) % 1440; return ('0' + Math.floor(v / 60)).slice(-2) + ':' + ('0' + (v % 60)).slice(-2); }
+  function clockStep(dt) {
+    if (!game || game.clock == null || state !== 'play') return;
+    game.clock += dt / (CLK.rate || 1.5);
+    (CLK.events || []).forEach(function (ev) {
+      if (state !== 'play' || game.flags['hora:' + ev.id] || game.clock < toMin(ev.at) || !avail(ev)) return;
+      game.flags['hora:' + ev.id] = 1; runScript(ev.run);
+    });
+    clockHud();
+  }
+  function clockHud(force) {
+    var el = $('clk'), on = !!(game && game.clock != null && scene), h = '';
+    if (on) {
+      h = '<b>' + fmt(game.clock) + '</b>';
+      Object.keys(MIS).forEach(function (id) {
+        var m = MIS[id]; if (!m.limit || game.flags['mision:' + id] !== 'activa') return;
+        var left = Math.ceil(toMin(m.limit) - game.clock);
+        h += '<span class="' + (left <= 10 ? 'late' : '') + '">' + esc(m.limitLabel || m.name) + ' ' + m.limit + ' · ' + (left > 0 ? 'faltan ' + left + ' min' : '¡ya!') + '</span>';
+      });
+    }
+    if (h === clkSig && !force) return; clkSig = h;
+    el.innerHTML = h; el.hidden = !on; stage.classList.toggle('hasclk', on);
+  }
+
+  // ---------------- el movil (chat a pantalla completa) ----------------
+  var PH_COL = ['#ffb15e', '#7ee0ff', '#c79bff', '#8fdf6e', '#ff8fa8', '#ffd75e'];
+  function phCol(name) { var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0; return PH_COL[h % PH_COL.length]; }
+  function openPhone(key, title, res) {
+    var d = TEXT[key] || { lines: [] };
+    var who = []; d.lines.forEach(function (l) { if (l.who && l.who !== 'ethan' && who.indexOf(l.who) < 0) who.push(l.who); });
+    run.phone = { lines: d.lines, i: -1, t: 0, ph: 'open', res: res };
+    $('phg').textContent = title || 'Chat'; $('phw').textContent = who.concat(['Tú']).join(', ');
+    $('phh').textContent = game && game.clock != null ? fmt(game.clock) : '';
+    $('phm').innerHTML = ''; $('pht').textContent = ''; $('phb').classList.remove('on');
+    var el = $('phone'); el.hidden = false; el.className = ''; void el.offsetWidth; el.classList.add('in');
+    stage.classList.add('talking'); sfx('vibra');
+  }
+  function phoneStep(dt) {
+    var P2 = run.phone, adv = pressed.act || pressed.ok || pressed.jump;
+    P2.t += dt;
+    if (P2.ph === 'open') { if (P2.t > 1.1) { P2.ph = 'next'; P2.t = 0; } return; }
+    if (P2.ph === 'next') {
+      P2.i++;
+      if (P2.i >= P2.lines.length) { P2.ph = 'end'; $('pht').textContent = ''; $('phb').classList.add('on'); return; }
+      var L = P2.lines[P2.i];
+      P2.wait = L.who === 'ethan' ? 0.5 : 0.7 + Math.min(1.3, L.text.length * 0.03);
+      $('pht').textContent = L.who === 'ethan' ? '' : (L.who || 'Alguien') + ' está escribiendo…';
+      P2.ph = 'typing'; P2.t = 0; return;
+    }
+    if (P2.ph === 'typing') {
+      if (P2.t >= P2.wait || adv) {
+        var L2 = P2.lines[P2.i], me = L2.who === 'ethan', b = document.createElement('div');
+        b.className = 'pmsg' + (me ? ' me' : '');
+        if (!me) { var n = document.createElement('b'); n.textContent = L2.who || ''; n.style.color = phCol(L2.who || ''); b.appendChild(n); }
+        var tx = document.createElement('span'); tx.textContent = L2.text; b.appendChild(tx);
+        var hr = document.createElement('small'); hr.textContent = $('phh').textContent; b.appendChild(hr);
+        $('phm').appendChild(b); $('phm').scrollTop = 1e6; $('pht').textContent = '';
+        sfx('msg'); P2.ph = 'shown'; P2.t = 0;
+      }
+      return;
+    }
+    if (P2.ph === 'shown') { if (P2.t > 0.9 || adv) { P2.ph = 'next'; P2.t = 0; } return; }
+    if (P2.ph === 'end' && adv) {
+      P2.ph = 'closing'; sfx('ok'); var el = $('phone'); el.classList.remove('in'); el.classList.add('outp');
+      setTimeout(function () { el.hidden = true; el.className = ''; stage.classList.remove('talking'); var r = P2.res; if (run && run.phone === P2) run.phone = null; r(); }, 450);
+    }
+  }
+
   // ---------------- sonido (sintetizado, sin archivos) ----------------
   // Comparte el silencio con el tycoon (elt_mute).
   var AC = null, master = null, muted = false;
@@ -615,6 +707,9 @@
   var SFX = {
     principal: function () { [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) { bell(f, i * 0.12, 1.1, 0.14); }); bell(1318.5, 0.36, 1.4, 0.09); tn(261.63, 0.34, 1.8, 'sine', 0.09); tn(392, 0.34, 1.8, 'sine', 0.05); },
     secundaria: function () { bell(783.99, 0, 0.8, 0.12); bell(1174.66, 0.13, 1.1, 0.11); tn(392, 0.12, 1.2, 'sine', 0.05); },
+    fallo: function () { [392, 349.23, 293.66].forEach(function (f, i) { tn(f, i * 0.22, 0.5, 'triangle', 0.12); }); tn(146.83, 0.66, 1.2, 'sine', 0.12); },
+    vibra: function () { tn(150, 0, 0.16, 'sawtooth', 0.035); tn(150, 0.24, 0.16, 'sawtooth', 0.035); bell(1318.5, 0.5, 0.5, 0.06); bell(1760, 0.6, 0.6, 0.05); },
+    msg: function () { tn(1046.5, 0, 0.08, 'sine', 0.07); tn(1568, 0.06, 0.12, 'sine', 0.05); },
     hecha: function () { [392, 523.25, 659.25].forEach(function (f, i) { bell(f, i * 0.1, 0.5, 0.12); }); [523.25, 659.25, 783.99, 1046.5].forEach(function (f) { bell(f, 0.38, 1.7, 0.08); }); tn(130.81, 0.38, 1.9, 'sine', 0.12); },
     objeto: function () { tn(880, 0, 0.12, 'triangle', 0.1, 1320); tn(1760, 0.09, 0.25, 'sine', 0.06); },
     sel: function () { tn(660, 0, 0.05, 'triangle', 0.05); },
@@ -638,10 +733,10 @@
     questOn = true;
     var m = MIS[q.id] || { name: q.id }, main = m.type !== 'secundaria';
     el.className = (main ? 'main' : 'side') + ' ' + q.kind;
-    $('qlab').textContent = q.kind === 'hecha' ? 'Misión completada' : main ? 'Misión principal' : 'Misión secundaria';
+    $('qlab').textContent = q.kind === 'hecha' ? 'Misión completada' : q.kind === 'fallo' ? 'Misión fallida' : main ? 'Misión principal' : 'Misión secundaria';
     $('qtit').textContent = m.name;
     el.hidden = false; void el.offsetWidth; el.classList.add('go');
-    sfx(q.kind === 'hecha' ? 'hecha' : main ? 'principal' : 'secundaria');
+    sfx(q.kind === 'hecha' ? 'hecha' : q.kind === 'fallo' ? 'fallo' : main ? 'principal' : 'secundaria');
     setTimeout(function () { el.classList.add('out'); }, 3400);
     setTimeout(function () { el.hidden = true; el.className = ''; nextQuest(); }, 4100);
   }
@@ -724,7 +819,12 @@
         var sel = document.createElement('select'), wc = whoChoices();
         if (L.who && !wc.some(function (w) { return w[0] === L.who; })) wc.unshift([L.who, L.who]);
         wc.forEach(function (w) { var o = document.createElement('option'); o.value = w[0]; o.textContent = w[1]; sel.appendChild(o); });
-        sel.value = L.who || ''; sel.onchange = function () { L.who = sel.value || null; saveText(); };
+        var oo = document.createElement('option'); oo.value = '__otro'; oo.textContent = '(otro nombre…)'; sel.appendChild(oo);
+        sel.value = L.who || '';
+        sel.onchange = function () {
+          if (sel.value === '__otro') { var nm = prompt('¿Quién lo dice?'); if (nm && nm.trim()) L.who = nm.trim(); saveText(); renderEditor(); return; }
+          L.who = sel.value || null; saveText();
+        };
         var ta = document.createElement('textarea'); ta.rows = 2; ta.value = L.text; ta.oninput = function () { L.text = ta.value; saveText(); };
         var tools = document.createElement('span');
         [['↑', -1], ['↓', 1]].forEach(function (m) {
@@ -736,7 +836,7 @@
         row.appendChild(sel); row.appendChild(ta); row.appendChild(tools); sec.appendChild(row);
       });
       var add = document.createElement('button'); add.textContent = '+ Línea'; add.className = 'edadd';
-      add.onclick = function () { d.lines.push({ who: own.npc ? own.id : 'ethan', text: '' }); saveText(); renderEditor(); };
+      add.onclick = function () { var last = d.lines[d.lines.length - 1]; d.lines.push({ who: last ? last.who : own.npc ? own.id : 'ethan', text: '' }); saveText(); renderEditor(); };
       sec.appendChild(add);
       if (own.npc) {
         var tl = document.createElement('label'); tl.textContent = 'Piensa después (bocadillo, opcional)';
@@ -1001,7 +1101,7 @@
       if (game) { game.play = (game.play || 0) + dt; saveT += dt; if (saveT > 10) { saveT = 0; writeSave(); } }
     } else if (state === 'talk' && run) { acc = 0; P.vx = 0; scriptStep(dt); camStep(dt); if (game) game.play = (game.play || 0) + dt; }
     else acc = 0;
-    if (scene) { thinkStep(dt); if (state === 'play' || state === 'talk') dustStep(dt); }
+    if (scene) { clockStep(dt); thinkStep(dt); if (state === 'play' || state === 'talk') dustStep(dt); }
     npcs.forEach(function (o) { o.blinkT -= dt; if (o.blinkT <= 0) { o.blink = 0.13; o.blinkT = 2 + Math.random() * 3.5; } o.blink -= dt; });
     if (scene && state !== 'menu') { time += dt; fx.forEach(function (o) { fxStep(o, dt); }); }
     draw();

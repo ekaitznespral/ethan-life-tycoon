@@ -53,5 +53,17 @@ window.STORY_TEXT = {
     "lines": [
       { "who": "ethan", "text": "Falta la tortilla de Lourdes." }
     ]
+  },
+  "puerta.antes_cena": {
+    "lines": [
+      { "who": "ethan", "text": "Primero, la cena." }
+    ]
+  },
+  "movil.quedada": {
+    "lines": [
+      { "who": "Sadaba", "text": "¿qué, a qué hora?" },
+      { "who": "Ekabi", "text": "a la 1.15 pasa el metro" },
+      { "who": "Lier", "text": "yo no sé si llego, estoy en el Arena" }
+    ]
   }
 };

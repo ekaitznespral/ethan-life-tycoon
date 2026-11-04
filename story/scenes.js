@@ -7,7 +7,8 @@
 //    (0 = quieta, 1 = se mueve con el escenario). Ancho minimo de una capa: 384 + (w-384)*f.
 //  - platforms: superficies a las que se puede subir saltando (se atraviesan por debajo;
 //    S + salto para bajarse). {x, y, w}.
-//  - spawns: puntos donde aparece Ethan. exits: zonas con [E] que llevan a otro escenario.
+//  - spawns: puntos donde aparece Ethan. exits: zonas con [E] que llevan a otro escenario
+//    (when(g) para abrirlas solo a partir de un momento; locked = guion si aun no se puede).
 //  - fx: efectos animados. z = indice de la capa tras la que se pintan.
 //  - Una capa con front: true se pinta delante de los personajes (p. ej. la mesa).
 //  - npcs: personajes. x = centro, top = y de la parte de arriba del sprite (48x48, 7 fotogramas),
@@ -27,7 +28,11 @@
 //   s.mission(id) / s.complete(id)       empezar / terminar una mision (STORY.missions: name, type, desc, steps, extra)
 //   await s.cine(true|false)             bandas negras de cine
 //   await s.walkTo(x) · s.face(1|-1) · s.sit(x|null) · s.eat(true|false)
-//   await s.wait(seg) · await s.fade(1|0, ms) · s.toast(texto)
+//   await s.wait(seg) · await s.fade(1|0, ms) · s.toast(texto) · await s.card(texto)
+//   s.clock('00:20') / s.clock(null)    pone (o quita) el reloj de la partida
+//   await s.phone('movil.x', 'Titulo')  el movil a pantalla completa con un chat
+//   await s.go(escenario, aparicion)    cambia de escenario sin cortar el guion
+//   s.fail(id)                           mision fallida (aviso en rojo)
 
 // Modo desarrollador: panel (º/F1), editor rapido de dialogos (F3) y depuracion (F2).
 // En produccion: false, y desaparece todo eso.
@@ -42,6 +47,16 @@ window.STORY = {
     langostinos: { name: 'Langostinos', icon: 2, desc: 'Los que pide la hermanastra.' }
   },
 
+  // Reloj de la partida: aparece despues de la cena. rate = segundos reales por minuto de juego.
+  // events: guiones que saltan a una hora (una sola vez; se rearman borrando la flag "hora:<id>").
+  clock: {
+    rate: 1.5,
+    events: [
+      { id: 'quedada', at: '00:30', run: 'quedada', when: function (g) { return g.flag('cena_hecha'); } },
+      { id: 'metro_perdido', at: '01:15', run: 'metro_perdido', when: function (g) { return g.flag('mision:metro') === 'activa'; } }
+    ]
+  },
+
   missions: {
     cena: {
       name: 'La cena de Nochevieja', type: 'principal',   // principal | secundaria
@@ -53,6 +68,13 @@ window.STORY = {
       extra: [
         { text: 'Opcional: saca el jamón', done: function (g) { return g.flag('nevera:jamon'); } },
         { text: 'Opcional: saca los langostinos', done: function (g) { return g.flag('nevera:langostinos'); } }
+      ]
+    },
+    metro: {
+      name: 'Pilla el metro de la 1:15', type: 'principal', limit: '01:15', limitLabel: 'Metro',
+      desc: 'Has quedado con Sadaba, Ekabi y Lier. El metro pasa a la 1:15: llega a tiempo.',
+      steps: [
+        { text: 'Llega al metro antes de la 1:15', done: function (g) { return g.flag('metro_ok'); } }
       ]
     }
   },
@@ -94,10 +116,35 @@ window.STORY = {
       await s.wait(0.8);
       await s.fade(1, 900);
       s.flag('cena_hecha', 1); s.complete('cena');
-      // AQUI SIGUE LA HISTORIA (pendiente). De momento Ethan se levanta y vuelve el control.
       s.sit(null); s.face(1);
+      s.clock('00:20');                        // a partir de aqui hay reloj
       await s.wait(0.5);
       await s.fade(0, 900);
+      await s.cine(false);
+    },
+    puerta_cerrada: async function (s) { await s.talk('puerta.antes_cena'); },
+    // 00:30: el movil con la quedada
+    quedada: async function (s) {
+      await s.phone('movil.quedada', 'Nochevieja');
+      s.mission('metro');
+    },
+    // 01:15 sin haber llegado: PROVISIONAL (se vuelve a la puerta de casa a las 00:30)
+    metro_perdido: async function (s) {
+      s.fail('metro');
+      await s.wait(2.5);
+      await s.fade(1, 700);
+      s.clock('00:30'); s.flag('hora:metro_perdido', null);
+      await s.go('cocina', 'puerta');
+      s.toast('Inténtalo otra vez: el metro pasa a la 1:15');
+    },
+    // llegar al metro a tiempo
+    metro: async function (s) {
+      s.flag('metro_ok', 1); s.complete('metro');
+      await s.wait(1.2);
+      await s.cine(true);
+      await s.fade(1, 900);
+      await s.card('Continuará...');           // AQUI SIGUE LA HISTORIA (pendiente)
+      await s.fade(0, 700);
       await s.cine(false);
     }
   },
@@ -111,7 +158,10 @@ window.STORY = {
     { id: 'mision', name: 'Misión de la cena activa', scene: 'cocina', spawn: 'mesa', flags: { 'mision:cena': 'activa' } },
     { id: 'tortilla', name: 'Con la tortilla en la mano', scene: 'cocina', spawn: 'nevera', flags: { 'mision:cena': 'activa', 'nevera:tortilla': 1 }, inv: ['tortilla'] },
     { id: 'todo', name: 'Con tortilla, jamón y langostinos', scene: 'cocina', spawn: 'silla', flags: { 'mision:cena': 'activa', 'nevera:tortilla': 1, 'nevera:jamon': 1, 'nevera:langostinos': 1 }, inv: ['tortilla', 'jamon', 'langostinos'] },
-    { id: 'trascena', name: 'Después de la cena', scene: 'cocina', spawn: 'silla', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1 } },
+    { id: 'trascena', name: 'Después de la cena (00:20)', scene: 'cocina', spawn: 'silla', clock: '00:20', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1 } },
+    { id: 'quedada', name: 'Justo antes del móvil (00:29)', scene: 'cocina', spawn: 'puerta', clock: '00:29', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1 } },
+    { id: 'metro', name: 'Misión del metro, en la calle (00:40)', scene: 'calle', spawn: 'portal', clock: '00:40', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
+    { id: 'metro_justo', name: 'Metro: a punto de perderlo (01:13)', scene: 'calle', spawn: 'portal', clock: '01:13', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
     { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' }
   ]
 };
@@ -147,7 +197,7 @@ window.STORY_SCENES = {
       { x: 372, y: 177, w: 144 }  // mesa
     ],
     spawns: { inicio: { x: 150, dir: 1 }, puerta: { x: 606, dir: -1 }, mesa: { x: 520, dir: -1 }, nevera: { x: 76, dir: 1 }, silla: { x: 340, dir: 1 } },
-    exits: [{ x: 588, w: 42, to: 'calle', spawn: 'portal', label: 'Salir' }],
+    exits: [{ x: 588, w: 42, to: 'calle', spawn: 'portal', label: 'Salir', when: function (g) { return g.flag('cena_hecha'); }, locked: 'puerta_cerrada' }],
     fx: [
       { type: 'fireworks', z: 0, x0: 40, x1: 340, y0: 58, y1: 100, rate: 1.1 },
       { type: 'tv', x: 539, y: 85, w: 40, h: 25 },
@@ -157,7 +207,7 @@ window.STORY_SCENES = {
   },
 
   calle: {
-    name: 'Calle', sub: 'Escena de prueba',
+    name: 'Calle', sub: 'Sestao · provisional',
     w: 1100, floor: 200,
     layers: [
       { src: 'sprites/story/calle-cielo.png', f: 0.08 },
@@ -171,6 +221,9 @@ window.STORY_SCENES = {
     ],
     spawns: { portal: { x: 87, dir: 1 } },
     exits: [{ x: 66, w: 42, to: 'cocina', spawn: 'puerta', label: 'Entrar a casa' }],
+    objects: [
+      { id: 'metro', name: 'Metro', x: 1066, reach: 24, py: 150, label: 'Bajar al metro', run: 'metro', when: function (g) { return g.flag('mision:metro') === 'activa'; } }
+    ],
     fx: [
       { type: 'fireworks', z: 0, x0: 20, x1: 460, y0: 25, y1: 110, rate: 1.6 },
       { type: 'blink', x: 304, y: 57, f: 0.3, z: 1 },
