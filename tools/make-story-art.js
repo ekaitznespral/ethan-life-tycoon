@@ -586,10 +586,10 @@ function calle() {
   f.rect(316, 142, 80, 8, '#d8ccb4'); f.rect(316, 149, 80, 1, '#a89878');
   persianaMetal(f, 318, 150, 76, 48, '#bcae8e', '#a8997a');
   f.rect(398, 146, 52, 52, '#cfc2a2'); for (var x = 400; x < 450; x += 4) f.rect(x, 146, 1, 52, '#a8997a'); f.rect(398, 170, 52, 2, '#b4a684');
-  // bar (en el mismo bloque)
-  f.rect(456, 144, 112, 56, '#4a3a30'); f.box(456, 144, 112, 56, '#2e241e');
-  f.rect(464, 160, 64, 34, '#2a2018'); f.rect(536, 158, 24, 42, '#2a2018');
-  f.rect(470, 146, 54, 11, '#1b1b22'); f.box(470, 146, 54, 11, '#0e0e12');
+  // bajos cerrados (persianas metalicas) y otro portal del bloque
+  f.rect(456, 142, 64, 6, '#d8ccb4'); f.rect(456, 147, 64, 1, '#a89878');
+  persianaMetal(f, 458, 148, 60, 50, '#9a9894', '#84827e');
+  f.rect(526, 148, 40, 52, '#8a7672'); f.rect(530, 154, 32, 46, '#b8bcc0'); f.rect(532, 156, 28, 44, '#20262e'); f.rect(545, 156, 2, 44, '#b8bcc0');
   // garaje
   persianaMetal(f, 574, 150, 42, 48, '#8e8c86', '#7a7872');
   // cables colgando por la fachada
@@ -698,17 +698,14 @@ function calle() {
 
   // ---- de noche
   nightPass(f);
-  // luces: ventanas encendidas, portal, letreros, bar
+  // luces: portal, letreros
   f.rect(254, 153, 21, 47, '#e8c070'); f.rect(277, 153, 21, 47, '#e8c070'); f.rect(254, 153, 44, 3, '#fff0b0');   // portal encendido
   f.rect(258, 170, 14, 1, '#b08840'); f.rect(280, 170, 14, 1, '#b08840'); f.rect(272, 176, 2, 6, '#8a8e94'); f.rect(278, 176, 2, 6, '#8a8e94');
   f.text(274, 146, '3', '#f0f0f0');
   f.text(50, 146, 'AGENCIA INMOBILIARIA', '#e8e4da');
   f.text(171, 147, 'PELUQUERIA', '#ff5a5a'); f.text(222, 147, '', '#5a8aff');
   for (var yy = 148; yy < 160; yy++) { f.px(158 + ((yy * 2) % 5), yy, '#ff4a4a'); f.px(158 + ((yy * 2 + 2) % 5), yy, '#6a8aff'); }
-  f.rect(466, 162, 60, 30, '#f4c35c'); f.rect(466, 162, 60, 3, '#ffe38f');
-  for (var x = 472; x < 524; x += 14) { f.rect(x, 178, 7, 14, '#6a3a1c'); f.disc(x + 3, 176, 3, '#6a3a1c'); }
-  f.rect(538, 160, 20, 40, '#f4c35c'); f.rect(552, 178, 2, 5, '#3a2f29');
-  f.text(477, 149, 'BAR', '#ff5a6e', 2);
+  f.rect(532, 156, 13, 44, '#b89a5a'); f.rect(547, 156, 13, 44, '#b89a5a'); f.rect(532, 156, 28, 2, '#e0c27a');   // el otro portal, con luz tenue
   [652].forEach(function (x) { f.rect(x + 9, 123, 6, 2, '#fbefb2'); });
   [990, 1110, 1290].forEach(function (x) { var y = calleSuelo(x); f.disc(x + 1, y - 74, 5, '#fff6d0'); f.disc(x + 1, y - 75, 2, '#ffffff'); });
   for (var x = 1498; x < 1560; x += 3) f.rect(x, 176, 1, 36, '#e8b060');                      // la reja del metro, iluminada por dentro
