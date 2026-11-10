@@ -100,7 +100,7 @@ window.STORY = {
       for (;;) {
         var ids = ['tortilla', 'jamon', 'langostinos'].filter(function (id) { return !s.flag('nevera:' + id); });
         if (!ids.length) { await s.talk('nevera.vacia'); return; }
-        var c = await s.choose('Nevera', '¿Qué sacas?', ids.map(function (id) { return STORY.items[id].name; }).concat(['Cerrar']));
+        var c = await s.choose('Nevera', '¿Qué sacas?', ids.map(function (id) { return { text: STORY.items[id].name, item: id }; }).concat(['Cerrar']));
         if (c >= ids.length) return;
         s.flag('nevera:' + ids[c], 1); s.give(ids[c]);
       }

@@ -454,7 +454,7 @@
       if (d.piensa && run) run.think.push({ owner: key.split('.')[0], text: d.piensa });
     },
     choose: function (who, text, opts) { return new Promise(function (res) { showLine(who, text, opts, res); }); },
-    give: function (id) { if (!game || GS.has(id)) return; game.inv.push(id); toast('+ ' + (ITEMS[id] ? ITEMS[id].name : id), id); sfx('objeto'); refreshHud(); },
+    give: function (id) { if (!game || GS.has(id)) return; game.inv.push(id); gotItem(id); sfx('objeto'); refreshHud(); },
     take: function (id) { if (!game) return; var i = game.inv.indexOf(id); if (i >= 0) game.inv.splice(i, 1); refreshHud(); },
     mission: function (id) { if (GS.flag('mision:' + id)) return; GS.flag('mision:' + id, 'activa'); questBanner('nueva', id); },
     complete: function (id) { GS.flag('mision:' + id, 'hecha'); questBanner('hecha', id); },
@@ -519,7 +519,8 @@
       if (!L.shown) {
         L.shown = true; var box = $('dopts');
         L.opts.forEach(function (t, i) {
-          var b = document.createElement('button'); b.textContent = t;
+          var b = document.createElement('button');
+          if (t && typeof t === 'object') { if (t.item) { var ic = document.createElement('i'); icon(ic, t.item); b.appendChild(ic); } b.appendChild(document.createTextNode(t.text)); } else b.textContent = t;
           b.onpointerenter = function () { L.sel = i; mark(); };
           b.onclick = function () { if (run && run.line === L) { sfx('ok'); finishLine(i); } };
           box.appendChild(b);
@@ -560,16 +561,33 @@
   function cine(on) { stage.classList.toggle('cine', !!on); }
   function icon(el, id) {
     var it = ITEMS[id]; if (!it) return;
-    el.style.backgroundImage = 'url(' + OBJ + ')';
-    var w = (img(OBJ) && img(OBJ).width) || 96;
-    el.style.backgroundSize = (w * 2) + 'px 32px'; el.style.backgroundPosition = (-it.icon * 32) + 'px 0';
+    el.classList.add('ico');
+    el.style.setProperty('--ix', it.icon || 0);
+    var im = img(OBJ); if (im && im.width) el.style.setProperty('--sw', im.width);
   }
-  function toast(text, id) {
+  function toast(text) {
     var t = document.createElement('div'); t.className = 'toast';
-    if (id && ITEMS[id]) { var i = document.createElement('i'); icon(i, id); t.appendChild(i); }
     t.appendChild(document.createTextNode(text)); $('toasts').appendChild(t);
     setTimeout(function () { t.classList.add('out'); }, 2600); setTimeout(function () { t.remove(); }, 3200);
   }
+  // tarjeta centrada de "objeto conseguido" (si se cogen varios seguidos, van en cola)
+  var gotQ = [], gotBusy = false, gotT0 = 0, gotTm = 0;
+  function gotItem(id) {
+    gotQ.push(id);
+    if (!gotBusy) gotNext();
+    else { clearTimeout(gotTm); gotTm = setTimeout(gotOut, Math.max(0, gotT0 + 900 - Date.now())); }
+  }
+  function gotNext() {
+    var id = gotQ.shift(), el = $('got');
+    if (!id) { gotBusy = false; return; }
+    gotBusy = true; gotT0 = Date.now();
+    var it = ITEMS[id] || { name: id };
+    icon(el.querySelector('.ico'), id);
+    el.querySelector('b').textContent = it.name; el.querySelector('span').textContent = it.desc || '';
+    el.classList.remove('out', 'on'); void el.offsetWidth; el.classList.add('on');
+    clearTimeout(gotTm); gotTm = setTimeout(gotOut, gotQ.length ? 900 : 2400);
+  }
+  function gotOut() { var el = $('got'); el.classList.remove('on'); el.classList.add('out'); gotTm = setTimeout(gotNext, 300); }
   var hudSig = '';
   function refreshHud() {
     var box = $('mis'), h = '';
