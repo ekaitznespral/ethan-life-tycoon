@@ -97,13 +97,58 @@ window.STORY_TEXT = {
   },
   "canceladora.sin_barik": {
     "lines": [
-      { "who": "ethan", "text": "¡No! ¡La Barik se ha quedado en casa!" },
-      { "who": "ethan", "text": "Como no corra, el metro se va sin mí." }
+      { "who": "ethan", "text": "¡No! ¡La Barik se ha quedado en la cartera!" },
+      { "who": "ethan", "text": "Está en el escritorio de mi cuarto. Como no corra, el metro se va sin mí." }
     ]
   },
-  "barik.cogida": {
+  "cartera.barik": {
     "lines": [
-      { "who": "ethan", "text": "¡Aquí estaba! Venga, al metro." }
+      { "who": "ethan", "text": "La Barik. Sin esto no paso del metro." }
+    ]
+  },
+  "cartera.banco": {
+    "lines": [
+      { "who": "ethan", "text": "La tarjeta del banco. Mejor que se quede aquí." }
+    ]
+  },
+  "cartera.dinero": {
+    "lines": [
+      { "who": "ethan", "text": "Cinco euros y unas monedas. Para Nochevieja no da ni para empezar." }
+    ]
+  },
+  "cartera.sanidad": {
+    "lines": [
+      { "who": "ethan", "text": "La tarjeta sanitaria. Esperemos no necesitarla esta noche..." }
+    ]
+  },
+  "habitacion.pc": {
+    "lines": [
+      { "who": "ethan", "text": "Hoy no hay tiempo para viciar." }
+    ]
+  },
+  "pasillo.bano": {
+    "lines": [
+      { "who": "ethan", "text": "Ahora no me hace falta." }
+    ]
+  },
+  "pasillo.padres": {
+    "lines": [
+      { "who": null, "text": "La habitación de Aita y Lourdes está cerrada." }
+    ]
+  },
+  "friki.figuritas": {
+    "lines": [
+      { "who": "ethan", "text": "Las figuritas de Aita. Mejor ni tocarlas." }
+    ]
+  },
+  "friki.consolas": {
+    "lines": [
+      { "who": "ethan", "text": "La colección de consolas de Aita. Mejor cuidada que la vitro." }
+    ]
+  },
+  "friki.tele": {
+    "lines": [
+      { "who": "ethan", "text": "Aquí se pasa Aita las tardes jugando a lo retro." }
     ]
   }
 };

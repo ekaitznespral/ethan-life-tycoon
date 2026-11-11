@@ -389,10 +389,12 @@ function objetos() {
   o = 80;
   f.rect(o + 2, 7, 12, 8, '#d8392b'); f.rect(o + 2, 7, 12, 1, '#ff6a50'); f.rect(o + 3, 10, 10, 2, '#f2b632');
   f.rect(o + 3, 4, 4, 3, '#d99a3e'); f.rect(o + 7, 3, 4, 4, '#c98a30'); f.rect(o + 10, 5, 3, 2, '#e0a848'); f.px(o + 4, 5, '#f0c070'); f.px(o + 8, 4, '#e8b860');
-  // la Barik: tarjeta de transporte verde azulada (sin logotipo)
+  // la Barik: tarjeta blanca con la huella gris (sin logotipos)
   o = 96;
-  f.rect(o + 1, 4, 14, 9, '#1f8f86'); f.rect(o + 1, 4, 14, 1, '#4cc2b4'); f.rect(o + 1, 12, 14, 1, '#14665f');
-  f.rect(o + 2, 6, 7, 2, '#f4f1e8'); f.rect(o + 2, 9, 4, 1, '#bfe9e2'); f.rect(o + 10, 7, 3, 3, '#e8c45a'); f.px(o + 11, 8, '#b8922e');
+  f.rect(o + 1, 4, 14, 9, '#f6f5f2'); f.rect(o + 1, 12, 14, 1, '#cfcdc8');
+  [[9, 6], [8, 7], [11, 7], [8, 9], [12, 9], [9, 10], [11, 11], [13, 6], [13, 11]].forEach(function (q) { f.px(o + q[0], q[1], '#9a9a9a'); });
+  f.rect(o + 10, 8, 2, 1, '#b8b8b8');
+  f.rect(o + 2, 5, 2, 1, '#2a2622'); f.rect(o + 4, 5, 3, 1, '#e8463a');
   outline(f);
   save(f, 'objetos.png');
 }
@@ -718,6 +720,245 @@ function calle() {
   save(f, 'calle.png');
 }
 
+
+// ======================= LA CASA: PASILLO, SALON Y CUARTOS =======================
+// Pasillo de derecha a izquierda: puerta de la cocina, baño, cuarto de Aita y Lourdes,
+// cuarto de Ethan, sala friki de Aita, puerta de la calle y, al fondo, el salon.
+// Lo que se ve por las ventanas es la capa casa-cielo (las ventanas quedan transparentes).
+function cieloCasa() {
+  var W = 700, f = new FB(W, 216), r = rng(19);
+  f.vgrad(0, 0, W, 150, ['#0a1128', '#141c3c', '#262350', '#3a2c58']);
+  for (var i = 0; i < 130; i++) f.px(r() * W, r() * 100, r() < 0.3 ? '#f7e8b0' : '#cfd6ff', 120 + (r() * 135 | 0));
+  var x = 0;
+  while (x < W) {
+    var w = 30 + (r() * 40 | 0), top = 84 + (r() * 26 | 0);
+    f.rect(x, top, w, 216 - top, '#151a2e'); f.rect(x, top, w, 1, '#222944');
+    for (var wy = top + 5; wy < 210; wy += 8) for (var wx = x + 4; wx < x + w - 4; wx += 7)
+      if (r() < 0.4) f.rect(wx, wy, 3, 4, r() < 0.8 ? '#f0c75a' : '#9fc3ff');
+    x += w + 2;
+  }
+  save(f, 'casa-cielo.png');
+}
+function hueco(f, x, y, w, h) { f.rect(x, y, w, h, '#000000', 0); }          // transparente: se ve el cielo
+function ventanaCasa(f, x, y, w, h) {
+  f.rect(x - 3, y - 3, w + 6, h + 6, '#f2efe8'); hueco(f, x, y, w, h);
+  f.rect(x + Math.floor(w / 2) - 1, y, 2, h, '#f2efe8'); f.rect(x, y + Math.floor(h * 0.4), w, 2, '#f2efe8');
+  f.rect(x - 5, y + h + 3, w + 10, 3, '#e2ddd2'); f.rect(x - 5, y + h + 6, w + 10, 1, '#b8b2a6');
+}
+function cortina(f, x, y, h, c, cd) { f.rect(x, y, 7, h, c); for (var j = 0; j < h; j += 2) f.px(x + 2, y + j, cd), f.px(x + 5, y + j + 1, cd); }
+function puertaCasa(f, x, w, col, colD, o) {
+  o = o || {};
+  var y = o.top || 132, h = 196 - y;
+  f.rect(x - 3, y - 3, w + 6, h + 3, '#f2efe8'); f.rect(x - 3, y - 3, w + 6, 1, '#d8d2c6');   // marco
+  f.rect(x, y, w, h, col);
+  f.box(x + 3, y + 4, w - 6, Math.floor(h / 2) - 6, colD); f.box(x + 3, y + Math.floor(h / 2) + 2, w - 6, Math.floor(h / 2) - 6, colD);
+  f.rect(x + (o.izq ? 3 : w - 6), y + Math.floor(h / 2), 4, 2, '#d8c27a'); f.px(x + (o.izq ? 3 : w - 3), y + Math.floor(h / 2) + 1, '#a8924a');
+}
+function lampara(f, x) { f.rect(x, 0, 1, 6, '#6a5a4a'); f.rect(x - 6, 6, 13, 3, '#f2e6c8'); f.emit = true; f.rect(x - 4, 9, 9, 1, '#fff6d8'); f.emit = false; }
+function parquet(f, x0, x1) {
+  f.rect(x0, 196, x1 - x0, 20, '#a87848'); f.rect(x0, 196, x1 - x0, 1, '#c89a68');
+  for (var y = 199; y < 216; y += 5) { f.rect(x0, y, x1 - x0, 1, '#8e6238'); for (var x = x0 + ((y * 7) % 23); x < x1; x += 23) f.rect(x, y + 1, 1, 4, '#8e6238'); }
+}
+function cuadro(f, x, y, w, h, cs) {
+  f.rect(x, y, w, h, '#6b4426'); f.rect(x + 2, y + 2, w - 4, h - 4, cs[0]);
+  f.rect(x + 2, y + Math.floor(h / 2), w - 4, Math.ceil(h / 2) - 2, cs[1]); if (cs[2]) f.disc(x + w - 7, y + 6, 2, cs[2]);
+}
+var PAS_W = 1100;
+function pasillo() {
+  var W = PAS_W, f = new FB(W, 216), r = rng(23);
+  // --- pasillo (452..1100) ---
+  f.rect(440, 0, W - 440, 196, '#efe3c8'); f.rect(440, 0, W - 440, 12, '#e2d6ba'); f.rect(440, 12, W - 440, 1, '#c8b896');
+  f.rect(440, 150, W - 440, 46, '#d4bd94'); f.rect(440, 149, W - 440, 2, '#b0956a'); f.rect(440, 191, W - 440, 5, '#8a6a44');
+  for (var x = 446; x < W; x += 18) f.rect(x, 154, 1, 36, '#c4ab80');
+  [600, 780, 980].forEach(function (x) { lampara(f, x); });
+  // puerta de la calle (blindada, mas oscura), con mirilla y felpudo
+  puertaCasa(f, 474, 36, '#5a3a22', '#46301c', { top: 128, izq: true });
+  f.rect(490, 150, 3, 3, '#d8c27a'); f.px(491, 151, '#2a2622');
+  f.rect(470, 196, 44, 3, '#6a4a3a'); for (var x = 471; x < 513; x += 3) f.px(x, 197, '#8a6a52');
+  // perchero con un abrigo y la llavera
+  f.rect(522, 112, 22, 3, '#6b4426'); [524, 532, 540].forEach(function (x) { f.rect(x, 115, 1, 3, '#d8c27a'); });
+  f.rect(529, 118, 9, 26, '#2f3a52'); f.rect(528, 120, 11, 3, '#2f3a52'); f.rect(533, 118, 1, 24, '#24304a');
+  f.rect(548, 120, 6, 5, '#6b4426'); f.px(549, 126, '#d8c27a'); f.px(552, 127, '#c0c0c8');
+  // sala friki de Aita (puerta con una pegatina de estrella)
+  puertaCasa(f, 568, 32, '#9a6a3c', '#7e5430');
+  f.px(584, 142, '#ffd75e'); f.rect(583, 143, 3, 1, '#ffd75e'); f.rect(582, 144, 5, 1, '#ffd75e'); f.rect(583, 145, 3, 1, '#ffd75e'); f.px(582, 146, '#ffd75e'); f.px(586, 146, '#ffd75e');
+  cuadro(f, 616, 84, 26, 20, ['#7fb0d8', '#5f8a4a', '#ffe08a']);
+  // cuarto de Ethan (con su cartelito)
+  puertaCasa(f, 676, 32, '#9a6a3c', '#7e5430');
+  f.rect(680, 140, 24, 9, '#f6f4ee'); f.box(680, 140, 24, 9, '#3f6fb0'); f.text(682, 142, 'ETHAN', '#3f6fb0');
+  cuadro(f, 734, 80, 34, 24, ['#f0c070', '#c96a4a', '#fff0b0']);
+  // cuarto de Aita y Lourdes (cerrado)
+  puertaCasa(f, 800, 32, '#9a6a3c', '#7e5430');
+  // radiador
+  f.rect(856, 160, 40, 24, '#f2efe8'); for (var x = 858; x < 894; x += 4) f.rect(x, 161, 1, 22, '#d0cbc0');
+  cuadro(f, 866, 84, 22, 28, ['#c8d8e8', '#8aa0b8']);
+  // baño (puerta mas estrecha, con cristal esmerilado)
+  puertaCasa(f, 930, 26, '#b08a5a', '#957248');
+  f.rect(935, 138, 16, 20, '#dfe8ee'); for (var j = 0; j < 20; j += 2) f.rect(935 + (j % 4), 138 + j, 2, 1, '#c8d4dc');
+  cuadro(f, 990, 86, 26, 20, ['#d8b8e8', '#9a7ab8']);
+  // la cocina, al fondo a la derecha: hueco con la luz de dentro
+  f.rect(1045, 129, 42, 67, '#f2efe8'); f.emit = true; f.rect(1048, 132, 36, 64, '#f5d78a'); f.rect(1048, 132, 36, 2, '#fff0b8');
+  f.rect(1052, 150, 10, 46, '#e8c472'); f.rect(1066, 160, 18, 2, '#d8b060'); f.emit = false;
+  // --- arco al salon ---
+  f.rect(440, 0, 12, 196, '#e2d6ba'); f.rect(440, 0, 1, 196, '#c8b896'); f.rect(451, 0, 1, 196, '#c8b896');
+  // --- salon (0..440) ---
+  f.rect(0, 0, 440, 196, '#e6ddc2'); f.rect(0, 0, 440, 12, '#d8cfb4'); f.rect(0, 12, 440, 1, '#c0b494');
+  f.rect(0, 186, 440, 10, '#cfc4a6'); f.rect(0, 186, 440, 1, '#b0a484'); f.rect(0, 192, 440, 4, '#8a6a44');
+  lampara(f, 80); lampara(f, 280);
+  ventanaCasa(f, 40, 58, 60, 64); cortina(f, 30, 52, 82, '#b8322c', '#962822'); cortina(f, 103, 52, 82, '#b8322c', '#962822');
+  ventanaCasa(f, 196, 58, 60, 64); cortina(f, 186, 52, 82, '#b8322c', '#962822'); cortina(f, 259, 52, 82, '#b8322c', '#962822');
+  // mesa cuadrada con dos sillas
+  f.rect(48, 160, 64, 4, '#7a4a2a'); f.rect(48, 160, 64, 1, '#9a6a3c'); f.rect(52, 164, 3, 32, '#6b3f22'); f.rect(105, 164, 3, 32, '#6b3f22');
+  f.rect(60, 164, 40, 2, '#6b3f22');
+  [[34, 1], [118, -1]].forEach(function (c) {
+    var x = c[0]; f.rect(x, 172, 10, 3, '#8a5a32'); f.rect(x + 1, 175, 2, 21, '#6b3f22'); f.rect(x + 7, 175, 2, 21, '#6b3f22');
+    var bx = c[1] > 0 ? x : x + 8; f.rect(bx, 146, 2, 26, '#6b3f22'); f.rect(bx, 150, 2, 2, '#8a5a32');
+  });
+  f.rect(70, 154, 10, 6, '#f2efe8'); f.rect(72, 150, 6, 4, '#7ab84a');   // frutero
+  // sofa (mira hacia la tele) y mesa baja, con alfombra
+  f.rect(170, 196, 170, 3, '#8a3a32'); for (var x = 172; x < 338; x += 4) f.px(x, 197, '#a8524a');
+  f.rect(176, 168, 80, 24, '#5a6a8a'); f.rect(176, 168, 80, 2, '#6e80a4');                   // asiento
+  f.rect(176, 140, 12, 52, '#4a5874'); f.rect(176, 140, 12, 2, '#6e80a4');                   // respaldo
+  f.rect(250, 158, 10, 34, '#4a5874'); f.rect(250, 158, 10, 2, '#6e80a4');                   // brazo
+  f.rect(190, 160, 14, 9, '#e8d2a0'); f.rect(212, 162, 12, 7, '#b8322c');                     // cojines
+  f.rect(178, 192, 3, 4, '#2a2622'); f.rect(254, 192, 3, 4, '#2a2622');
+  f.rect(272, 178, 34, 3, '#6b3f22'); f.rect(274, 181, 2, 15, '#5a3420'); f.rect(302, 181, 2, 15, '#5a3420');
+  f.rect(280, 174, 8, 4, '#f2efe8'); f.rect(292, 175, 6, 3, '#3a3a40');                      // tazas y mando
+  // la tele, enfrente del sofa
+  f.rect(340, 176, 56, 20, '#3a2a20'); f.rect(340, 176, 56, 1, '#5a4030'); f.rect(344, 184, 20, 8, '#2a1e16'); f.rect(372, 184, 20, 8, '#2a1e16');
+  f.rect(350, 136, 46, 30, '#16171a'); f.rect(366, 166, 14, 10, '#26272b');
+  f.emit = true; f.rect(352, 138, 42, 26, '#2a3f78'); f.rect(356, 142, 20, 12, '#4a6ab0'); f.rect(380, 150, 10, 10, '#8aa8e0'); f.emit = false;
+  // planta y lampara de pie
+  f.rect(408, 180, 14, 16, '#b86a3a'); f.disc(415, 172, 8, '#4a8a3a'); f.disc(411, 166, 5, '#5aa04a'); f.disc(419, 164, 5, '#3f7a32');
+  f.rect(150, 100, 2, 96, '#3a3a40'); f.rect(144, 192, 14, 4, '#3a3a40'); f.rect(142, 92, 18, 10, '#f2e6c8'); f.emit = true; f.rect(144, 102, 14, 1, '#fff6d8'); f.emit = false;
+  parquet(f, 0, W);
+  save(f, 'pasillo.png');
+}
+var HAB_W = 420;
+function habitacion() {
+  var W = HAB_W, f = new FB(W, 216);
+  f.rect(0, 0, W, 196, '#cfdbe6'); f.rect(0, 0, W, 12, '#c0ccd8'); f.rect(0, 12, W, 1, '#a8b6c4');
+  f.rect(0, 190, W, 6, '#8a6a44'); f.rect(0, 189, W, 1, '#a8885e');
+  lampara(f, 200);
+  // cama
+  f.rect(14, 138, 6, 58, '#6b4426'); f.rect(14, 138, 6, 2, '#8a5a32');
+  f.rect(20, 172, 92, 14, '#f2efe8'); f.rect(20, 186, 92, 3, '#6b4426'); f.rect(22, 189, 3, 7, '#5a3420'); f.rect(106, 189, 3, 7, '#5a3420');
+  f.rect(22, 164, 18, 9, '#ffffff'); f.rect(22, 172, 18, 1, '#d8d6d0');
+  f.rect(38, 166, 74, 10, '#3f6fb0'); f.rect(38, 166, 74, 1, '#5a8ad0'); f.rect(108, 166, 4, 20, '#3f6fb0');
+  for (var x = 44; x < 106; x += 10) f.rect(x, 170, 4, 1, '#5a8ad0');
+  // poster encima de la cama (un paisaje pixelado)
+  f.rect(40, 70, 44, 32, '#f2efe8'); f.rect(42, 72, 40, 28, '#3a2c58'); f.disc(70, 80, 4, '#ffd75e');
+  f.rect(42, 90, 40, 10, '#2a5a3a'); f.line(42, 90, 56, 80, '#3a7a4a'); f.line(56, 80, 70, 92, '#3a7a4a'); f.text(46, 74, '8BIT', '#ff9ad5');
+  // armario marron
+  f.rect(124, 92, 54, 104, '#7a4a28'); f.rect(124, 92, 54, 3, '#9a6a3c'); f.rect(122, 89, 58, 3, '#6b3f22');
+  f.box(128, 98, 22, 92, '#5e3820'); f.box(152, 98, 22, 92, '#5e3820'); f.rect(148, 140, 2, 8, '#d8c27a'); f.rect(152, 140, 2, 8, '#d8c27a');
+  // ventanas
+  ventanaCasa(f, 196, 60, 56, 62); cortina(f, 187, 54, 80, '#3f6fb0', '#2f5a94'); cortina(f, 254, 54, 80, '#3f6fb0', '#2f5a94');
+  // escritorio con el PC
+  f.rect(276, 158, 92, 4, '#8a5a34'); f.rect(276, 158, 92, 1, '#a8784a'); f.rect(278, 162, 3, 34, '#6b3f22'); f.rect(363, 162, 3, 34, '#6b3f22');
+  f.rect(340, 162, 24, 30, '#7a4a28'); f.box(342, 166, 20, 10, '#5e3820'); f.box(342, 178, 20, 10, '#5e3820');
+  f.rect(304, 126, 38, 26, '#16171a'); f.rect(320, 152, 6, 4, '#26272b'); f.rect(314, 156, 18, 2, '#26272b');
+  f.emit = true; f.rect(306, 128, 34, 22, '#203a6a'); f.rect(308, 130, 14, 2, '#7ee0ff'); f.rect(308, 134, 22, 1, '#4a6ab0'); f.rect(308, 137, 18, 1, '#4a6ab0'); f.rect(324, 140, 12, 8, '#b98cff'); f.emit = false;
+  f.rect(346, 120, 14, 38, '#26272b'); f.rect(347, 121, 12, 1, '#3a3c42'); f.emit = true; f.rect(352, 126, 2, 1, '#4cff7a'); for (var y = 132; y < 156; y += 3) f.rect(348, y, 1, 1, '#ff5ad1'); f.emit = false;
+  f.rect(306, 155, 24, 3, '#3a3a40'); f.rect(306, 155, 24, 1, '#5a5a62'); f.rect(334, 156, 4, 2, '#3a3a40');
+  // la cartera, encima del escritorio
+  f.rect(284, 154, 12, 4, '#6b3f22'); f.rect(284, 154, 12, 1, '#8a5a32'); f.px(290, 156, '#4a2a16');
+  // silla
+  f.rect(256, 170, 16, 4, '#2a2a30'); f.rect(262, 174, 3, 16, '#3a3a40'); f.rect(256, 190, 16, 2, '#3a3a40'); f.rect(256, 140, 4, 32, '#2a2a30'); f.rect(256, 142, 4, 10, '#b8322c');
+  // estanteria encima del escritorio
+  f.rect(286, 104, 50, 3, '#8a5a34'); f.rect(290, 92, 4, 12, '#3f6fb0'); f.rect(295, 94, 4, 10, '#e8463a'); f.rect(300, 93, 3, 11, '#4fb34a'); f.rect(318, 96, 8, 8, '#ffd75e'); f.rect(320, 98, 4, 2, '#2a2622');
+  // puerta al pasillo
+  puertaCasa(f, 384, 30, '#9a6a3c', '#7e5430', { izq: true });
+  parquet(f, 0, W);
+  save(f, 'habitacion.png');
+}
+var FRIKI_W = 420;
+function friki() {
+  var W = FRIKI_W, f = new FB(W, 216), r = rng(31);
+  f.rect(0, 0, W, 196, '#3a3354'); f.rect(0, 0, W, 12, '#2e2944'); f.rect(0, 190, W, 6, '#2a2238');
+  f.emit = true; for (var x = 0; x < W; x++) f.px(x, 12, x % 40 < 20 ? '#ff5ad1' : '#7ee0ff'); f.emit = false;   // tira de LED
+  lampara(f, 210);
+  // estanterias llenas de figuritas
+  function figura(x, y) { var c = ['#e8463a', '#3f8fe0', '#4fb34a', '#ffd23f', '#f07ab0', '#f2efe8', '#b98cff', '#ff9a3a'][(r() * 8) | 0], h = 6 + (r() * 5 | 0); f.rect(x, y - h, 4, h - 3, c); f.rect(x, y - h - 3, 4, 3, r() < 0.5 ? '#f2c9a0' : c); f.px(x + 1, y - h - 2, '#1f241e'); f.rect(x, y - 3, 4, 3, '#2a2622'); }
+  [86, 112, 138, 164].forEach(function (y) {
+    f.rect(14, y, 132, 3, '#8a5a34'); f.rect(14, y + 3, 132, 1, '#5e3820');
+    for (var x = 18; x < 140; x += 7 + (r() * 4 | 0)) if (r() < 0.85) figura(x, y);
+  });
+  f.rect(12, 60, 3, 136, '#6b3f22'); f.rect(145, 60, 3, 136, '#6b3f22');
+  // vitrina iluminada
+  f.rect(158, 82, 54, 114, '#6b3f22'); f.rect(162, 86, 46, 104, '#20203a');
+  f.emit = true; f.rect(162, 86, 46, 2, '#fff2c8'); f.emit = false;
+  [112, 140, 168].forEach(function (y) { f.rect(162, y, 46, 1, '#bfe6ff'); for (var x = 166; x < 204; x += 9) figura(x, y); });
+  mezcla(f, 162, 86, 46, 104, '#bfe6ff', 0.1); f.rect(184, 86, 1, 104, '#6b3f22');
+  // tele de tubo con una consola retro
+  f.rect(222, 160, 70, 36, '#5e3820'); f.rect(222, 160, 70, 2, '#7a4a28');
+  f.rect(228, 122, 52, 38, '#8a8d93'); f.rect(228, 122, 52, 2, '#a8abb1'); f.rect(232, 126, 36, 28, '#16171a');
+  f.emit = true; f.rect(234, 128, 32, 24, '#3a7ab8'); f.rect(238, 140, 24, 10, '#4fb34a'); f.rect(246, 132, 4, 6, '#e8463a'); f.rect(258, 134, 3, 3, '#ffd23f'); f.emit = false;
+  f.rect(270, 130, 6, 4, '#3a3c42'); f.rect(270, 138, 6, 2, '#3a3c42');
+  f.rect(232, 168, 26, 8, '#9a9ca2'); f.rect(234, 170, 8, 2, '#5a5c62'); f.rect(250, 170, 4, 2, '#e8463a');
+  f.rect(262, 172, 10, 5, '#3a3c42'); f.line(266, 172, 252, 176, '#2a2622');
+  // estanteria de consolas
+  [104, 132, 160].forEach(function (y) { f.rect(300, y, 76, 3, '#8a5a34'); });
+  f.rect(304, 94, 22, 10, '#f2efe8'); f.rect(306, 98, 10, 1, '#c0c0c8');                  // consola blanca
+  f.rect(330, 96, 18, 8, '#3a3c42'); f.rect(332, 99, 6, 1, '#5aa0ff');                       // consola negra
+  f.rect(352, 92, 12, 12, '#5a3a8a'); f.rect(354, 94, 8, 3, '#7a5aaa');                     // consola morada (cubo)
+  f.rect(304, 124, 10, 8, '#c8cad0'); f.rect(306, 125, 6, 3, '#6a8a4a');                    // portatiles
+  f.rect(318, 124, 12, 8, '#d8392b'); f.rect(320, 125, 8, 3, '#202020');
+  f.rect(334, 122, 14, 10, '#3f6fb0'); f.rect(336, 123, 10, 3, '#202020'); f.rect(336, 128, 10, 3, '#202020');   // la 3DS
+  f.rect(352, 120, 20, 12, '#e8e4da'); f.rect(354, 122, 6, 6, '#9a9a9a');
+  for (var x = 304; x < 372; x += 9) { f.rect(x, 148, 7, 12, ['#e8463a', '#3f8fe0', '#4fb34a', '#ffd23f', '#b98cff', '#f2efe8', '#ff9a3a', '#7ee0ff'][((x - 304) / 9) | 0]); f.rect(x, 148, 7, 2, '#2a2622'); }
+  // posteres
+  f.rect(222, 50, 34, 44, '#f2efe8'); f.rect(224, 52, 30, 40, '#1c2a52'); f.disc(239, 66, 7, '#ffd75e'); f.text(227, 80, 'GAME', '#e8463a'); f.text(227, 86, 'OVER', '#e8463a');
+  f.rect(266, 56, 26, 34, '#f2efe8'); f.rect(268, 58, 22, 30, '#8a3a32'); f.line(272, 84, 286, 62, '#c0c0c8'); f.rect(276, 76, 6, 2, '#d8c27a');
+  puertaCasa(f, 384, 30, '#9a6a3c', '#7e5430', { izq: true });
+  parquet(f, 0, W);
+  save(f, 'friki.png');
+}
+// ======================= LA CARTERA (vista de cerca) =======================
+// Cartera abierta: a la izquierda la tarjeta del banco, el billete de 5 y las monedas, y la
+// tarjeta sanitaria; a la derecha, en la ventanita de plastico, la Barik (capa aparte).
+function tarjeta(f, x, y, w, h, fondo) { f.rect(x + 1, y, w - 2, h, fondo); f.rect(x, y + 1, w, h - 2, fondo); }
+function cartera() {
+  var f = new FB(208, 120);
+  // cuero
+  f.rect(2, 4, 204, 112, '#6b3f22'); f.rect(0, 6, 208, 108, '#6b3f22'); f.rect(2, 4, 204, 2, '#8a5a32');
+  for (var x = 6; x < 202; x += 3) { f.px(x, 8, '#9a6a3c'); f.px(x, 111, '#9a6a3c'); }
+  for (var y = 8; y < 112; y += 3) { f.px(4, y, '#9a6a3c'); f.px(203, y, '#9a6a3c'); }
+  f.rect(102, 4, 4, 112, '#5a3420'); f.rect(103, 4, 1, 112, '#4a2a16');                   // pliegue
+  // tarjeta del banco (arriba)
+  tarjeta(f, 14, 12, 82, 52, '#1f4a7a'); f.rect(14, 22, 82, 2, '#d8b860');
+  f.rect(22, 30, 12, 9, '#d8c27a'); f.box(22, 30, 12, 9, '#a8924a'); f.rect(27, 30, 1, 9, '#a8924a');
+  f.text(22, 15, 'BANCO', '#e8eef8'); [0, 1, 2].forEach(function (k) { f.line(84 + k * 3, 15, 85 + k * 3, 18, '#e8eef8'); f.line(85 + k * 3, 18, 84 + k * 3, 21, '#e8eef8'); });   // simbolo de pago sin contacto
+  // bolsillo
+  f.rect(10, 34, 90, 78, '#7a4a28'); f.rect(10, 34, 90, 1, '#9a6a3c'); for (var x = 12; x < 98; x += 3) f.px(x, 36, '#a8784a');
+  // billete de 5 y monedas (en medio)
+  f.rect(12, 38, 86, 30, '#9aa098'); f.rect(12, 38, 86, 1, '#c0c6be'); f.rect(16, 42, 20, 22, '#b4bab0'); f.text(18, 46, '5', '#5a6a5a', 3);
+  f.rect(42, 44, 30, 2, '#7a827a'); f.rect(42, 50, 40, 1, '#7a827a'); f.rect(42, 54, 36, 1, '#7a827a'); f.text(82, 58, '5', '#5a6a5a');
+  [[40, 62, '#d8b860'], [52, 64, '#c0c0c8'], [64, 61, '#d8a040'], [74, 64, '#d8b860']].forEach(function (c) { f.disc(c[0], c[1], 5, c[2]); f.px(c[0] - 2, c[1] - 2, '#fff6d0'); f.disc(c[0], c[1], 2, '#a88a3a'); });
+  // otro bolsillo
+  f.rect(10, 70, 90, 42, '#7a4a28'); f.rect(10, 70, 90, 1, '#9a6a3c'); for (var x = 12; x < 98; x += 3) f.px(x, 72, '#a8784a');
+  // tarjeta sanitaria (abajo): blanca arriba, azul abajo, con el chip
+  tarjeta(f, 14, 74, 82, 38, '#f6f5f2'); f.rect(14, 92, 82, 20, '#2b2f8a');
+  f.rect(18, 78, 3, 9, '#2b2f8a'); f.rect(16, 81, 7, 3, '#2b2f8a'); f.disc(27, 82, 2, '#2b2f8a');
+  f.text(34, 79, 'TIS', '#2b2f8a'); f.rect(54, 80, 36, 1, '#8a8ec8'); f.rect(54, 84, 30, 1, '#8a8ec8');
+  f.rect(18, 90, 12, 9, '#c8cad0'); f.box(18, 90, 12, 9, '#8a8d93'); f.rect(23, 90, 1, 9, '#8a8d93');
+  f.text(40, 96, '01234567', '#f6f5f2'); f.rect(36, 104, 50, 1, '#8a8ec8');
+  // lado derecho: ventanita de plastico (vacia: la Barik va en otra capa)
+  f.rect(114, 18, 84, 80, '#7a4a28'); f.rect(118, 22, 76, 72, '#8a6a52'); mezcla(f, 118, 22, 76, 72, '#d8eef8', 0.25);
+  f.rect(118, 22, 76, 1, '#e8f4ff'); f.line(124, 30, 136, 22, '#e8f4ff'); f.line(124, 36, 142, 22, '#cfe4f0');
+  f.rect(114, 100, 84, 12, '#7a4a28'); f.rect(114, 100, 84, 1, '#9a6a3c');
+  save(f, 'cartera.png');
+  // la Barik (blanca con la huella en gris), 70x44
+  var b = new FB(70, 44);
+  tarjeta(b, 0, 0, 70, 44, '#f8f8f6'); b.rect(1, 43, 68, 1, '#cfcdc8');
+  for (var k = 0; k < 9; k++) {
+    var rx = 4 + k * 3, ry = 3 + k * 2.4;
+    for (var a = 0; a < 360; a += 4) { if ((a + k * 37) % 90 < 12) continue; var X = 48 + Math.cos(a * Math.PI / 180) * rx, Y = 22 + Math.sin(a * Math.PI / 180) * ry; if (X > 24 && X < 69 && Y > 0 && Y < 43) b.px(X, Y, k % 2 ? '#a8a8a8' : '#c4c4c4'); }
+  }
+  b.text(5, 6, 'BA', '#2a2622', 2); b.text(21, 6, 'RIK', '#e8463a', 2);
+  save(b, 'cartera-barik.png');
+}
+
 // ======================= ESTACION DE METRO =======================
 // Entrada (bajando de la calle), el tunel de acero con las pasarelas mecanicas y el
 // vestibulo con las canceladoras; al fondo, el arco que lleva a los andenes.
@@ -821,4 +1062,4 @@ function metro() {
 
 cocinaCielo(); cocina(); cocinaMesa(); calleCielo(); calleLejos(); calleMedio(); calle();
 sheet(HERMANASTRA, 'npc-hermanastra.png'); sheet(PADRE, 'npc-padre.png'); sheet(LOURDES, 'npc-lourdes.png');
-objetos(); ethanSentado(); metro();
+objetos(); ethanSentado(); metro(); cieloCasa(); pasillo(); habitacion(); friki(); cartera();

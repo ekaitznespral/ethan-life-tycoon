@@ -446,7 +446,7 @@
     if (state === 'talk') state = 'play';
     P.buf = 0; pressed = {}; writeSave(); refreshHud();
   }
-  function stopScript() { if (run) { run = null; dlg.hidden = true; $('dopts').innerHTML = ''; } $('phone').hidden = true; $('camp').hidden = true; chimeOn = false; stage.classList.remove('talking'); P.sit = null; cine(false); npcs.forEach(function (o) { o.mouth = false; }); }
+  function stopScript() { $('look').hidden = true; if (run) { run = null; dlg.hidden = true; $('dopts').innerHTML = ''; } $('phone').hidden = true; $('camp').hidden = true; chimeOn = false; stage.classList.remove('talking'); P.sit = null; cine(false); npcs.forEach(function (o) { o.mouth = false; }); }
   var API = {
     flag: GS.flag, has: GS.has,
     say: function (who, text) { return new Promise(function (res) { showLine(who, text, null, res); }); },
@@ -463,6 +463,7 @@
     complete: function (id) { GS.flag('mision:' + id, 'hecha'); questBanner('hecha', id); },
     toast: function (t) { toast(t); },
     sfx: function (k) { sfx(k); },
+    closeup: function (id) { var r = run; return new Promise(function (res) { if (r && (STORY.views || {})[id]) openLook(id, res); else res(null); }); },
     wait: function (sec) { var r = run; return new Promise(function (res) { if (r) r.waits.push({ t: sec, res: res }); else res(); }); },
     walkTo: function (x) { var r = run; return new Promise(function (res) { if (r) r.walk = { x: clampX(x), done: res }; else res(); }); },
     face: function (d) { P.dir = d < 0 ? -1 : 1; },
@@ -553,12 +554,49 @@
     else P.eatF = 0;
     if (run.line) lineStep(dt);
     if (run && run.phone) phoneStep(dt);
+    if (run && run.look) lookStep();
     if (run && run.fly) run.fly = run.fly.filter(function (f) {
       f.t += dt; if (f.t < f.d) return true;
       if (f.flag) GS.flag(f.flag, 1); sfx('ok'); npcs.forEach(function (o) { if (o.d.id === 'lourdes') o.mouth = false; }); f.res(); return false;
     });
     if (run && run.chime) chimeStep(dt);
     if (run && run.chew > 0) { run.chew -= dt; npcs.forEach(function (o, i) { o.mouth = run.chew > 0 && Math.sin(time * 26 + i * 2) > 0; }); P.eatF = run.chew > 0 && Math.sin(time * 22) > 0 ? 1 : 0; }
+  }
+
+  // ---------------- vista de cerca (STORY.views): una imagen con zonas que se pueden elegir ----------------
+  function openLook(id, res) {
+    var v = STORY.views[id], box = $('lki'), el = $('look');
+    var spots = (v.spots || []).filter(function (sp) { return avail(sp); });
+    run.look = { v: v, spots: spots, sel: 0, res: res, btn: [] };
+    $('lkt').textContent = v.title || '';
+    box.style.width = 'calc(var(--s) * ' + v.w + 'px)'; box.style.height = 'calc(var(--s) * ' + v.h + 'px)';
+    box.style.backgroundImage = 'url(' + v.src + ')'; box.innerHTML = '';
+    spots.forEach(function (sp, i) {
+      var b = document.createElement('button');
+      b.style.left = 'calc(var(--s) * ' + sp.x + 'px)'; b.style.top = 'calc(var(--s) * ' + sp.y + 'px)';
+      b.style.width = 'calc(var(--s) * ' + sp.w + 'px)'; b.style.height = 'calc(var(--s) * ' + sp.h + 'px)';
+      if (sp.src) b.style.backgroundImage = 'url(' + sp.src + ')';
+      b.setAttribute('aria-label', sp.label);
+      b.onpointerenter = function () { if (run && run.look) { run.look.sel = i; lookMark(); } };
+      b.onclick = function (e) { e.stopPropagation(); if (run && run.look) { run.look.sel = i; lookPick(); } };
+      box.appendChild(b); run.look.btn.push(b);
+    });
+    el.onclick = function (e) { if (e.target === el && run && run.look) lookClose(null); };
+    el.hidden = false; sfx('sel'); lookMark();
+  }
+  function lookMark() {
+    var L = run.look; L.btn.forEach(function (b, i) { b.classList.toggle('sel', i === L.sel); });
+    var sp = L.spots[L.sel]; $('lkl').textContent = sp ? sp.label : '';
+  }
+  function lookPick() { var L = run.look, sp = L.spots[L.sel]; sfx('ok'); lookClose(sp ? sp.id : null); }
+  function lookClose(val) { var L = run.look; run.look = null; $('look').hidden = true; $('lki').innerHTML = ''; L.res(val); }
+  function lookStep() {
+    var L = run.look, n = L.spots.length;
+    if (pressed.menu) { lookClose(null); return; }
+    if (!n) { if (pressed.act || pressed.ok) lookClose(null); return; }
+    if (pressed.left || pressed.jump) { L.sel = (L.sel + n - 1) % n; lookMark(); sfx('sel'); }
+    if (pressed.right || pressed.down) { L.sel = (L.sel + 1) % n; lookMark(); sfx('sel'); }
+    if (pressed.act || pressed.ok) lookPick();
   }
 
   // ---------------- cine, avisos, objetivos e inventario ----------------

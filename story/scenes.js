@@ -52,7 +52,21 @@ window.STORY = {
     uvas: { name: 'Uvas', icon: 3 },
     lacasitos: { name: 'Lacasitos', icon: 4 },
     nuggets: { name: 'Nuggets del Burger King', icon: 5 },
-    barik: { name: 'Barik', icon: 6, desc: 'La tarjeta del metro. Sin ella no pasas las canceladoras.' }
+    barik: { name: 'Barik', icon: 6, desc: 'La tarjeta del metro. Estaba en la cartera, en el escritorio.' }
+  },
+
+  // Vistas de cerca: s.closeup('id') abre la imagen y devuelve el id de la zona elegida (o null).
+  // spots: zonas en pixeles de la imagen; src = imagen propia de esa zona (desaparece si su when deja de cumplirse).
+  views: {
+    cartera: {
+      title: 'Cartera de Ethan', src: 'sprites/story/cartera.png', w: 208, h: 120,
+      spots: [
+        { id: 'banco', label: 'Tarjeta del banco', x: 14, y: 12, w: 82, h: 22 },
+        { id: 'dinero', label: 'Billete de 5 € y unas monedas', x: 12, y: 38, w: 86, h: 30 },
+        { id: 'sanidad', label: 'Tarjeta sanitaria', x: 14, y: 74, w: 82, h: 38 },
+        { id: 'barik', label: 'Barik', x: 121, y: 36, w: 70, h: 44, src: 'sprites/story/cartera-barik.png', when: function (g) { return !g.flag('barik_cogida'); } }
+      ]
+    }
   },
 
   // Reloj de la partida: aparece despues de la cena. rate = segundos reales por minuto de juego
@@ -195,11 +209,21 @@ window.STORY = {
       await s.fade(0, 700);
       await s.cine(false);
     },
-    // la Barik estaba en la encimera, al lado de la nevera
-    barik: async function (s) {
-      s.flag('barik_cogida', 1); s.give('barik');
-      await s.talk('barik.cogida');
-    }
+    // la cartera, en el escritorio del cuarto de Ethan: ahi esta la Barik (solo la cogen los curiosos)
+    cartera: async function (s) {
+      for (;;) {
+        var c = await s.closeup('cartera');
+        if (!c) return;
+        if (c === 'barik') { s.flag('barik_cogida', 1); s.give('barik'); await s.talk('cartera.barik'); return; }
+        await s.talk('cartera.' + c);
+      }
+    },
+    pc: async function (s) { await s.talk('habitacion.pc'); },
+    bano: async function (s) { await s.talk('pasillo.bano'); },
+    padres: async function (s) { await s.talk('pasillo.padres'); },
+    figuritas: async function (s) { await s.talk('friki.figuritas'); },
+    consolas: async function (s) { await s.talk('friki.consolas'); },
+    tele_retro: async function (s) { await s.talk('friki.tele'); }
   },
 
   // Puntos de la historia para el panel de desarrollador (tecla º o F1).
@@ -218,8 +242,10 @@ window.STORY = {
     { id: 'metro', name: 'Misión del metro, en la calle (00:40)', scene: 'calle', spawn: 'portal', clock: '00:40', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
     { id: 'metro_justo', name: 'Metro: a punto de perderlo (01:13)', scene: 'calle', spawn: 'portal', clock: '01:13', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
     { id: 'estacion', name: 'Metro: bajando a la estación (00:46)', scene: 'metro', spawn: 'entrada', clock: '00:46', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
-    { id: 'sin_barik', name: 'Sin la Barik: de vuelta a casa (00:52)', scene: 'cocina', spawn: 'puerta', clock: '00:52', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1 } },
+    { id: 'sin_barik', name: 'Sin la Barik: de vuelta a casa (00:52)', scene: 'pasillo', spawn: 'portal', clock: '00:52', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1 } },
     { id: 'con_barik', name: 'Con la Barik, saliendo del portal (00:56)', scene: 'calle', spawn: 'portal', clock: '00:56', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1, barik_cogida: 1 }, inv: ['barik'] },
+    { id: 'casa', name: 'Pasillo de casa (escena de prueba)', scene: 'pasillo', spawn: 'cocina' },
+    { id: 'cuarto', name: 'Cuarto de Ethan (escena de prueba)', scene: 'habitacion', spawn: 'puerta' },
     { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' },
     { id: 'metro_prueba', name: 'Estación de metro (escena de prueba)', scene: 'metro', spawn: 'entrada' }
   ]
@@ -242,8 +268,7 @@ window.STORY_SCENES = {
     objects: [
       { id: 'nevera', name: 'Nevera', x: 44, reach: 22, py: 124, label: 'Abrir la nevera', run: 'nevera', when: function (g) { return g.flag('mision:cena'); } },
       { id: 'silla', name: 'Silla de Ethan', x: 358, reach: 12, py: 150, label: 'Sentarse a cenar', run: 'silla', when: function (g) { return g.flag('mision:cena') === 'activa'; } },
-      { id: 'vitro', name: 'Vitro', x: 202, reach: 14, py: 156, label: 'Mirar la vitro', run: 'vitro' },
-      { id: 'barik', name: 'Barik', x: 84, reach: 16, py: 146, label: 'Coger la Barik', run: 'barik', when: function (g) { return g.flag('barik_olvidada') && !g.flag('barik_cogida'); } }
+      { id: 'vitro', name: 'Vitro', x: 202, reach: 14, py: 156, label: 'Mirar la vitro', run: 'vitro' }
     ],
     props: [
       { item: 'jamon', x: 510, y: 178, when: function (g) { return g.flag('mesa:jamon'); } },
@@ -252,8 +277,7 @@ window.STORY_SCENES = {
       { item: 'lacasitos', x: 412, y: 178, when: function (g) { return g.flag('mesa:lacasitos'); } },
       { item: 'nuggets', x: 381, y: 178, when: function (g) { return g.flag('mesa:nuggets'); } },
       { item: 'langostinos', x: 428, y: 178, when: function (g) { return g.flag('mesa:langostinos'); } },
-      { item: 'tortilla', x: 457, y: 178, when: function (g) { return g.flag('mesa:tortilla'); } },
-      { item: 'barik', x: 84, y: 166, when: function (g) { return !g.flag('barik_cogida'); } }   // toda la noche ahi, en la encimera
+      { item: 'tortilla', x: 457, y: 178, when: function (g) { return g.flag('mesa:tortilla'); } }
     ],
     platforms: [
       { x: 24, y: 128, w: 40 },   // nevera
@@ -262,7 +286,7 @@ window.STORY_SCENES = {
       { x: 372, y: 177, w: 144 }  // mesa
     ],
     spawns: { inicio: { x: 150, dir: 1 }, puerta: { x: 606, dir: -1 }, mesa: { x: 520, dir: -1 }, nevera: { x: 76, dir: 1 }, silla: { x: 340, dir: 1 } },
-    exits: [{ x: 588, w: 42, to: 'calle', spawn: 'portal', label: 'Salir', when: function (g) { return g.flag('ano_nuevo'); }, locked: 'puerta_cerrada' }],
+    exits: [{ x: 588, w: 42, to: 'pasillo', spawn: 'cocina', label: 'Salir al pasillo', when: function (g) { return g.flag('ano_nuevo'); }, locked: 'puerta_cerrada' }],
     fx: [
       { type: 'fireworks', z: 0, x0: 40, x1: 340, y0: 58, y1: 100, rate: 1.1, when: function (g) { return g.flag('ano_nuevo'); }, light: { x: 279, y: 86, r: 240, a: 0.09 } },
       { type: 'tv', x: 539, y: 85, w: 40, h: 25 },
@@ -294,7 +318,7 @@ window.STORY_SCENES = {
     ],
     spawns: { portal: { x: 276, dir: 1 }, metro: { x: 1470, dir: -1 } },
     exits: [
-      { x: 252, w: 48, to: 'cocina', spawn: 'puerta', label: 'Entrar al portal' },
+      { x: 252, w: 48, to: 'pasillo', spawn: 'portal', label: 'Entrar al portal' },
       { x: 1500, w: 60, to: 'metro', spawn: 'entrada', label: 'Bajar al metro', when: function (g) { return g.flag('mision:metro') === 'activa'; } }
     ],
     fx: [
@@ -339,6 +363,83 @@ window.STORY_SCENES = {
       { type: 'glow', x: 1047, y: 150, r: 60, c: '255,215,190', a: 0.22 },
       { type: 'glow', x: 860, y: 151, r: 14, c: '160,210,255', a: 0.25 },
       { type: 'glow', x: 900, y: 151, r: 14, c: '160,210,255', a: 0.25 }
+    ]
+  },
+
+  // La casa: el pasillo va de derecha (cocina) a izquierda (salon)
+  pasillo: {
+    name: 'Pasillo', sub: 'Casa de Ethan',
+    w: 1100, floor: 196,
+    layers: [
+      { src: 'sprites/story/casa-cielo.png', f: 0.3 },
+      { src: 'sprites/story/pasillo.png', f: 1 }
+    ],
+    platforms: [
+      { x: 48, y: 160, w: 64 },    // mesa del salon
+      { x: 176, y: 168, w: 84 },   // sofa
+      { x: 340, y: 176, w: 56 },   // mueble de la tele
+      { x: 856, y: 160, w: 40 }    // radiador
+    ],
+    spawns: { cocina: { x: 1040, dir: -1 }, portal: { x: 492, dir: 1 }, ethan: { x: 692, dir: -1 }, friki: { x: 584, dir: -1 } },
+    exits: [
+      { x: 1046, w: 40, to: 'cocina', spawn: 'puerta', label: 'Entrar a la cocina' },
+      { x: 470, w: 44, to: 'calle', spawn: 'portal', label: 'Salir a la calle' },
+      { x: 674, w: 36, to: 'habitacion', spawn: 'puerta', label: 'Entrar a tu cuarto' },
+      { x: 566, w: 36, to: 'friki', spawn: 'puerta', label: 'Entrar a la sala de Aita' }
+    ],
+    objects: [
+      { id: 'bano', name: 'Baño', x: 943, reach: 14, py: 128, label: 'Entrar al baño', run: 'bano' },
+      { id: 'padres', name: 'Habitación de Aita y Lourdes', x: 816, reach: 16, py: 128, label: 'Habitación de Aita y Lourdes', run: 'padres' }
+    ],
+    fx: [
+      { type: 'fireworks', z: 0, x0: 30, x1: 270, y0: 40, y1: 90, rate: 1.2, when: function (g) { return g.flag('ano_nuevo'); }, light: { x: 150, y: 90, r: 160, a: 0.07 } },
+      { type: 'glow', x: 600, y: 10, r: 50, c: '255,240,200', a: 0.07 },
+      { type: 'glow', x: 780, y: 10, r: 50, c: '255,240,200', a: 0.07 },
+      { type: 'glow', x: 980, y: 10, r: 50, c: '255,240,200', a: 0.07 },
+      { type: 'glow', x: 1066, y: 165, r: 50, c: '255,215,130', a: 0.25 },
+      { type: 'glow', x: 373, y: 150, r: 34, c: '120,160,255', a: 0.18, flicker: 1 },
+      { type: 'glow', x: 151, y: 103, r: 22, c: '255,235,190', a: 0.1 }
+    ]
+  },
+
+  habitacion: {
+    name: 'Cuarto de Ethan', sub: 'Casa de Ethan',
+    w: 420, floor: 196,
+    layers: [
+      { src: 'sprites/story/casa-cielo.png', f: 0.3 },
+      { src: 'sprites/story/habitacion.png', f: 1 }
+    ],
+    platforms: [{ x: 20, y: 166, w: 92 }, { x: 276, y: 158, w: 92 }],   // cama y escritorio
+    spawns: { puerta: { x: 386, dir: -1 } },
+    exits: [{ x: 380, w: 38, to: 'pasillo', spawn: 'ethan', label: 'Salir al pasillo' }],
+    objects: [
+      { id: 'cartera', name: 'Cartera', x: 290, reach: 14, py: 138, label: 'Mirar la cartera', run: 'cartera' },
+      { id: 'pc', name: 'PC', x: 323, reach: 12, py: 112, label: 'Mirar el PC', run: 'pc' }
+    ],
+    fx: [
+      { type: 'fireworks', z: 0, x0: 190, x1: 260, y0: 40, y1: 90, rate: 1.2, when: function (g) { return g.flag('ano_nuevo'); }, light: { x: 224, y: 90, r: 160, a: 0.07 } },
+      { type: 'glow', x: 323, y: 140, r: 36, c: '120,170,255', a: 0.2, flicker: 1 },
+      { type: 'glow', x: 200, y: 10, r: 70, c: '255,240,200', a: 0.12 }
+    ]
+  },
+
+  friki: {
+    name: 'Sala de Aita', sub: 'Consolas y figuritas',
+    w: 420, floor: 196,
+    layers: [{ src: 'sprites/story/friki.png', f: 1 }],
+    platforms: [{ x: 222, y: 160, w: 70 }],
+    spawns: { puerta: { x: 386, dir: -1 } },
+    exits: [{ x: 380, w: 38, to: 'pasillo', spawn: 'friki', label: 'Salir al pasillo' }],
+    objects: [
+      { id: 'figuritas', name: 'Figuritas', x: 80, reach: 40, py: 70, label: 'Mirar las figuritas', run: 'figuritas' },
+      { id: 'tele_retro', name: 'Tele', x: 254, reach: 18, py: 110, label: 'Mirar la tele', run: 'tele_retro' },
+      { id: 'consolas', name: 'Consolas', x: 338, reach: 22, py: 84, label: 'Mirar las consolas', run: 'consolas' }
+    ],
+    fx: [
+      { type: 'glow', x: 254, y: 140, r: 40, c: '90,150,230', a: 0.22, flicker: 1 },
+      { type: 'glow', x: 185, y: 100, r: 40, c: '255,240,200', a: 0.14 },
+      { type: 'glow', x: 100, y: 12, r: 70, c: '255,90,210', a: 0.1 },
+      { type: 'glow', x: 300, y: 12, r: 70, c: '120,220,255', a: 0.1 }
     ]
   }
 };

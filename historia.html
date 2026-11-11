@@ -80,6 +80,16 @@ body{display:flex;align-items:center;justify-content:center;font-family:var(--px
 #dopts button{font-family:var(--px);font-size:calc(var(--s)*4.2px);background:#2b2620;color:#f3eedb;border:calc(var(--s)*.7px) solid #f3eedb66;padding:calc(var(--s)*2px) calc(var(--s)*3.5px);cursor:pointer}
 #dopts button.sel{background:#ffd75e;color:#1d1a17;border-color:#ffd75e}
 #dopts button.sel::before{content:'▶ '}
+/* vista de cerca (p. ej. la cartera) */
+#look{background:#000c;z-index:4}
+#look .lkb{display:flex;flex-direction:column;align-items:center;gap:calc(var(--s)*4px)}
+#look .lkb>b{font-weight:400;color:#ffd75e;font-size:calc(var(--s)*6px);text-shadow:0 calc(var(--s)*1px) 0 #000}
+#lki{position:relative;background-repeat:no-repeat;background-size:100% 100%;image-rendering:pixelated;box-shadow:0 0 0 calc(var(--s)*1px) #000,0 calc(var(--s)*3px) calc(var(--s)*6px) #000c;animation:lkin .3s cubic-bezier(.2,1.3,.4,1)}
+#lki button{position:absolute;padding:0;margin:0;border:0;background:transparent no-repeat;background-size:100% 100%;image-rendering:pixelated;cursor:pointer;outline:none;transition:transform .12s,filter .12s}
+#lki button.sel{outline:calc(var(--s)*1px) solid #ffd75e;outline-offset:calc(var(--s)*.5px);filter:brightness(1.12) drop-shadow(0 0 calc(var(--s)*3px) #ffd75e88);transform:translateY(calc(var(--s)*-1px));z-index:1}
+#lkl{margin:0;min-height:1.6em;font-size:calc(var(--s)*5px);color:#f3eedb}
+#look small{font-size:calc(var(--s)*3.4px);color:#9a9488}
+@keyframes lkin{from{transform:scale(.9);opacity:0}}
 /* inventario */
 #inv{background:#000a}
 .ivb{width:calc(var(--s)*170px);max-width:92%;background:#1d1a17;border:calc(var(--s)*1px) solid #f3eedb;padding:calc(var(--s)*5px);text-align:left}
@@ -270,6 +280,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
   <div id="pht"></div>
   <div id="phb"><kbd>E</kbd> Guardar el móvil</div>
  </div></div></div>
+ <div id="look" class="ov" hidden><div class="lkb"><b id="lkt"></b><div id="lki"></div><p id="lkl"></p><small>A/D o clic: elegir · E: coger · Esc: cerrar</small></div></div>
  <div id="inv" class="ov" hidden><div class="ivb"><div class="dh"><b>Inventario</b><button id="invx" aria-label="Cerrar">✕</button></div><div id="invl"></div></div></div>
  <div id="touch" aria-hidden="true">
   <button data-k="left">◀</button><button data-k="right">▶</button>
@@ -329,7 +340,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
 </div>
 <div id="rot">Gira el móvil<br>para jugar en horizontal</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="story/dialogos.js?v=20261111a"></script>
-<script src="story/scenes.js?v=20261111a"></script>
-<script src="story/engine.js?v=20261111a"></script>
+<script src="story/dialogos.js?v=20261111b"></script>
+<script src="story/scenes.js?v=20261111b"></script>
+<script src="story/engine.js?v=20261111b"></script>
 </body></html>
