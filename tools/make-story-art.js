@@ -358,7 +358,7 @@ var LOURDES = {
 // ======================= OBJETOS (iconos 16x16) =======================
 // 0 tortilla de Lourdes · 1 jamon · 2 langostinos · 3 copa de uvas · 4 tubo de lacasitos · 5 nuggets
 function objetos() {
-  var f = new FB(96, 16);
+  var f = new FB(112, 16);
   // tortilla en su plato
   f.rect(1, 12, 14, 2, '#f6f4ee'); f.rect(2, 14, 12, 1, '#cfccc3');
   f.rect(2, 6, 12, 6, '#f0c34a'); f.rect(3, 5, 10, 1, '#d99a2e'); f.rect(2, 6, 12, 1, '#d99a2e'); f.rect(2, 11, 12, 1, '#c98a28');
@@ -389,6 +389,10 @@ function objetos() {
   o = 80;
   f.rect(o + 2, 7, 12, 8, '#d8392b'); f.rect(o + 2, 7, 12, 1, '#ff6a50'); f.rect(o + 3, 10, 10, 2, '#f2b632');
   f.rect(o + 3, 4, 4, 3, '#d99a3e'); f.rect(o + 7, 3, 4, 4, '#c98a30'); f.rect(o + 10, 5, 3, 2, '#e0a848'); f.px(o + 4, 5, '#f0c070'); f.px(o + 8, 4, '#e8b860');
+  // la Barik: tarjeta de transporte verde azulada (sin logotipo)
+  o = 96;
+  f.rect(o + 1, 4, 14, 9, '#1f8f86'); f.rect(o + 1, 4, 14, 1, '#4cc2b4'); f.rect(o + 1, 12, 14, 1, '#14665f');
+  f.rect(o + 2, 6, 7, 2, '#f4f1e8'); f.rect(o + 2, 9, 4, 1, '#bfe9e2'); f.rect(o + 10, 7, 3, 3, '#e8c45a'); f.px(o + 11, 8, '#b8922e');
   outline(f);
   save(f, 'objetos.png');
 }
@@ -714,6 +718,107 @@ function calle() {
   save(f, 'calle.png');
 }
 
+// ======================= ESTACION DE METRO =======================
+// Entrada (bajando de la calle), el tunel de acero con las pasarelas mecanicas y el
+// vestibulo con las canceladoras; al fondo, el arco que lleva a los andenes.
+// Las pasarelas (peldanos y pasamanos que se mueven) y las portillas las pinta el motor encima.
+var METRO_W = 1120;
+function mezcla(f, x, y, w, h, c, k) { // tinte semitransparente sobre lo ya pintado
+  var t = hex(c);
+  for (var j = 0; j < h; j++) for (var i = 0; i < w; i++) {
+    var X = x + i, Y = y + j; if (X < 0 || Y < 0 || X >= f.w || Y >= f.h) continue;
+    var n = (Y * f.w + X) * 4; for (var q = 0; q < 3; q++) f.d[n + q] = Math.round(f.d[n + q] * (1 - k) + t[q] * k); f.d[n + 3] = 255;
+  }
+}
+function metro() {
+  var f = new FB(METRO_W, 216), r = rng(77), W = METRO_W;
+  // --- boveda de acero (todo el escenario) ---
+  f.vgrad(0, 0, W, 196, ['#b98a84', '#c8aaa2', '#cbc3bd', '#bdb7b2', '#a7a29e']);
+  for (var x = 0; x < W; x += 2) { f.px(x, 0, '#8a6d68'); }
+  [44, 92, 132].forEach(function (y) { f.rect(0, y, W, 1, '#a39b96'); f.rect(0, y + 1, W, 1, '#d6d0cb'); });   // juntas de los paneles
+  for (var x = 18; x < W; x += 56) { f.rect(x, 0, 2, 196, '#8e8782'); f.rect(x + 2, 0, 1, 196, '#ddd6d0'); }   // costillas
+  // luces del techo: dos tiras de fluorescentes
+  f.emit = true;
+  for (var x = 6; x < W; x += 40) { f.rect(x, 10, 32, 2, '#fff6ea'); f.rect(x + 2, 12, 28, 1, '#ffd9c8'); }
+  for (var x = 26; x < W; x += 40) { f.rect(x, 30, 26, 1, '#fff2e2'); }
+  f.emit = false;
+  // --- suelo general (granito claro) ---
+  f.rect(0, 196, W, 20, '#cfc6b8'); f.rect(0, 196, W, 1, '#e8e0d2');
+  for (var x = 0; x < W; x += 16) f.rect(x, 197, 1, 19, '#bcb3a5');
+  f.rect(0, 206, W, 1, '#bcb3a5');
+
+  // --- entrada: escaleras mecanicas que suben a la calle (0-140) ---
+  f.rect(0, 40, 140, 156, '#9e9590');
+  f.rect(4, 44, 132, 60, '#1a2340'); f.vgrad(4, 44, 132, 60, ['#121a33', '#24305a']);    // la noche, arriba del todo
+  f.emit = true; f.rect(4, 44, 132, 2, '#ffe3b0'); f.emit = false;
+  for (var i = 0; i < 100; i++) {                              // escalera mecanica en diagonal
+    var x = 128 - i, y = 196 - i;
+    f.rect(x - 22, y, 22, 1, i % 4 === 0 ? '#5d6066' : '#7a7d83');
+    f.px(x, y, '#16171a'); f.px(x + 1, y, '#16171a'); f.px(x - 23, y - 8, '#16171a'); f.px(x - 22, y - 8, '#16171a');
+  }
+  for (var i = 0; i < 100; i += 3) mezcla(f, 104 - i - 22, 186 - i, 24, 10, '#bfe6ff', 0.12);
+  // panel de informacion
+  f.rect(150, 120, 26, 40, '#3a3d44'); f.rect(152, 122, 22, 26, '#f0ece2'); f.rect(154, 125, 18, 1, '#e02a32'); f.rect(154, 129, 14, 1, '#888'); f.rect(154, 132, 16, 1, '#888'); f.rect(154, 135, 10, 1, '#888');
+  f.rect(158, 160, 10, 36, '#8a8d93');
+
+  // --- tunel de las pasarelas (190-780) ---
+  var T0 = 190, T1 = 780;
+  // pasarela del fondo (la que va en sentido contrario): faldon, cristal y pasamanos
+  f.rect(T0, 172, T1 - T0, 12, '#9da0a6'); f.rect(T0, 172, T1 - T0, 1, '#c9ccd2'); f.rect(T0, 183, T1 - T0, 1, '#6e7177');
+  f.rect(T0, 150, T1 - T0, 2, '#16171a');
+  mezcla(f, T0, 152, T1 - T0, 18, '#bfe6ff', 0.18);
+  for (var x = T0; x < T1; x += 28) f.rect(x, 152, 1, 18, '#e8f4ff');
+  // barandilla trasera de la pasarela de Ethan
+  f.rect(T0, 184, T1 - T0, 12, '#aeb1b7'); f.rect(T0, 184, T1 - T0, 1, '#d4d7dc');
+  mezcla(f, T0, 170, T1 - T0, 14, '#bfe6ff', 0.14);
+  for (var x = T0 + 10; x < T1; x += 32) f.rect(x, 170, 1, 14, '#eef7ff');
+  // faldon de acero de la pasarela de Ethan (debajo de los peldanos)
+  f.rect(T0 - 6, 199, T1 - T0 + 12, 17, '#8e9198'); f.rect(T0 - 6, 199, T1 - T0 + 12, 1, '#c4c7cc');
+  for (var x = T0; x < T1; x += 24) f.rect(x, 202, 12, 1, '#a8abb1');
+  // peines y postes de entrada/salida, con la luz roja y la flecha azul
+  [T0 - 14, T1 + 4].forEach(function (x, k) {
+    f.rect(x, 160, 8, 36, '#c8cbd0'); f.rect(x, 160, 1, 36, '#eceef2'); f.rect(x + 7, 160, 1, 36, '#8d9096');
+    f.rect(x, 158, 8, 2, '#16171a');
+    f.emit = true; f.disc(x + 4, 170, 2, k ? '#e8463a' : '#3f8fe0'); f.emit = false;
+    f.rect(x + 2, 184, 4, 4, '#e8463a');
+  });
+  // cartel colgado: CAMINO TXIKITO BIDEA
+  [330, 420].forEach(function (x) { f.rect(x, 12, 1, 40, '#6e6a66'); });
+  f.rect(316, 52, 120, 13, '#d81e26'); f.rect(316, 52, 120, 1, '#f04a4f'); f.rect(316, 64, 120, 1, '#9c1218');
+  f.emit = true;
+  f.rect(322, 55, 1, 7, '#ffffff'); f.px(321, 56, '#ffffff'); f.px(323, 56, '#ffffff'); f.px(320, 57, '#ffffff'); f.px(324, 57, '#ffffff');
+  f.text(330, 56, 'CAMINO TXIKITO BIDEA', '#ffffff');
+  f.emit = false;
+
+  // --- vestibulo de las canceladoras (800-1120) ---
+  var V = 800;
+  f.rect(V - 4, 40, 4, 156, '#8e8782');
+  f.vgrad(V, 40, W - V, 156, ['#c2bbb6', '#b8b1ac', '#a49e99']);
+  for (var x = V + 6; x < W; x += 8) f.rect(x, 64, 1, 132, '#ada69f');               // paneles de acero acanalado
+  f.rect(V, 64, W - V, 1, '#8e8782'); f.rect(V, 150, W - V, 1, '#8e8782');
+  // arco del fondo que lleva a los andenes, iluminado
+  var AX = 1010, AW = 74;
+  for (var y = 90; y < 196; y++) {
+    var dy = Math.max(0, 128 - y), half = Math.round(Math.sqrt(Math.max(0, 37 * 37 - dy * dy * 0.9)));
+    f.emit = true; f.rect(AX + 37 - half, y, half * 2, 1, y < 120 ? '#f2d6c6' : '#e6d2c0'); f.emit = false;
+    f.px(AX + 37 - half - 1, y, '#7d7671'); f.px(AX + 37 + half, y, '#7d7671');
+  }
+  f.emit = true;
+  for (var y = 100; y < 196; y += 9) f.rect(AX + 24, y, 26, 1, '#d9b9aa');             // costillas del tunel de dentro
+  f.rect(AX + 30, 150, 14, 46, '#cbb6a4'); f.rect(AX + 33, 160, 8, 36, '#b9a290');      // escaleras al anden, al fondo
+  f.emit = false;
+  // canceladoras: dos cabinas de acero con pantalla y la etiqueta naranja; las portillas, el motor
+  [852, 892].forEach(function (x) {
+    f.rect(x, 154, 16, 42, '#a8abb1'); f.rect(x, 154, 16, 1, '#e2e4e8'); f.rect(x, 154, 1, 42, '#d0d3d8'); f.rect(x + 15, 154, 1, 42, '#7e8187');
+    f.rect(x + 2, 147, 12, 8, '#4a4e56'); f.emit = true; f.rect(x + 3, 148, 10, 6, '#9fd4ff'); f.rect(x + 4, 149, 6, 1, '#ffffff'); f.emit = false;
+    f.emit = true; f.rect(x + 3, 162, 10, 7, '#f06a2a'); f.rect(x + 5, 164, 2, 3, '#ffffff'); f.rect(x + 7, 165, 4, 1, '#ffffff'); f.emit = false;
+    f.rect(x + 4, 174, 8, 5, '#2a2c30'); f.emit = true; f.px(x + 7, 176, '#4cff7a'); f.emit = false;
+    f.rect(x + 3, 186, 10, 4, '#e8463a');
+  });
+  f.rect(866, 194, 28, 2, '#8d9096');                                                     // carril de las portillas
+  save(f, 'metro.png');
+}
+
 cocinaCielo(); cocina(); cocinaMesa(); calleCielo(); calleLejos(); calleMedio(); calle();
 sheet(HERMANASTRA, 'npc-hermanastra.png'); sheet(PADRE, 'npc-padre.png'); sheet(LOURDES, 'npc-lourdes.png');
-objetos(); ethanSentado();
+objetos(); ethanSentado(); metro();

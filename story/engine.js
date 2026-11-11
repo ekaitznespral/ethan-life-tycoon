@@ -49,6 +49,9 @@
     var up = function () { keys[k] = false; };
     b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('lostpointercapture', up);
   });
+  // tactil: boton de correr que se queda puesto (no hay Mayus)
+  var trun = $('trun'), touchRun = false;
+  if (trun) trun.addEventListener('pointerdown', function (e) { e.preventDefault(); touchRun = !touchRun; trun.classList.toggle('on', touchRun); });
   if (matchMedia('(pointer:coarse)').matches) document.body.classList.add('touch');
 
   // ---------------- imagenes ----------------
@@ -459,6 +462,7 @@
     mission: function (id) { if (GS.flag('mision:' + id)) return; GS.flag('mision:' + id, 'activa'); questBanner('nueva', id); },
     complete: function (id) { GS.flag('mision:' + id, 'hecha'); questBanner('hecha', id); },
     toast: function (t) { toast(t); },
+    sfx: function (k) { sfx(k); },
     wait: function (sec) { var r = run; return new Promise(function (res) { if (r) r.waits.push({ t: sec, res: res }); else res(); }); },
     walkTo: function (x) { var r = run; return new Promise(function (res) { if (r) r.walk = { x: clampX(x), done: res }; else res(); }); },
     face: function (d) { P.dir = d < 0 ? -1 : 1; },
@@ -595,7 +599,7 @@
       if (game.flags['mision:' + id] !== 'activa') return;
       var m = MIS[id];
       h += '<div class="mt ' + (m.type === 'secundaria' ? 'side' : 'main') + '"><i></i>' + esc(m.name) + '</div>';
-      (m.steps || []).forEach(function (st) { h += '<div class="ms' + (avail({ when: st.done }) ? ' ok' : '') + '"><i></i>' + esc(st.text) + '</div>'; });
+      (m.steps || []).forEach(function (st) { if (st.when && !avail(st)) return; h += '<div class="ms' + (avail({ when: st.done }) ? ' ok' : '') + '"><i></i>' + esc(st.text) + '</div>'; });
       (m.extra || []).forEach(function (st) { h += '<div class="ms ex' + (avail({ when: st.done }) ? ' ok' : '') + '"><i></i>' + esc(st.text) + '</div>'; });
     });
     if (h === hudSig) return; hudSig = h;
@@ -639,6 +643,7 @@
         c.appendChild(t); c.appendChild(k);
         if (m.desc) { var d = document.createElement('p'); d.textContent = m.desc; c.appendChild(d); }
         (m.steps || []).concat(m.extra || []).forEach(function (st, i) {
+          if (st.when && !avail(st)) return;
           var ok = g[0] === 'hecha' && i < (m.steps || []).length || avail({ when: st.done });
           var r = document.createElement('div'); r.className = 'ms' + (ok ? ' ok' : '') + (i >= (m.steps || []).length ? ' ex' : '');
           r.innerHTML = '<i></i>'; r.appendChild(document.createTextNode(st.text)); c.appendChild(r);
@@ -657,7 +662,8 @@
   function fmt(v) { v = Math.floor(v) % 1440; return ('0' + Math.floor(v / 60)).slice(-2) + ':' + ('0' + (v % 60)).slice(-2); }
   function clockStep(dt) {
     if (!game || game.clock == null || state !== 'play') return;
-    game.clock += dt / (CLK.rate || 1.5);
+    var rt = typeof CLK.rate === 'function' ? CLK.rate(GS) : CLK.rate;
+    game.clock += dt / (rt || 1.5);
     (CLK.events || []).forEach(function (ev) {
       if (state !== 'play' || game.flags['hora:' + ev.id] || game.clock < toMin(ev.at) || !avail(ev)) return;
       game.flags['hora:' + ev.id] = 1; runScript(ev.run);
@@ -782,6 +788,9 @@
     hecha: function () { [392, 523.25, 659.25].forEach(function (f, i) { bell(f, i * 0.1, 0.5, 0.12); }); [523.25, 659.25, 783.99, 1046.5].forEach(function (f) { bell(f, 0.38, 1.7, 0.08); }); tn(130.81, 0.38, 1.9, 'sine', 0.12); },
     objeto: function () { tn(880, 0, 0.12, 'triangle', 0.1, 1320); tn(1760, 0.09, 0.25, 'sine', 0.06); },
     sel: function () { tn(660, 0, 0.05, 'triangle', 0.05); },
+    bip: function () { tn(1568, 0, 0.12, 'square', 0.05); tn(2093, 0.13, 0.16, 'square', 0.05); },
+    error: function () { tn(220, 0, 0.18, 'square', 0.06); tn(208, 0.22, 0.3, 'square', 0.06); },
+    portillas: function () { tn(140, 0, 0.25, 'sawtooth', 0.03, 90); },
     ok: function () { tn(880, 0, 0.07, 'triangle', 0.07); tn(1320, 0.05, 0.09, 'triangle', 0.05); }
   };
   function sfx(k) { if (SFX[k] && !muted) SFX[k](); }
@@ -1023,7 +1032,7 @@
   // ---------------- fisica de Ethan ----------------
   var WALK = 82, RUN = 132, ACC = 950, AIR = 620, FRIC = 1100, G = 920, FALLG = 1.5, JUMP = 312, CUT = 190, MAXF = 480, JBUF = 0.15;
   function step(dt) {
-    var ax = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), max = keys.run ? RUN : WALK;
+    var ax = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), max = keys.run || touchRun ? RUN : WALK;
     if (ax) {
       if (P.vx * ax < 0) P.vx += ax * FRIC * dt;                         // giro rapido
       P.vx += ax * (P.ground ? ACC : AIR) * dt;
@@ -1042,6 +1051,12 @@
 
     P.x += P.vx * dt;
     var hw = P.w / 2;
+    if (P.ground && !P.onPlat) (scene.conveyors || []).forEach(function (c) {   // pasarelas mecanicas: te llevan
+      if (P.x > c.x && P.x < c.x + c.w) P.x += convV(c) * dt;
+    });
+    (scene.blocks || []).forEach(function (b) {                                  // barreras (p. ej. canceladoras cerradas)
+      if (avail(b) && P.x + hw > b.x && P.x - hw < b.x + 6) { P.x = b.x - hw; if (P.vx > 0) P.vx = 0; }
+    });
     if (P.x < hw + 4) { P.x = hw + 4; P.vx = 0; }
     if (P.x > scene.w - hw - 4) { P.x = scene.w - hw - 4; P.vx = 0; }
 
@@ -1074,6 +1089,7 @@
       m.vx *= 1 - 5 * dt; m.vy += 30 * dt; m.x += m.vx * dt; m.y = Math.min(m.y + m.vy * dt, P.ground ? P.y : m.y + m.vy * dt);
     }
   }
+  function convV(c) { return typeof c.v === 'function' ? (c.v(GS) || 0) : c.v || 0; }
   function floorAt(x) {
     var g = scene && scene.ground; if (!g || !g.length) return scene.floor;
     if (x <= g[0][0]) return g[0][1];
@@ -1142,6 +1158,7 @@
   function party() { return !!(game && game.flags.ano_nuevo && game.clock != null && game.clock < toMin('00:25')); }
   function fxDraw(o, cx) {
     var d = o.d, f = d.f == null ? 1 : d.f, ox = Math.round(cx * f);
+    if (d.when && d.type !== 'fireworks' && d.type !== 'paddles' && !avail(d)) return;
     if (d.type === 'fireworks') {
       ctx.globalCompositeOperation = 'lighter';
       o.parts.forEach(function (p) {
@@ -1161,6 +1178,22 @@
       var x0 = d.x - ox, y0 = d.y;
       hand(x0, y0, hh / 12, 5, '#2a2622'); hand(x0, y0, mm / 60, 7, '#b8322c');
       ctx.fillStyle = '#2a2622'; ctx.fillRect(x0, y0, 1, 1);
+    } else if (d.type === 'conveyor') {   // peldanos de la pasarela moviendose (v: la de la cinta de scene.conveyors o propia)
+      var cv0 = d.belt != null ? convV(scene.conveyors[d.belt]) * (d.k || 1) : convV(d), x0 = d.x - ox, off = ((o.t * cv0) % 4 + 4) % 4;
+      ctx.fillStyle = d.c || '#5d6066'; ctx.fillRect(x0, d.y, d.w, d.h);
+      ctx.fillStyle = d.g || '#8d9097';
+      for (var gx = off - 4; gx < d.w; gx += 4) if (gx >= 0) ctx.fillRect(x0 + Math.floor(gx), d.y, 1, d.h);
+      if (d.rail != null) {                  // pasamanos: goma negra con un brillo que avanza
+        ctx.fillStyle = '#16171a'; ctx.fillRect(x0, d.rail, d.w, 2);
+        ctx.fillStyle = '#3a3c42'; var ro = ((o.t * cv0) % 24 + 24) % 24;
+        for (var rx = ro - 24; rx < d.w; rx += 24) if (rx >= 0) ctx.fillRect(x0 + Math.floor(rx), d.rail, 3, 1);
+      }
+    } else if (d.type === 'paddles') {    // portillas de cristal de la canceladora: cerradas o abiertas
+      var x0 = d.x - ox, shut = avail(d);
+      ctx.globalAlpha = 0.75; ctx.fillStyle = '#bfe6ff';
+      if (shut) { ctx.fillRect(x0 - 1, d.y, 3, d.h); ctx.fillStyle = '#ffffff'; ctx.fillRect(x0, d.y + 1, 1, d.h - 2); }
+      else { ctx.fillRect(x0 - 7, d.y, 3, d.h); ctx.fillRect(x0 + 5, d.y, 3, d.h); }
+      ctx.globalAlpha = 1;
     } else if (d.type === 'blink') {
       if ((o.t + (d.phase || 0)) % 1.4 < 0.7) { ctx.fillStyle = '#ff3b30'; ctx.fillRect(d.x - ox, d.y, 2, 2); }
     } else if (d.type === 'tv') { // las campanadas: la Puerta del Sol en la tele

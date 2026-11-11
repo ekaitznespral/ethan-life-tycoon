@@ -83,5 +83,27 @@ window.STORY_TEXT = {
       { "who": "Ekabi", "text": "a la 1.15 pasa el metro" },
       { "who": "Lier", "text": "yo no sé si llego, estoy en el Arena" }
     ]
+  },
+  "lourdes.barik": {
+    "lines": [
+      { "who": "lourdes", "text": "¿Ya estás aquí? ¿Qué se te ha olvidado ahora?" }
+    ]
+  },
+  "canceladora.buscar": {
+    "lines": [
+      { "who": "ethan", "text": "A ver, la Barik..." },
+      { "who": null, "text": "Ethan se palpa los bolsillos." }
+    ]
+  },
+  "canceladora.sin_barik": {
+    "lines": [
+      { "who": "ethan", "text": "¡No! ¡La Barik se ha quedado en casa!" },
+      { "who": "ethan", "text": "Como no corra, el metro se va sin mí." }
+    ]
+  },
+  "barik.cogida": {
+    "lines": [
+      { "who": "ethan", "text": "¡Aquí estaba! Venga, al metro." }
+    ]
   }
 };

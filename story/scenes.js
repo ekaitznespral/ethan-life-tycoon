@@ -51,13 +51,16 @@ window.STORY = {
     // solo se ven en la mesa (no van al inventario)
     uvas: { name: 'Uvas', icon: 3 },
     lacasitos: { name: 'Lacasitos', icon: 4 },
-    nuggets: { name: 'Nuggets del Burger King', icon: 5 }
+    nuggets: { name: 'Nuggets del Burger King', icon: 5 },
+    barik: { name: 'Barik', icon: 6, desc: 'La tarjeta del metro. Sin ella no pasas las canceladoras.' }
   },
 
-  // Reloj de la partida: aparece despues de la cena. rate = segundos reales por minuto de juego.
+  // Reloj de la partida: aparece despues de la cena. rate = segundos reales por minuto de juego
+  // (puede ser una funcion de la partida: durante la carrera al metro el reloj va mas despacio
+  // para que de tiempo justo a ir, volver a casa a por la Barik y llegar).
   // events: guiones que saltan a una hora (una sola vez; se rearman borrando la flag "hora:<id>").
   clock: {
-    rate: 0.8,
+    rate: function (g) { return g.flag('mision:metro') === 'activa' ? 1.4 : 0.8; },
     events: [
       { id: 'campanadas', at: '23:59', run: 'campanadas', when: function (g) { return g.flag('cena_hecha'); } },
       { id: 'quedada', at: '00:30', run: 'quedada', when: function (g) { return g.flag('ano_nuevo'); } },
@@ -82,7 +85,8 @@ window.STORY = {
       name: 'Pilla el metro de la 1:15', type: 'principal', limit: '01:15', limitLabel: 'Metro',
       desc: 'Has quedado con Sadaba, Ekabi y Lier. El metro pasa a la 1:15: llega a tiempo.',
       steps: [
-        { text: 'Llega al metro antes de la 1:15', done: function (g) { return g.flag('metro_ok'); } }
+        { text: 'Vuelve a casa a por la Barik', when: function (g) { return g.flag('barik_olvidada'); }, done: function (g) { return g.has('barik') || g.flag('metro_ok'); } },
+        { text: 'Pasa las canceladoras antes de la 1:15', done: function (g) { return g.flag('metro_ok'); } }
       ]
     }
   },
@@ -94,6 +98,7 @@ window.STORY = {
       if (!s.flag('mision:cena')) { await s.talk('lourdes.mision'); s.mission('cena'); }
       else if (!s.flag('nevera:tortilla')) await s.talk('lourdes.sin_tortilla');
       else if (!s.flag('cena_hecha')) await s.talk('lourdes.antes_cena');
+      else if (s.flag('barik_olvidada') && !s.has('barik')) await s.talk('lourdes.barik');
       else await s.talk('lourdes.despues_cena');
     },
     nevera: async function (s) {
@@ -162,15 +167,38 @@ window.STORY = {
       await s.go('cocina', 'puerta');
       s.toast('Inténtalo otra vez: el metro pasa a la 1:15');
     },
-    // llegar al metro a tiempo
-    metro: async function (s) {
-      s.flag('metro_ok', 1); s.complete('metro');
-      await s.wait(1.2);
+    // las canceladoras: la primera vez se da cuenta de que no lleva la Barik
+    canceladora: async function (s) {
+      if (!s.has('barik')) {
+        await s.cine(true);
+        await s.walkTo(866); s.face(1);
+        await s.talk('canceladora.buscar');
+        s.sfx('error');
+        await s.wait(0.6);
+        await s.talk('canceladora.sin_barik');
+        s.flag('barik_olvidada', 1);
+        await s.cine(false);
+        s.toast('Las pasarelas de vuelta van hacia la salida');
+        return;
+      }
+      // con la Barik: pasa
       await s.cine(true);
+      await s.walkTo(866); s.face(1);
+      s.sfx('bip'); await s.wait(0.4);
+      s.flag('canceladora_ok', 1); s.sfx('portillas');
+      await s.wait(0.5);
+      s.flag('metro_ok', 1); s.complete('metro');
+      await s.walkTo(1046);
+      await s.wait(0.6);
       await s.fade(1, 900);
       await s.card('Continuará...');           // AQUI SIGUE LA HISTORIA (pendiente)
       await s.fade(0, 700);
       await s.cine(false);
+    },
+    // la Barik estaba en la encimera, al lado de la nevera
+    barik: async function (s) {
+      s.flag('barik_cogida', 1); s.give('barik');
+      await s.talk('barik.cogida');
     }
   },
 
@@ -189,7 +217,11 @@ window.STORY = {
     { id: 'quedada', name: 'Justo antes del móvil (00:29)', scene: 'cocina', spawn: 'puerta', clock: '00:29', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1 } },
     { id: 'metro', name: 'Misión del metro, en la calle (00:40)', scene: 'calle', spawn: 'portal', clock: '00:40', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
     { id: 'metro_justo', name: 'Metro: a punto de perderlo (01:13)', scene: 'calle', spawn: 'portal', clock: '01:13', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
-    { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' }
+    { id: 'estacion', name: 'Metro: bajando a la estación (00:46)', scene: 'metro', spawn: 'entrada', clock: '00:46', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
+    { id: 'sin_barik', name: 'Sin la Barik: de vuelta a casa (00:52)', scene: 'cocina', spawn: 'puerta', clock: '00:52', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1 } },
+    { id: 'con_barik', name: 'Con la Barik, saliendo del portal (00:56)', scene: 'calle', spawn: 'portal', clock: '00:56', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1, barik_cogida: 1 }, inv: ['barik'] },
+    { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' },
+    { id: 'metro_prueba', name: 'Estación de metro (escena de prueba)', scene: 'metro', spawn: 'entrada' }
   ]
 };
 
@@ -210,7 +242,8 @@ window.STORY_SCENES = {
     objects: [
       { id: 'nevera', name: 'Nevera', x: 44, reach: 22, py: 124, label: 'Abrir la nevera', run: 'nevera', when: function (g) { return g.flag('mision:cena'); } },
       { id: 'silla', name: 'Silla de Ethan', x: 358, reach: 12, py: 150, label: 'Sentarse a cenar', run: 'silla', when: function (g) { return g.flag('mision:cena') === 'activa'; } },
-      { id: 'vitro', name: 'Vitro', x: 202, reach: 14, py: 156, label: 'Mirar la vitro', run: 'vitro' }
+      { id: 'vitro', name: 'Vitro', x: 202, reach: 14, py: 156, label: 'Mirar la vitro', run: 'vitro' },
+      { id: 'barik', name: 'Barik', x: 84, reach: 16, py: 146, label: 'Coger la Barik', run: 'barik', when: function (g) { return g.flag('barik_olvidada') && !g.flag('barik_cogida'); } }
     ],
     props: [
       { item: 'jamon', x: 510, y: 178, when: function (g) { return g.flag('mesa:jamon'); } },
@@ -219,7 +252,8 @@ window.STORY_SCENES = {
       { item: 'lacasitos', x: 412, y: 178, when: function (g) { return g.flag('mesa:lacasitos'); } },
       { item: 'nuggets', x: 381, y: 178, when: function (g) { return g.flag('mesa:nuggets'); } },
       { item: 'langostinos', x: 428, y: 178, when: function (g) { return g.flag('mesa:langostinos'); } },
-      { item: 'tortilla', x: 457, y: 178, when: function (g) { return g.flag('mesa:tortilla'); } }
+      { item: 'tortilla', x: 457, y: 178, when: function (g) { return g.flag('mesa:tortilla'); } },
+      { item: 'barik', x: 84, y: 166, when: function (g) { return !g.flag('barik_cogida'); } }   // toda la noche ahi, en la encimera
     ],
     platforms: [
       { x: 24, y: 128, w: 40 },   // nevera
@@ -259,9 +293,9 @@ window.STORY_SCENES = {
       { x: 1498, y: 164, w: 62 }   // encima de la boca de metro
     ],
     spawns: { portal: { x: 276, dir: 1 }, metro: { x: 1470, dir: -1 } },
-    exits: [{ x: 252, w: 48, to: 'cocina', spawn: 'puerta', label: 'Entrar al portal' }],
-    objects: [
-      { id: 'metro', name: 'Metro', x: 1528, reach: 30, py: 160, label: 'Bajar al metro', run: 'metro', when: function (g) { return g.flag('mision:metro') === 'activa'; } }
+    exits: [
+      { x: 252, w: 48, to: 'cocina', spawn: 'puerta', label: 'Entrar al portal' },
+      { x: 1500, w: 60, to: 'metro', spawn: 'entrada', label: 'Bajar al metro', when: function (g) { return g.flag('mision:metro') === 'activa'; } }
     ],
     fx: [
       { type: 'fireworks', z: 0, x0: 20, x1: 480, y0: 15, y1: 70, rate: 1.4, when: function (g) { return g.flag('ano_nuevo'); }, light: { x: 0, y: 0, r: 0, a: 0.07 } },
@@ -276,6 +310,35 @@ window.STORY_SCENES = {
       { type: 'glow', x: 160, y: 154, r: 12, c: '255,120,140', a: 0.2 },
       { type: 'glow', x: 1528, y: 192, r: 50, c: '255,200,120', a: 0.2 },
       { type: 'glow', x: 1465, y: 191, r: 22, c: '255,70,70', a: 0.2 }
+    ]
+  },
+
+  metro: {
+    name: 'Metro', sub: 'Estación de Sestao',
+    w: 1120, floor: 196,
+    layers: [{ src: 'sprites/story/metro.png', f: 1 }],
+    // pasarela mecanica: lleva hacia las canceladoras; a la vuelta a por la Barik, Ethan coge la
+    // del otro sentido (la cinta va hacia la salida)
+    conveyors: [
+      { x: 190, w: 590, v: function (g) { return g.flag('barik_olvidada') && !g.has('barik') ? -75 : 75; } }
+    ],
+    // las portillas cerradas no dejan pasar
+    blocks: [{ x: 878, when: function (g) { return !g.flag('canceladora_ok'); } }],
+    platforms: [{ x: 852, y: 154, w: 16 }, { x: 892, y: 154, w: 16 }],   // encima de las canceladoras
+    spawns: { entrada: { x: 84, dir: 1 } },
+    exits: [{ x: 6, w: 70, to: 'calle', spawn: 'metro', label: 'Subir a la calle' }],
+    objects: [
+      { id: 'canceladora', name: 'Canceladora', x: 866, reach: 18, py: 140, label: 'Pasar la canceladora', run: 'canceladora', when: function (g) { return !g.flag('canceladora_ok'); } }
+    ],
+    fx: [
+      { type: 'conveyor', belt: 0, x: 190, y: 196, w: 590, h: 3, rail: 184 },               // la pasarela de Ethan
+      { type: 'conveyor', belt: 0, k: -1, x: 190, y: 170, w: 590, h: 2, rail: 150, c: '#6e7177', g: '#9da0a6' },   // la del fondo, al reves
+      { type: 'paddles', x: 878, y: 170, h: 22, when: function (g) { return !g.flag('canceladora_ok'); } },
+      { type: 'glow', x: 376, y: 58, r: 40, c: '255,60,60', a: 0.12 },
+      { type: 'glow', x: 70, y: 46, r: 60, c: '255,220,170', a: 0.12 },
+      { type: 'glow', x: 1047, y: 150, r: 60, c: '255,215,190', a: 0.22 },
+      { type: 'glow', x: 860, y: 151, r: 14, c: '160,210,255', a: 0.25 },
+      { type: 'glow', x: 900, y: 151, r: 14, c: '160,210,255', a: 0.25 }
     ]
   }
 };

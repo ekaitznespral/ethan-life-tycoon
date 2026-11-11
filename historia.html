@@ -236,6 +236,8 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
 #touch [data-k=right]{left:calc(var(--s)*42px)}
 #touch [data-k=jump]{right:calc(var(--s)*8px);width:calc(var(--s)*34px);height:calc(var(--s)*34px)}
 #touch [data-k=act]{right:calc(var(--s)*48px)}
+#touch #trun{left:calc(var(--s)*76px);width:calc(var(--s)*22px);height:calc(var(--s)*22px);bottom:calc(var(--s)*11px);font-size:calc(var(--s)*5px)}
+#touch #trun.on{background:#ffd75ecc;color:#1d1a17;border-color:#ffd75e}
 #touch [data-k=menu]{top:calc(var(--s)*6px);bottom:auto;right:calc(var(--s)*6px);width:calc(var(--s)*18px);height:calc(var(--s)*18px);font-size:calc(var(--s)*5px)}
 @media (orientation:portrait) and (pointer:coarse){
  #rot{display:flex;position:fixed;inset:0;z-index:9;background:#000;color:#f3eedb;font-family:var(--px);font-size:12px;line-height:2;padding:24px;text-align:center;align-items:center;justify-content:center}
@@ -271,7 +273,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
  <div id="inv" class="ov" hidden><div class="ivb"><div class="dh"><b>Inventario</b><button id="invx" aria-label="Cerrar">✕</button></div><div id="invl"></div></div></div>
  <div id="touch" aria-hidden="true">
   <button data-k="left">◀</button><button data-k="right">▶</button>
-  <button data-k="act">E</button><button data-k="jump">▲</button><button data-k="menu">II</button>
+  <button id="trun" aria-label="Correr">»</button><button data-k="act">E</button><button data-k="jump">▲</button><button data-k="menu">II</button>
  </div>
  <div id="fade"></div>
  <div id="loading" hidden>Cargando</div>
@@ -327,7 +329,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
 </div>
 <div id="rot">Gira el móvil<br>para jugar en horizontal</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="story/dialogos.js?v=20261110b"></script>
-<script src="story/scenes.js?v=20261110b"></script>
-<script src="story/engine.js?v=20261110b"></script>
+<script src="story/dialogos.js?v=20261111a"></script>
+<script src="story/scenes.js?v=20261111a"></script>
+<script src="story/engine.js?v=20261111a"></script>
 </body></html>
