@@ -177,7 +177,8 @@
   async function loadScene(id) {
     var s = SCENES[id]; if (!s) throw new Error('Escenario desconocido: ' + id);
     var srcs = s.layers.map(function (l) { return l.src; }).concat((s.npcs || []).map(function (n) { return n.sprite; }))
-      .concat((s.actors || []).map(function (a) { return (PEOPLE[a.id] || {}).walk; }).filter(Boolean));
+      .concat((s.actors || []).map(function (a) { return (PEOPLE[a.id] || {}).walk; }).filter(Boolean))
+      .concat((s.fx || []).map(function (d) { return d.src; }).filter(Boolean));
     // descarta las imagenes del escenario anterior que ya no hacen falta
     Object.keys(IMG).forEach(function (k) { if (srcs.indexOf(k) < 0 && KEEP.indexOf(k) < 0) delete IMG[k]; });
     await Promise.all(srcs.concat(KEEP).map(loadImg));
@@ -206,6 +207,7 @@
     });
   }
   function place(spawn, at) {
+    P.hide = false;
     var sp = (at && at.x != null) ? at : (scene.spawns[spawn] || { x: 40, dir: 1 });
     P.x = sp.x; P.y = at && at.y != null ? at.y : floorAt(sp.x); P.dir = sp.dir || 1;
     P.vx = P.vy = 0; P.ground = true; P.buf = 0; P.drop = 0;
@@ -215,7 +217,7 @@
   var busy = false;
   async function goScene(id, spawn, at, keep) {   // keep: lo pide un guion, que sigue en marcha
     if (busy) return; busy = true;
-    var prev = state; state = 'loading'; hidePrompt(); if (!keep) stopScript(); thoughts = {}; motes = []; flashes = [];
+    var prev = state; state = 'loading'; hidePrompt(); $('inv').hidden = true; $('diario').hidden = true; if (!keep) stopScript(); thoughts = {}; motes = []; flashes = [];
     if (prev !== 'card' && prev !== 'menu') await fadeTo(1, 280); else setFade(1);
     loading.hidden = false;
     var t0 = performance.now();
@@ -492,6 +494,12 @@
       actors[id] = { id: id, x: x, dir: dir || 1, frame: 1, dist: 0, walk: null };
     },
     actorWalk: function (id, x, speed) { var a = actors[id]; return new Promise(function (res) { if (!a) return res(); a.walk = { x: x, speed: speed, done: res }; }); },
+    fxMove: function (id, x, secs, ease) {
+      var o = fx.filter(function (q) { return q.d.id === id; })[0];
+      return new Promise(function (res) { if (!o) return res(); if (o.x == null) o.x = o.d.x; o.mv = { x0: o.x, x1: x, d: secs || 1, t: 0, ease: ease, res: res }; });
+    },
+    doors: function (id, open) { var o = fx.filter(function (q) { return q.d.id === id; })[0]; if (o) { o.open = o.open || 0; o.dv = open ? 1 : -1; } return API.wait(0.5); },
+    hideEthan: function (on) { P.hide = !!on; },
     actorFace: function (id, d) { if (actors[id]) actors[id].dir = d < 0 ? -1 : 1; },
     closeup: function (id) { var r = run; return new Promise(function (res) { if (r && (STORY.views || {})[id]) openLook(id, res); else res(null); }); },
     wait: function (sec) { var r = run; return new Promise(function (res) { if (r) r.waits.push({ t: sec, res: res }); else res(); }); },
@@ -875,6 +883,9 @@
     sel: function () { tn(660, 0, 0.05, 'triangle', 0.05); },
     bip: function () { tn(1568, 0, 0.12, 'square', 0.05); tn(2093, 0.13, 0.16, 'square', 0.05); },
     error: function () { tn(220, 0, 0.18, 'square', 0.06); tn(208, 0.22, 0.3, 'square', 0.06); },
+    tren: function () { tn(55, 0, 3.2, 'sawtooth', 0.05, 40); tn(110, 0.2, 2.8, 'triangle', 0.04, 70); tn(1760, 2.2, 0.9, 'sine', 0.015, 1200); },
+    puertas: function () { bell(988, 0, 0.5, 0.1); bell(784, 0.3, 0.7, 0.1); },
+    arranca: function () { tn(45, 0, 2.6, 'sawtooth', 0.04, 90); tn(90, 0.1, 2.4, 'triangle', 0.035, 180); },
     portillas: function () { tn(140, 0, 0.25, 'sawtooth', 0.03, 90); },
     ok: function () { tn(880, 0, 0.07, 'triangle', 0.07); tn(1320, 0.05, 0.09, 'triangle', 0.05); }
   };
@@ -1195,6 +1206,11 @@
   }
   function fxStep(o, dt) {
     var d = o.d; o.t += dt;
+    if (o.mv) {                                      // s.fxMove: va de un sitio a otro (frenando o arrancando)
+      var m = o.mv; m.t += dt; var k = Math.min(1, m.t / m.d), e = m.ease === 'in' ? k * k * k : 1 - Math.pow(1 - k, 3);
+      o.x = m.x0 + (m.x1 - m.x0) * e; if (k >= 1) { o.mv = null; m.res(); }
+    }
+    if (o.dv) { o.open = Math.max(0, Math.min(1, o.open + o.dv * dt * 2.2)); if (o.open === 0 || o.open === 1) o.dv = 0; }
     if (d.type !== 'fireworks') return;
     o.next -= dt;
     if (o.next <= 0 && d.when && !avail(d)) o.next = 0.5;   // aun no es la hora: no salen
@@ -1244,6 +1260,18 @@
   function fxDraw(o, cx) {
     var d = o.d, f = d.f == null ? 1 : d.f, ox = Math.round(cx * f);
     if (d.when && d.type !== 'fireworks' && d.type !== 'paddles' && !avail(d)) return;
+    if (d.type === 'train') {                        // el metro: imagen que se mueve (o.x) y puertas que se abren (o.open)
+      var ti = img(d.src); if (!ti) return;
+      var tx = Math.round(o.x == null ? d.x : o.x) - ox;
+      if (tx > VW || tx + ti.width < 0) return;
+      ctx.drawImage(ti, tx, d.y);
+      if (o.open) (d.doors || []).forEach(function (dx) {
+        var w = Math.round(9 * o.open), x0 = tx + dx;
+        ctx.fillStyle = '#f2e2b0'; ctx.fillRect(x0 - w, d.y + 9, w * 2, 38);
+        ctx.fillStyle = '#d8c48e'; ctx.fillRect(x0 - w, d.y + 40, w * 2, 7);
+      });
+      return;
+    }
     if (d.type === 'fireworks') {
       ctx.globalCompositeOperation = 'lighter';
       o.parts.forEach(function (p) {
@@ -1340,7 +1368,8 @@
     }
     drawActors(cx);
     var e = img(ETHAN), es = img(SIT);
-    if (P.sit && es) ctx.drawImage(es, (P.eatF || 0) * 48, 0, 48, 48, Math.round(P.x) - 24 - cx, Math.round(P.y) - 46, 48, 48);
+    if (P.hide) { }
+    else if (P.sit && es) ctx.drawImage(es, (P.eatF || 0) * 48, 0, 48, 48, Math.round(P.x) - 24 - cx, Math.round(P.y) - 46, 48, 48);
     else if (e) {
       var dx = Math.round(P.x) - cx, dy = Math.round(P.y) - 46;
       ctx.fillStyle = 'rgba(0,0,0,0.18)'; if (P.ground) ctx.fillRect(dx - 8, Math.round(P.y) - 1, 16, 2);
@@ -1402,6 +1431,7 @@
   }
 
   loadImg(ETHAN);
+  var ver = document.querySelector('script[src*="engine.js"]'); if (ver && $('mver')) $('mver').textContent = 'versión ' + (ver.src.split('v=')[1] || '?');
   showMenu();
   requestAnimationFrame(frame);
   window.__historia = { P: P, cam: cam, get state() { return state; }, get scene() { return sceneId; }, get slot() { return slot; }, get fx() { return fx; }, get flashes() { return flashes.length; }, go: goScene }; // para pruebas

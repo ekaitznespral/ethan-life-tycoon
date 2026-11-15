@@ -175,5 +175,53 @@ window.STORY_TEXT = {
     "lines": [
       { "who": "ekaitz", "text": "¡Por fin! Venga, que llegamos justos." }
     ]
+  },
+  "anden.llegan": {
+    "lines": [
+      { "who": "javi", "text": "¡Mira quién aparece!" },
+      { "who": "sadaba", "text": "¡Ya era hora, que se nos va el metro!" },
+      { "who": "lier", "text": "Al final he llegado del Arena. Por los pelos." },
+      { "who": "ethan", "text": "¡Feliz año, cuadrilla!" }
+    ]
+  },
+  "anden.ekaitz": {
+    "lines": [
+      { "who": "ekaitz", "text": "Menos mal que te he esperado, ¿eh?" }
+    ]
+  },
+  "anden.manso": {
+    "lines": [
+      { "who": "manso", "text": "¿Qué pasa, Ethan? Pensaba que no venías." }
+    ]
+  },
+  "anden.sadaba": {
+    "lines": [
+      { "who": "sadaba", "text": "Llegas justo. Como siempre." }
+    ]
+  },
+  "anden.lier": {
+    "lines": [
+      { "who": "lier", "text": "Del Arena hasta aquí corriendo. Me debéis una." }
+    ]
+  },
+  "anden.javi": {
+    "lines": [
+      { "who": "javi", "text": "¡Feliz año! Esta noche promete." }
+    ]
+  },
+  "anden.igor": {
+    "lines": [
+      { "who": "igor", "text": "¿A dónde vamos al final? Yo me apunto a todo." }
+    ]
+  },
+  "anden.no_salir": {
+    "lines": [
+      { "who": "ethan", "text": "¿A dónde voy? El metro está a punto de llegar." }
+    ]
+  },
+  "anden.tren": {
+    "lines": [
+      { "who": "sadaba", "text": "¡Venga, todos dentro!" }
+    ]
   }
 };

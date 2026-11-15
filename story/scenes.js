@@ -85,10 +85,11 @@ window.STORY = {
   // para que de tiempo justo a ir, volver a casa a por la Barik y llegar).
   // events: guiones que saltan a una hora (una sola vez; se rearman borrando la flag "hora:<id>").
   clock: {
-    rate: function (g) { return g.flag('mision:metro') === 'activa' ? 1.4 : 0.8; },
+    rate: function (g) { return g.flag('mision:metro') === 'activa' ? 1.4 : g.flag('en_anden') ? 3 : 0.8; },
     events: [
       { id: 'campanadas', at: '23:59', run: 'campanadas', when: function (g) { return g.flag('cena_hecha'); } },
       { id: 'quedada', at: '00:30', run: 'quedada', when: function (g) { return g.flag('ano_nuevo'); } },
+      { id: 'tren', at: '01:15', run: 'tren', when: function (g) { return g.flag('en_anden') && !g.flag('en_metro'); } },
       { id: 'metro_perdido', at: '01:15', run: 'metro_perdido', when: function (g) { return g.flag('mision:metro') === 'activa'; } }
     ]
   },
@@ -226,7 +227,55 @@ window.STORY = {
       var ek = s.actorWalk('ekaitz', 1020, 70);
       await s.walkTo(1046);
       await ek;
+      await s.wait(0.4);
+      // bajan al anden: ahi esta toda la cuadrilla
+      await s.fade(1, 700);
+      s.flag('en_anden', 1); s.actor('ekaitz', null);
+      await s.go('anden', 'entrada');
+      s.actor('ekaitz', 20, 1);
+      await s.fade(0, 700);
+      var ek2 = s.actorWalk('ekaitz', 150);
+      await s.walkTo(196); s.face(1);
+      await ek2;
+      await s.talk('anden.llegan');
+      s.clock('01:13');                        // el metro llega a la 1:15: un momento para hablar con ellos
+      await s.cine(false);
+      s.toast('El metro está a punto de llegar');
+    },
+    // por si se llega a las canceladoras ya abiertas (p. ej. una partida de antes): bajar al anden
+    bajar_anden: async function (s) {
+      await s.fade(1, 600);
+      s.flag('en_anden', 1); s.flag('metro_ok', 1);
+      await s.go('anden', 'cuadrilla');
+      if (!s.flag('hora:tren')) s.clock('01:13');
+      await s.fade(0, 600);
+    },
+    // en el anden: hablar con la cuadrilla
+    amigo_ekaitz: async function (s) { await s.talk('anden.ekaitz'); },
+    amigo_manso: async function (s) { await s.talk('anden.manso'); },
+    amigo_sadaba: async function (s) { await s.talk('anden.sadaba'); },
+    amigo_lier: async function (s) { await s.talk('anden.lier'); },
+    amigo_javi: async function (s) { await s.talk('anden.javi'); },
+    amigo_igor: async function (s) { await s.talk('anden.igor'); },
+    anden_salir: async function (s) { await s.talk('anden.no_salir'); },
+    // 01:15: llega el metro, suben todos y se va
+    tren: async function (s) {
+      await s.cine(true);
+      s.sfx('tren');
+      await s.fxMove('tren', 20, 3.2);          // entra por la derecha y frena
+      await s.wait(0.3);
+      s.sfx('puertas'); await s.doors('tren', true);
+      await s.talk('anden.tren');
+      // cada uno a la puerta que le pilla mas cerca (puertas en x = 20 + 60, 140, 220, 364, 444, 524)
+      var sube = [['ekaitz', 160], ['manso', 240], ['sadaba', 384], ['lier', 384], ['javi', 464], ['igor', 464]];
+      await Promise.all(sube.map(function (a) { return s.actorWalk(a[0], a[1]).then(function () { s.actor(a[0], null); }); }).concat([s.walkTo(240)]));
+      s.hideEthan(true);
       await s.wait(0.6);
+      s.sfx('puertas'); await s.doors('tren', false);
+      s.flag('en_metro', 1);
+      await s.wait(0.5);
+      s.sfx('arranca');
+      await s.fxMove('tren', -700, 3.4, 'in');  // arranca hacia la izquierda
       await s.fade(1, 900);
       await s.card('Continuará...');           // AQUI SIGUE LA HISTORIA (pendiente)
       await s.fade(0, 700);
@@ -268,6 +317,7 @@ window.STORY = {
     { id: 'estacion', name: 'Metro: bajando a la estación (00:46)', scene: 'metro', spawn: 'entrada', clock: '00:46', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
     { id: 'sin_barik', name: 'Sin la Barik: de vuelta a casa (00:52)', scene: 'pasillo', spawn: 'portal', clock: '00:52', flags: { ekaitz_llega: 1, ekaitz_espera: 1, 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1 } },
     { id: 'con_barik', name: 'Con la Barik, saliendo del portal (00:56)', scene: 'calle', spawn: 'portal', clock: '00:56', flags: { ekaitz_llega: 1, ekaitz_espera: 1, 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1, barik_cogida: 1 }, inv: ['barik'] },
+    { id: 'anden', name: 'En el andén con la cuadrilla (01:13)', scene: 'anden', spawn: 'cuadrilla', clock: '01:13', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1 }, inv: ['barik'] },
     { id: 'casa', name: 'Pasillo de casa (escena de prueba)', scene: 'pasillo', spawn: 'cocina' },
     { id: 'cuarto', name: 'Cuarto de Ethan (escena de prueba)', scene: 'habitacion', spawn: 'puerta' },
     { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' },
@@ -379,6 +429,7 @@ window.STORY_SCENES = {
     exits: [{ x: 6, w: 70, to: 'calle', spawn: 'metro', label: 'Subir a la calle' }],
     objects: [
       { id: 'ekaitz', name: 'Ekaitz', x: 842, reach: 12, py: 140, label: 'Hablar con Ekaitz', run: 'ekaitz', when: function (g) { return g.flag('ekaitz_espera') && !g.flag('metro_ok'); } },
+      { id: 'andenes', name: 'Andenes', x: 1047, reach: 26, py: 120, label: 'Bajar al andén', run: 'bajar_anden', when: function (g) { return g.flag('canceladora_ok') && !g.flag('en_metro'); } },
       { id: 'canceladora', name: 'Canceladora', x: 870, reach: 18, py: 140, label: 'Pasar la canceladora', run: 'canceladora', when: function (g) { return !g.flag('canceladora_ok'); } }
     ],
     fx: [
@@ -467,6 +518,40 @@ window.STORY_SCENES = {
       { type: 'glow', x: 185, y: 100, r: 40, c: '255,240,200', a: 0.14 },
       { type: 'glow', x: 100, y: 12, r: 70, c: '255,90,210', a: 0.1 },
       { type: 'glow', x: 300, y: 12, r: 70, c: '120,220,255', a: 0.1 }
+    ]
+  },
+
+  // El anden: la cuadrilla esperando el metro de la 1:15
+  anden: {
+    name: 'Andén', sub: 'Metro de Sestao · 01:15',
+    w: 640, floor: 196,
+    layers: [
+      { src: 'sprites/story/anden-fondo.png', f: 1 },
+      { src: 'sprites/story/anden.png', f: 1 }
+    ],
+    spawns: { entrada: { x: 40, dir: 1 }, cuadrilla: { x: 196, dir: 1 } },
+    exits: [{ x: 0, w: 44, to: 'metro', spawn: 'entrada', label: 'Volver', when: function () { return false; }, locked: 'anden_salir' }],
+    actors: [
+      { id: 'ekaitz', x: 150, dir: 1, when: function (g) { return !g.flag('en_metro'); } },
+      { id: 'manso', x: 300, dir: -1, when: function (g) { return !g.flag('en_metro'); } },
+      { id: 'sadaba', x: 336, dir: -1, when: function (g) { return !g.flag('en_metro'); } },
+      { id: 'lier', x: 372, dir: -1, when: function (g) { return !g.flag('en_metro'); } },
+      { id: 'javi', x: 412, dir: -1, when: function (g) { return !g.flag('en_metro'); } },
+      { id: 'igor', x: 448, dir: -1, when: function (g) { return !g.flag('en_metro'); } }
+    ],
+    objects: [
+      { id: 'amigo_ekaitz', name: 'Ekaitz', x: 150, reach: 13, py: 140, label: 'Hablar con Ekaitz', run: 'amigo_ekaitz', when: function (g) { return !g.flag('en_metro'); } },
+      { id: 'amigo_manso', name: 'Manso', x: 300, reach: 13, py: 140, label: 'Hablar con Manso', run: 'amigo_manso', when: function (g) { return !g.flag('en_metro'); } },
+      { id: 'amigo_sadaba', name: 'Sadaba', x: 336, reach: 13, py: 140, label: 'Hablar con Sadaba', run: 'amigo_sadaba', when: function (g) { return !g.flag('en_metro'); } },
+      { id: 'amigo_lier', name: 'Lier', x: 372, reach: 13, py: 140, label: 'Hablar con Lier', run: 'amigo_lier', when: function (g) { return !g.flag('en_metro'); } },
+      { id: 'amigo_javi', name: 'Javi', x: 412, reach: 13, py: 140, label: 'Hablar con Javi', run: 'amigo_javi', when: function (g) { return !g.flag('en_metro'); } },
+      { id: 'amigo_igor', name: 'Igor', x: 448, reach: 13, py: 140, label: 'Hablar con Igor', run: 'amigo_igor', when: function (g) { return !g.flag('en_metro'); } }
+    ],
+    fx: [
+      { type: 'train', id: 'tren', z: 0, src: 'sprites/story/tren.png', x: 760, y: 118, doors: [60, 140, 220, 364, 444, 524] },
+      { type: 'glow', x: 111, y: 77, r: 26, c: '120,170,255', a: 0.2 },
+      { type: 'glow', x: 315, y: 77, r: 26, c: '120,170,255', a: 0.2 },
+      { type: 'glow', x: 515, y: 77, r: 26, c: '120,170,255', a: 0.2 }
     ]
   }
 };

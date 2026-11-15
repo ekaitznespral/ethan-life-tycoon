@@ -1075,6 +1075,78 @@ function amigoWalk(id) {
 }
 function cuadrilla() { Object.keys(AMIGOS).forEach(function (id) { bustSheet(id); amigoWalk(id); }); }
 
+
+// ======================= EL ANDEN Y EL TREN =======================
+// anden-fondo: la boveda, la pared de enfrente con pantallas y la via (el tren se pinta encima).
+// anden: el suelo del anden en primer plano (tapa los bajos del tren); arriba es transparente.
+var ANDEN_W = 640;
+function andenFondo() {
+  var W = ANDEN_W, f = new FB(W, 216), r = rng(41);
+  f.vgrad(0, 0, W, 182, ['#b98a84', '#c4aaa2', '#c8c0ba', '#b4aea9', '#8e8984']);
+  // boveda: arcos y costillas
+  for (var x = 0; x < W; x += 2) { var y0 = Math.round(18 + 10 * Math.sin(x / W * Math.PI)); f.px(x, y0, '#8a7470'); f.px(x + 1, y0, '#8a7470'); }
+  for (var x = 10; x < W; x += 52) { f.rect(x, 0, 2, 150, '#9a928c'); f.rect(x + 2, 0, 1, 150, '#ddd6d0'); }
+  [60, 110].forEach(function (y) { f.rect(0, y, W, 1, '#a39b96'); f.rect(0, y + 1, W, 1, '#d6d0cb'); });
+  f.emit = true; for (var x = 4; x < W; x += 36) { f.rect(x, 8, 28, 2, '#fff6ea'); f.rect(x + 2, 10, 24, 1, '#ffd9c8'); } f.emit = false;
+  // pantallas de informacion en la pared de enfrente
+  [96, 300, 500].forEach(function (x) {
+    f.rect(x, 66, 30, 22, '#16171a'); f.rect(x + 14, 60, 2, 6, '#5a5a62');
+    f.emit = true; f.rect(x + 2, 68, 26, 18, '#1f4a9a'); f.rect(x + 4, 70, 14, 2, '#ffffff'); f.rect(x + 4, 74, 20, 1, '#9fc3ff'); f.rect(x + 4, 78, 18, 1, '#9fc3ff'); f.rect(x + 4, 82, 10, 1, '#ffd75e'); f.emit = false;
+  });
+  // anuncios retroiluminados
+  [190, 400].forEach(function (x) { f.rect(x, 116, 46, 26, '#3a3c42'); f.emit = true; f.rect(x + 2, 118, 42, 22, '#f0e6d0'); f.rect(x + 6, 122, 16, 14, '#e8463a'); f.rect(x + 26, 124, 14, 2, '#3a3c42'); f.rect(x + 26, 130, 10, 2, '#3a3c42'); f.emit = false; });
+  // anden de enfrente (al fondo) y su borde
+  f.rect(0, 148, W, 6, '#d8d2c4'); f.rect(0, 154, W, 2, '#3a3632');
+  // via
+  f.rect(0, 156, W, 30, '#3a3632');
+  for (var x = 0; x < W; x += 9) f.rect(x, 174, 5, 3, '#5a544e');
+  for (var i = 0; i < 160; i++) f.px(r() * W, 160 + r() * 24, r() < 0.5 ? '#4a4540' : '#2e2a26');
+  f.rect(0, 172, W, 2, '#9a9da3'); f.rect(0, 178, W, 2, '#9a9da3');
+  // bocas del tunel a los lados
+  f.rect(0, 96, 18, 90, '#1a1816'); f.rect(W - 22, 96, 22, 90, '#1a1816');
+  save(f, 'anden-fondo.png');
+}
+function anden() {
+  var W = ANDEN_W, f = new FB(W, 216);
+  // suelo del anden: borde oscuro, franja tactil y baldosas claras
+  f.rect(0, 178, W, 38, '#e6e0d2'); f.rect(0, 178, W, 2, '#2a2622'); f.rect(0, 180, W, 1, '#f6f2e8');
+  f.rect(0, 183, W, 6, '#d6cca8'); for (var x = 1; x < W; x += 3) { f.px(x, 184, '#bfb48e'); f.px(x + 1, 187, '#bfb48e'); }
+  f.rect(0, 190, W, 1, '#cfc8b8'); for (var x = 0; x < W; x += 20) f.rect(x, 191, 1, 25, '#d4cebe');
+  f.rect(0, 202, W, 1, '#d4cebe');
+  // pared con la escalera a la izquierda (por ahi se baja de las canceladoras)
+  f.rect(0, 40, 34, 140, '#a49e99'); f.rect(34, 40, 2, 140, '#7d7671');
+  for (var i = 0; i < 12; i++) f.rect(4, 70 + i * 9, 26, 2, '#8e8984');
+  f.rect(4, 52, 26, 10, '#d81e26'); f.emit = true; f.rect(8, 55, 1, 5, '#ffffff'); f.px(7, 56, '#ffffff'); f.px(9, 56, '#ffffff'); f.text(12, 55, 'IRT', '#ffffff'); f.emit = false;
+  save(f, 'anden.png');
+}
+// el tren: dos coches plateados con la franja de ventanas oscura y detalles rojos (sin logotipos).
+// Va hacia la izquierda: la cabina de delante esta a la izquierda. Puertas: ver story/scenes.js
+var TREN_PUERTAS = [60, 140, 220, 364, 444, 524];
+function tren() {
+  var f = new FB(600, 62);
+  [0, 304].forEach(function (cx, k) {
+    var L = 296;
+    f.rect(cx + 4, 2, L - 8, 2, '#b8bcc2'); f.rect(cx + 2, 4, L - 4, 44, '#e2e4e8'); f.rect(cx + 2, 4, L - 4, 1, '#f4f5f7');
+    f.rect(cx + 2, 14, L - 4, 20, '#20242c'); f.rect(cx + 2, 14, L - 4, 1, '#4a505a');
+    for (var x = cx + 10; x < cx + L - 10; x += 26) f.rect(x, 15, 1, 19, '#3a404a');
+    f.rect(cx + 2, 42, L - 4, 3, '#d82a32');
+    f.rect(cx + 2, 48, L - 4, 8, '#3a3c42');
+    [cx + 40, cx + 70, cx + L - 70, cx + L - 40].forEach(function (wx) { f.disc(wx, 56, 4, '#1c1d20'); f.disc(wx, 56, 1, '#6a6d73'); });
+    // puertas
+    TREN_PUERTAS.filter(function (d) { return d >= cx && d < cx + L; }).forEach(function (d) {
+      f.rect(d - 10, 8, 20, 40, '#cdd1d7'); f.box(d - 10, 8, 20, 40, '#8d9197'); f.rect(d, 8, 1, 40, '#8d9197');
+      f.rect(d - 8, 14, 7, 18, '#2a303a'); f.rect(d + 2, 14, 7, 18, '#2a303a');
+      f.emit = true; f.rect(d - 2, 9, 4, 1, '#ff6a5a'); f.emit = false;
+    });
+  });
+  // cabina de delante (izquierda) y de atras (derecha)
+  f.rect(0, 6, 10, 46, '#16181c'); f.rect(2, 4, 8, 2, '#16181c'); f.rect(0, 14, 6, 18, '#2a3240');
+  f.emit = true; f.rect(1, 8, 7, 3, '#ff3040'); f.rect(1, 40, 3, 3, '#fffbe8'); f.emit = false;
+  f.rect(590, 6, 10, 46, '#16181c'); f.rect(590, 4, 8, 2, '#16181c'); f.emit = true; f.rect(596, 40, 3, 3, '#ff2a2a'); f.emit = false;
+  f.rect(296, 10, 8, 38, '#4a4c52');                                                   // fuelle entre coches
+  save(f, 'tren.png');
+}
+
 // ======================= ESTACION DE METRO =======================
 // Entrada (bajando de la calle), el tunel de acero con las pasarelas mecanicas y el
 // vestibulo con las canceladoras; al fondo, el arco que lleva a los andenes.
@@ -1178,4 +1250,4 @@ function metro() {
 
 cocinaCielo(); cocina(); cocinaMesa(); calleCielo(); calleLejos(); calleMedio(); calle();
 sheet(HERMANASTRA, 'npc-hermanastra.png'); sheet(PADRE, 'npc-padre.png'); sheet(LOURDES, 'npc-lourdes.png');
-objetos(); ethanSentado(); metro(); cieloCasa(); pasillo(); habitacion(); friki(); cartera(); cuadrilla();
+objetos(); ethanSentado(); metro(); cieloCasa(); pasillo(); habitacion(); friki(); cartera(); cuadrilla(); andenFondo(); anden(); tren();
