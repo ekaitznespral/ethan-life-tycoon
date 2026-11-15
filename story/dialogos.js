@@ -150,5 +150,30 @@ window.STORY_TEXT = {
     "lines": [
       { "who": "ethan", "text": "Aquí se pasa Aita las tardes jugando a lo retro." }
     ]
+  },
+  "ekaitz.espabila": {
+    "lines": [
+      { "who": "ekaitz", "text": "¡Venga, espabila!" }
+    ]
+  },
+  "ekaitz.te_espero": {
+    "lines": [
+      { "who": "ekaitz", "text": "Te espero." }
+    ]
+  },
+  "ekaitz.esperando": {
+    "lines": [
+      { "who": "ekaitz", "text": "¿Todavía aquí? ¡Corre a por la Barik, que te espero!" }
+    ]
+  },
+  "ekaitz.vamos": {
+    "lines": [
+      { "who": "ekaitz", "text": "¡Venga, pasa ya, que se nos va!" }
+    ]
+  },
+  "ekaitz.por_fin": {
+    "lines": [
+      { "who": "ekaitz", "text": "¡Por fin! Venga, que llegamos justos." }
+    ]
   }
 };

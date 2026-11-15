@@ -55,6 +55,17 @@ window.STORY = {
     barik: { name: 'Barik', icon: 6, desc: 'La tarjeta del metro. Estaba en la cartera, en el escritorio.' }
   },
 
+  // La cuadrilla (Calentaos 4.0): walk = andando de lado, bust = retrato para dialogos y movil.
+  // En los dialogos, who: 'ekaitz' (el id). alias = otros nombres con los que salen en el chat.
+  people: {
+    ekaitz: { name: 'Ekaitz', walk: 'sprites/story/amigo-ekaitz.png', bust: 'sprites/story/busto-ekaitz.png', voice: 240 },
+    manso: { name: 'Manso', walk: 'sprites/story/amigo-manso.png', bust: 'sprites/story/busto-manso.png', voice: 270 },
+    sadaba: { name: 'Sadaba', walk: 'sprites/story/amigo-sadaba.png', bust: 'sprites/story/busto-sadaba.png', voice: 150 },
+    lier: { name: 'Lier', walk: 'sprites/story/amigo-lier.png', bust: 'sprites/story/busto-lier.png', voice: 210 },
+    javi: { name: 'Javi', walk: 'sprites/story/amigo-javi.png', bust: 'sprites/story/busto-javi.png', voice: 190 },
+    igor: { name: 'Igor', walk: 'sprites/story/amigo-igor.png', bust: 'sprites/story/busto-igor.png', voice: 260 }
+  },
+
   // Vistas de cerca: s.closeup('id') abre la imagen y devuelve el id de la zona elegida (o null).
   // spots: zonas en pixeles de la imagen; src = imagen propia de esa zona (desaparece si su when deja de cumplirse).
   views: {
@@ -181,34 +192,47 @@ window.STORY = {
       await s.go('cocina', 'puerta');
       s.toast('Inténtalo otra vez: el metro pasa a la 1:15');
     },
-    // las canceladoras: la primera vez se da cuenta de que no lleva la Barik
+    // las canceladoras: justo antes llega Ekaitz ("Venga, espabila"). Sin la Barik, Ethan se da
+    // cuenta de que se la ha dejado y Ekaitz se queda esperando ("Te espero").
     canceladora: async function (s) {
+      await s.cine(true);
+      await s.walkTo(866); s.face(1);
+      if (!s.flag('ekaitz_llega')) {
+        s.actor('ekaitz', 760, 1);                 // llega por la pasarela, por detras
+        await s.actorWalk('ekaitz', 842, 110);
+        s.face(-1);
+        await s.talk('ekaitz.espabila');
+        s.flag('ekaitz_llega', 1);
+        s.face(1);
+      }
       if (!s.has('barik')) {
-        await s.cine(true);
-        await s.walkTo(866); s.face(1);
         await s.talk('canceladora.buscar');
         s.sfx('error');
         await s.wait(0.6);
         await s.talk('canceladora.sin_barik');
-        s.flag('barik_olvidada', 1);
+        s.face(-1);
+        await s.talk('ekaitz.te_espero');
+        s.flag('barik_olvidada', 1); s.flag('ekaitz_espera', 1);
         await s.cine(false);
         s.toast('Las pasarelas de vuelta van hacia la salida');
         return;
       }
-      // con la Barik: pasa
-      await s.cine(true);
-      await s.walkTo(866); s.face(1);
+      // con la Barik: pasan los dos
+      if (s.flag('ekaitz_espera')) { s.face(-1); await s.talk('ekaitz.por_fin'); s.face(1); }
       s.sfx('bip'); await s.wait(0.4);
       s.flag('canceladora_ok', 1); s.sfx('portillas');
       await s.wait(0.5);
-      s.flag('metro_ok', 1); s.complete('metro');
+      s.flag('metro_ok', 1); s.flag('ekaitz_espera', null); s.complete('metro');
+      var ek = s.actorWalk('ekaitz', 1020, 70);
       await s.walkTo(1046);
+      await ek;
       await s.wait(0.6);
       await s.fade(1, 900);
       await s.card('Continuará...');           // AQUI SIGUE LA HISTORIA (pendiente)
       await s.fade(0, 700);
       await s.cine(false);
     },
+    ekaitz: async function (s) { await s.talk(s.has('barik') ? 'ekaitz.vamos' : 'ekaitz.esperando'); },
     // la cartera, en el escritorio del cuarto de Ethan: ahi esta la Barik (solo la cogen los curiosos)
     cartera: async function (s) {
       for (;;) {
@@ -242,8 +266,8 @@ window.STORY = {
     { id: 'metro', name: 'Misión del metro, en la calle (00:40)', scene: 'calle', spawn: 'portal', clock: '00:40', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
     { id: 'metro_justo', name: 'Metro: a punto de perderlo (01:13)', scene: 'calle', spawn: 'portal', clock: '01:13', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
     { id: 'estacion', name: 'Metro: bajando a la estación (00:46)', scene: 'metro', spawn: 'entrada', clock: '00:46', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa' } },
-    { id: 'sin_barik', name: 'Sin la Barik: de vuelta a casa (00:52)', scene: 'pasillo', spawn: 'portal', clock: '00:52', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1 } },
-    { id: 'con_barik', name: 'Con la Barik, saliendo del portal (00:56)', scene: 'calle', spawn: 'portal', clock: '00:56', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1, barik_cogida: 1 }, inv: ['barik'] },
+    { id: 'sin_barik', name: 'Sin la Barik: de vuelta a casa (00:52)', scene: 'pasillo', spawn: 'portal', clock: '00:52', flags: { ekaitz_llega: 1, ekaitz_espera: 1, 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1 } },
+    { id: 'con_barik', name: 'Con la Barik, saliendo del portal (00:56)', scene: 'calle', spawn: 'portal', clock: '00:56', flags: { ekaitz_llega: 1, ekaitz_espera: 1, 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1, barik_cogida: 1 }, inv: ['barik'] },
     { id: 'casa', name: 'Pasillo de casa (escena de prueba)', scene: 'pasillo', spawn: 'cocina' },
     { id: 'cuarto', name: 'Cuarto de Ethan (escena de prueba)', scene: 'habitacion', spawn: 'puerta' },
     { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' },
@@ -348,11 +372,14 @@ window.STORY_SCENES = {
     ],
     // las portillas cerradas no dejan pasar
     blocks: [{ x: 878, when: function (g) { return !g.flag('canceladora_ok'); } }],
+    // Ekaitz esperando a que Ethan vuelva con la Barik
+    actors: [{ id: 'ekaitz', x: 842, dir: -1, when: function (g) { return g.flag('ekaitz_espera') && !g.flag('metro_ok'); } }],
     platforms: [{ x: 852, y: 154, w: 16 }, { x: 892, y: 154, w: 16 }],   // encima de las canceladoras
     spawns: { entrada: { x: 84, dir: 1 } },
     exits: [{ x: 6, w: 70, to: 'calle', spawn: 'metro', label: 'Subir a la calle' }],
     objects: [
-      { id: 'canceladora', name: 'Canceladora', x: 866, reach: 18, py: 140, label: 'Pasar la canceladora', run: 'canceladora', when: function (g) { return !g.flag('canceladora_ok'); } }
+      { id: 'ekaitz', name: 'Ekaitz', x: 842, reach: 12, py: 140, label: 'Hablar con Ekaitz', run: 'ekaitz', when: function (g) { return g.flag('ekaitz_espera') && !g.flag('metro_ok'); } },
+      { id: 'canceladora', name: 'Canceladora', x: 870, reach: 18, py: 140, label: 'Pasar la canceladora', run: 'canceladora', when: function (g) { return !g.flag('canceladora_ok'); } }
     ],
     fx: [
       { type: 'conveyor', belt: 0, x: 190, y: 196, w: 590, h: 3, rail: 184 },               // la pasarela de Ethan

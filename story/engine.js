@@ -74,7 +74,8 @@
   var scene = null, sceneId = null;
   var cam = { x: 0 };
   var P = { x: 0, y: 0, vx: 0, vy: 0, w: 14, h: 42, dir: 1, ground: false, onPlat: false, coyote: 0, buf: 0, drop: 0, dist: 0, frame: 1, sit: null, eatF: 0 };
-  var debug = false, time = 0, fx = [], npcs = [];
+  var debug = false, time = 0, fx = [], npcs = [], actors = {};
+  var PEOPLE = STORY.people || {}, talkers = {};
 
   // ---------------- partidas (ranuras) ----------------
   // Cada ranura guarda: escenario y posicion, tiempo jugado y, para lo que venga
@@ -175,13 +176,34 @@
 
   async function loadScene(id) {
     var s = SCENES[id]; if (!s) throw new Error('Escenario desconocido: ' + id);
-    var srcs = s.layers.map(function (l) { return l.src; }).concat((s.npcs || []).map(function (n) { return n.sprite; }));
+    var srcs = s.layers.map(function (l) { return l.src; }).concat((s.npcs || []).map(function (n) { return n.sprite; }))
+      .concat((s.actors || []).map(function (a) { return (PEOPLE[a.id] || {}).walk; }).filter(Boolean));
     // descarta las imagenes del escenario anterior que ya no hacen falta
     Object.keys(IMG).forEach(function (k) { if (srcs.indexOf(k) < 0 && KEEP.indexOf(k) < 0) delete IMG[k]; });
     await Promise.all(srcs.concat(KEEP).map(loadImg));
     scene = s; sceneId = id;
     fx = (s.fx || []).map(function (d) { return makeFx(d); });
     npcs = (s.npcs || []).map(function (d) { return { d: d, blinkT: 1 + Math.random() * 3, blink: 0, mouth: false }; });
+    actors = {};
+    (s.actors || []).forEach(function (a) { if (avail(a)) actors[a.id] = { id: a.id, x: a.x, dir: a.dir || 1, frame: 1, dist: 0, walk: null }; });
+  }
+  // amigos y otros personajes que andan (STORY.people): aparecen, caminan y desaparecen desde los guiones
+  function actorStep(dt) {
+    Object.keys(actors).forEach(function (k) {
+      var a = actors[k], w = a.walk; if (!w) return;
+      var dd = w.x - a.x, sp = w.speed || WALK;
+      if (Math.abs(dd) > 1) { a.x += Math.sign(dd) * Math.min(Math.abs(dd), sp * dt); a.dir = Math.sign(dd); a.dist += sp * dt; a.frame = Math.floor(a.dist / 7) % 4; }
+      else { a.x = w.x; a.frame = 1; a.dist = 0; a.walk = null; w.done(); }
+    });
+  }
+  function drawActors(cx) {
+    Object.keys(actors).forEach(function (k) {
+      var a = actors[k], pe = PEOPLE[a.id], im = pe && img(pe.walk); if (!im) return;
+      var dx = Math.round(a.x) - cx, dy = Math.round(floorAt(a.x)) - 46;
+      ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fillRect(dx - 8, Math.round(floorAt(a.x)) - 1, 16, 2);
+      if (a.dir > 0) ctx.drawImage(im, a.frame * 48, 0, 48, 48, dx - 24, dy, 48, 48);
+      else { ctx.save(); ctx.translate(dx + 24, dy); ctx.scale(-1, 1); ctx.drawImage(im, a.frame * 48, 0, 48, 48, 0, 0, 48, 48); ctx.restore(); }
+    });
   }
   function place(spawn, at) {
     var sp = (at && at.x != null) ? at : (scene.spawns[spawn] || { x: 40, dir: 1 });
@@ -463,6 +485,14 @@
     complete: function (id) { GS.flag('mision:' + id, 'hecha'); questBanner('hecha', id); },
     toast: function (t) { toast(t); },
     sfx: function (k) { sfx(k); },
+    // personajes que andan: s.actor('ekaitz', x, dir) lo pone; await s.actorWalk('ekaitz', x) lo lleva andando; s.actor('ekaitz', null) lo quita
+    actor: function (id, x, dir) {
+      if (x == null) { delete actors[id]; return; }
+      var pe = PEOPLE[id]; if (pe) loadImg(pe.walk);
+      actors[id] = { id: id, x: x, dir: dir || 1, frame: 1, dist: 0, walk: null };
+    },
+    actorWalk: function (id, x, speed) { var a = actors[id]; return new Promise(function (res) { if (!a) return res(); a.walk = { x: x, speed: speed, done: res }; }); },
+    actorFace: function (id, d) { if (actors[id]) actors[id].dir = d < 0 ? -1 : 1; },
     closeup: function (id) { var r = run; return new Promise(function (res) { if (r && (STORY.views || {})[id]) openLook(id, res); else res(null); }); },
     wait: function (sec) { var r = run; return new Promise(function (res) { if (r) r.waits.push({ t: sec, res: res }); else res(); }); },
     walkTo: function (x) { var r = run; return new Promise(function (res) { if (r) r.walk = { x: clampX(x), done: res }; else res(); }); },
@@ -491,6 +521,8 @@
   function whoOf(id) {
     if (id === 'ethan') return { name: 'Ethan', src: 'sprites/ethan-sheet.png', sw: 384, fr: 0, voice: 300 };
     for (var i = 0; i < npcs.length; i++) if (npcs[i].d.id === id) return { name: npcs[i].d.name, src: npcs[i].d.sprite, sw: 336, fr: 1, npc: npcs[i] };
+    var pe = PEOPLE[id];
+    if (pe) { if (!talkers[id]) talkers[id] = { d: { id: id, voice: pe.voice }, mouth: false }; return { name: pe.name, src: pe.bust, sw: 336, fr: 1, npc: talkers[id] }; }
     return { name: id || '' };
   }
   function showLine(who, text, opts, res) {
@@ -553,6 +585,7 @@
     if (run.eat) { npcs.forEach(function (o, i) { o.mouth = Math.sin(time * 9 + i * 2.1) > 0.35; }); P.eatF = Math.sin(time * 6.5) > 0.2 ? 1 : 0; }
     else P.eatF = 0;
     if (run.line) lineStep(dt);
+    actorStep(dt);
     if (run && run.phone) phoneStep(dt);
     if (run && run.look) lookStep();
     if (run && run.fly) run.fly = run.fly.filter(function (f) {
@@ -750,6 +783,12 @@
   // ---------------- el movil (chat a pantalla completa) ----------------
   var PH_COL = ['#ffb15e', '#7ee0ff', '#c79bff', '#8fdf6e', '#ff8fa8', '#ffd75e'];
   function phCol(name) { var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0; return PH_COL[h % PH_COL.length]; }
+  function personOf(name) {               // 'Sadaba' -> 'sadaba' (o un alias de STORY.people)
+    if (!name) return null; var n = String(name).toLowerCase();
+    if (PEOPLE[n]) return n;
+    for (var k in PEOPLE) if ((PEOPLE[k].alias || []).indexOf(n) >= 0) return k;
+    return null;
+  }
   function openPhone(key, title, res) {
     var d = TEXT[key] || { lines: [] };
     var who = []; d.lines.forEach(function (l) { if (l.who && l.who !== 'ethan' && who.indexOf(l.who) < 0) who.push(l.who); });
@@ -779,7 +818,15 @@
         if (!me) { var n = document.createElement('b'); n.textContent = L2.who || ''; n.style.color = phCol(L2.who || ''); b.appendChild(n); }
         var tx = document.createElement('span'); tx.textContent = L2.text; b.appendChild(tx);
         var hr = document.createElement('small'); hr.textContent = $('phh').textContent; b.appendChild(hr);
-        $('phm').appendChild(b); $('phm').scrollTop = 1e6; $('pht').textContent = '';
+        var pid = !me && personOf(L2.who), row = b;
+        if (pid) {                               // foto del amigo al lado del mensaje (la cara de su retrato)
+          row = document.createElement('div'); row.className = 'prow';
+          var av = document.createElement('i'); av.className = 'pav'; av.style.backgroundImage = 'url(' + PEOPLE[pid].bust + ')';
+          av.style.backgroundSize = 'calc(var(--s) * ' + (336 * 0.55) + 'px) calc(var(--s) * ' + (48 * 0.55) + 'px)';
+          av.style.backgroundPosition = 'calc(var(--s) * ' + (-(48 + 14) * 0.55) + 'px) calc(var(--s) * ' + (-5 * 0.55) + 'px)';
+          row.appendChild(av); row.appendChild(b);
+        }
+        $('phm').appendChild(row); $('phm').scrollTop = 1e6; $('pht').textContent = '';
         sfx('msg'); P2.ph = 'shown'; P2.t = 0;
       }
       return;
@@ -1291,6 +1338,7 @@
       motes.forEach(function (m) { ctx.globalAlpha = Math.max(0, m.l / m.ml) * 0.55; ctx.fillRect(Math.round(m.x) - cx, Math.round(m.y) - 1, 1, 1); });
       ctx.globalAlpha = 1;
     }
+    drawActors(cx);
     var e = img(ETHAN), es = img(SIT);
     if (P.sit && es) ctx.drawImage(es, (P.eatF || 0) * 48, 0, 48, 48, Math.round(P.x) - 24 - cx, Math.round(P.y) - 46, 48, 48);
     else if (e) {

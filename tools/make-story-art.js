@@ -263,7 +263,7 @@ function outline(f) { // contorno de tinta alrededor de todo lo opaco
 }
 function person(o, look, blink, talk) {
   var f = new FB(48, 48), r = rng(o.seed || 1);
-  var S = '#e8b990', s = '#c9966b', fat = !!o.fat, T = HT, B = T + 15;
+  var S = o.skin || '#e8b990', s = o.skinS || '#c9966b', fat = !!o.fat, T = HT, B = T + 15;
   var hx0 = fat ? 15 : 16, hx1 = fat ? 32 : 31;
   var tx0 = fat ? 10 : 15, tx1 = fat ? 37 : 32;
   if (o.hairBack) o.hairBack(f, hx0, hx1, T);
@@ -272,7 +272,7 @@ function person(o, look, blink, talk) {
   f.rect(tx1 - 1, B + 3, 1, 12, o.shirtS); f.rect(tx0 + 3, B + 3, 1, 4, o.shirtS); f.rect(tx1 - 3, B + 3, 1, 4, o.shirtS);
   if (o.torso) o.torso(f, tx0, tx1, B);
   // manos sobre la mesa
-  f.rect(tx0, 31, 4, 3, S); f.rect(tx0, 33, 4, 1, s); f.rect(tx1 - 3, 31, 4, 3, S); f.rect(tx1 - 3, 33, 4, 1, s);
+  if (!o.noHands) { f.rect(tx0, 31, 4, 3, S); f.rect(tx0, 33, 4, 1, s); f.rect(tx1 - 3, 31, 4, 3, S); f.rect(tx1 - 3, 33, 4, 1, s); }
   // cuello y cabeza
   f.rect(21, B - 1, 6, 3, s);
   for (var y = T; y <= B; y++) {
@@ -959,6 +959,122 @@ function cartera() {
   save(b, 'cartera-barik.png');
 }
 
+
+// ======================= LA CUADRILLA (Calentaos 4.0) =======================
+// Cada amigo tiene dos hojas:
+//  - busto-<id>.png: retrato de frente (7 fotogramas, como la familia) para los dialogos y el movil
+//  - amigo-<id>.png: andando de lado (4 fotogramas, mirando a la derecha), hecho sobre el cuerpo de
+//    Ethan (sprites/ethan-walk.png) cambiando pelo, piel, ropa y detalles.
+// Ropa inspirada en las fotos, sin escudos ni marcas.
+var AMIGOS = {
+  ekaitz: { hair: '#3b2a1f', hairH: '#5e4533', shirt: '#26272b', shirtS: '#18191c', pants: '#b8c6d6', pantsS: '#94a4b8', style: 'tupe' },
+  manso:  { hair: '#2a1f1a', hairH: '#463630', shirt: '#2f4a3a', shirtS: '#22382b', pants: '#2a2a30', pantsS: '#1c1c22', style: 'flequillo' },
+  sadaba: { hair: '#5a3a24', hairH: '#7a5236', shirt: '#24304a', shirtS: '#18223a', pants: '#d8ccb0', pantsS: '#b8ac90', style: 'corto', barba: '#4a2e1c', fat: true, skin: '#e8b08e', skinS: '#c88a68' },
+  lier:   { hair: '#3a2c22', hairH: '#56443a', shirt: '#1e1f23', shirtS: '#121316', pants: '#2a3448', pantsS: '#1e2636', style: 'rapado', barbita: '#b8907a', pendiente: true, tatu: true, skin: '#ecc0a0', skinS: '#cc9a7a' },
+  javi:   { hair: '#2a1f1a', hairH: '#463630', shirt: '#f2f0ea', shirtS: '#cfcac0', pants: '#a8c4e0', pantsS: '#86a4c4', style: 'corto', rotos: true, skin: '#e6b08a', skinS: '#c68e68' },
+  igor:   { hair: '#241a14', hairH: '#44342a', shirt: '#3a3a40', shirtS: '#2a2a30', pants: '#22222a', pantsS: '#16161c', style: 'rizos', print: true }
+};
+// --- retrato de frente ---
+function bustHair(o) {
+  return function (f, a, b, T) {
+    var H = o.hair, L = o.hairH, top = { tupe: T - 4, flequillo: T - 2, corto: T - 1, rapado: T - 1, rizos: T - 3 }[o.style];
+    for (var y = top; y <= T + 2; y++) {
+      var c = y === top ? 4 : y === top + 1 ? 2 : y === top + 2 ? 1 : 0;
+      f.rect(a - 1 + c, y, b - a + 3 - c * 2, 1, o.style === 'rapado' && y > T ? o.hairH : H);
+    }
+    if (o.style === 'tupe') {                    // tupe ondulado hacia arriba, laterales cortos
+      [a + 2, a + 6, a + 10].forEach(function (x) { f.rect(x, top - 1, 3, 1, H); });
+      f.rect(a + 3, top + 1, 9, 1, L); f.rect(a + 5, top, 3, 1, L); f.rect(b - 3, T + 2, 3, 2, H);
+      f.rect(a - 1, T + 3, 1, 4, L); f.rect(b + 1, T + 3, 1, 4, L);
+    } else if (o.style === 'flequillo') {       // flequillo liso tapando la frente
+      for (var x = a; x <= b; x++) f.rect(x, T + 3, 1, (x % 3) ? 2 : 1, H);
+      f.rect(a + 2, T, 10, 1, L); f.rect(a - 1, T + 3, 1, 5, H); f.rect(b + 1, T + 3, 1, 5, H);
+    } else if (o.style === 'corto') {
+      f.rect(a + 3, T, 8, 1, L); f.rect(a - 1, T + 3, 1, 3, H); f.rect(b + 1, T + 3, 1, 3, H);
+    } else if (o.style === 'rapado') {          // degradado: arriba oscuro, los lados casi piel
+      f.rect(a + 3, T - 1, 9, 1, L); f.rect(a - 1, T + 3, 1, 4, '#9a8070'); f.rect(b + 1, T + 3, 1, 4, '#9a8070');
+    } else if (o.style === 'rizos') {
+      for (var x = a; x <= b; x += 3) { f.disc(x, top + 1, 2, H); f.px(x, top + 1, L); }
+      for (var x = a + 1; x <= b; x += 3) f.px(x, T + 1, L);
+      f.rect(a - 1, T + 3, 2, 4, H); f.rect(b, T + 3, 2, 4, H);
+    }
+  };
+}
+function bustFace(o) {
+  return function (f, a, b, T) {
+    var B = T + 15;
+    if (o.barba) {                               // barba poblada y bigote, dejando la boca
+      for (var y = T + 9; y <= B + 1; y++) for (var x = a + (y < T + 12 ? 0 : 1); x <= b - (y < T + 12 ? 0 : 1); x++) {
+        if (y >= T + 11 && y <= T + 12 && x >= 22 && x <= 25) continue;
+        if (y < T + 11 && x > a + 2 && x < b - 2 && y < T + 10) continue;
+        f.px(x, y, (x + y) % 4 ? o.barba : '#6a4630');
+      }
+      f.rect(21, T + 10, 6, 1, o.barba);
+    }
+    if (o.barbita) for (var y = T + 10; y <= B; y++) for (var x = a + 1; x < b; x++) if ((x * 7 + y * 3) % 8 === 0 && !(y >= T + 11 && y <= T + 12 && x >= 22 && x <= 25)) f.px(x, y, o.barbita);
+  };
+}
+function bustTorso(o) {
+  return function (f, a, b, B) {
+    if (o.shirt === '#f2f0ea') f.rect(20, B + 1, 8, 1, '#cfcac0');
+    if (o.print) { f.rect(19, B + 6, 10, 2, '#f2efe8'); f.rect(20, B + 9, 8, 1, '#9a9aa2'); }
+    if (o.tatu) { f.px(a + 1, B + 8, '#4a5a6a'); f.px(a + 2, B + 10, '#4a5a6a'); f.px(a + 1, B + 12, '#4a5a6a'); }
+  };
+}
+function bustSheet(id) {
+  var o = AMIGOS[id];
+  sheet({ seed: id.length * 7, noHands: true, fat: !!o.fat, skin: o.skin, skinS: o.skinS, shirt: o.shirt, shirtS: o.shirtS, brow: o.hair,
+    hairFront: bustHair(o), face: bustFace(o), torso: bustTorso(o),
+    after: o.pendiente ? function (f, a, b, T) { f.px(a - 1, T + 9, '#e8e8f0'); f.px(a - 1, T + 10, '#c0c0c8'); } : null }, 'busto-' + id + '.png');
+}
+// --- andando de lado (sobre el cuerpo de Ethan) ---
+var EW = null;
+function amigoWalk(id) {
+  var o = AMIGOS[id];
+  if (!EW) EW = readPNG(path.join(__dirname, '..', 'sprites', 'ethan-walk.png'));
+  var out = new FB(192, 48), SK = o.skin || '#e8b990', SKS = o.skinS || '#c9966b';
+  for (var fr = 0; fr < 4; fr++) {
+    var f = new FB(48, 48), dy = fr % 2 ? 0 : 1;
+    for (var y = 0; y < 48; y++) for (var x = 0; x < 48; x++) {
+      var k = (y * 192 + fr * 48 + x) * 4; if (!EW.d[k + 3]) continue;
+      var c = [EW.d[k], EW.d[k + 1], EW.d[k + 2]], key = c.join(','), ry = y - dy, out_ = null;
+      if (key === '40,33,30' || key === '74,59,48' || key === '58,42,30') { if (ry <= 13) continue; }
+      if (key === '31,36,30' && (ry <= 1 || (x <= 15 && ry <= 13))) continue;           // contorno del pelo: se rehace
+      if (key === '232,185,144' || key === '216,163,121') out_ = ry >= 34 ? o.pants : SK;
+      else if (key === '201,150,107' || key === '168,128,94') out_ = ry >= 34 ? o.pantsS : SKS;
+      else if (key === '58,110,216') out_ = ry >= 40 ? '#3a3a40' : o.shirt;
+      else if (key === '41,82,168') out_ = o.shirtS;
+      else if (key === '40,50,78') out_ = o.pants;
+      else if (key === '58,72,108') out_ = o.pantsS;
+      else if (key === '248,246,240') out_ = ry >= 40 ? '#f2f0ea' : ry >= 27 ? o.pantsS : ry >= 17 ? o.shirt : '#f8f6f0';
+      else if (key === '196,46,40') out_ = '#3a3a40';
+      if (out_) f.px(x, y, out_); else f.px(x, y, [c[0], c[1], c[2], 255]);
+    }
+    // pelo nuevo
+    var H = o.hair, L = o.hairH, T0 = dy + { tupe: 0, flequillo: 2, corto: 3, rapado: 3, rizos: 1 }[o.style];
+    for (var y = T0; y <= dy + 7; y++) { var c0 = y === T0 ? 3 : y === T0 + 1 ? 1 : 0; f.rect(15 + c0, y, 15 - c0 * 2, 1, H); }
+    f.rect(14, dy + 4, 3, 10, o.style === 'rapado' ? '#9a8070' : H);                   // nuca
+    f.rect(16, dy + 8, 1, 5, H);                                                         // patilla
+    if (o.style === 'tupe') { [16, 20, 24].forEach(function (x) { f.rect(x, dy - 1 < 0 ? 0 : dy - 1, 3, 1, H); }); f.rect(27, dy + 1, 4, 3, H); f.rect(18, dy + 1, 8, 1, L); f.rect(14, dy + 6, 2, 6, L); }
+    if (o.style === 'flequillo') { f.rect(24, dy + 8, 6, 1, H); f.rect(26, dy + 9, 3, 1, H); f.rect(28, dy + 3, 2, 5, H); f.rect(18, dy + 3, 8, 1, L); }
+    if (o.style === 'corto') { f.rect(18, dy + 4, 8, 1, L); f.rect(28, dy + 4, 1, 3, H); }
+    if (o.style === 'rapado') { f.rect(18, dy + 4, 9, 1, L); f.rect(15, dy + 6, 13, 2, '#7a6050'); }
+    if (o.style === 'rizos') { for (var x = 15; x < 30; x += 3) { f.disc(x + 1, T0 + 1, 2, H); f.px(x + 1, T0 + 1, L); } f.px(18, dy + 4, L); f.px(23, dy + 5, L); f.px(15, dy + 9, L); }
+    // barbas y detalles
+    if (o.barba) { for (var y = dy + 12; y <= dy + 16; y++) for (var x = 18; x <= 29; x++) { var q = (y * 48 + x) * 4; if (f.d[q + 3] && f.d[q] === hex(SK)[0] && f.d[q + 1] === hex(SK)[1]) f.px(x, y, (x + y) % 3 ? o.barba : '#6a4630'); } }
+    if (o.barbita) { for (var y = dy + 12; y <= dy + 16; y++) for (var x = 18; x <= 29; x++) { var q = (y * 48 + x) * 4; if ((x * 5 + y * 3) % 6 === 0 && f.d[q + 3] && f.d[q] === hex(SK)[0]) f.px(x, y, o.barbita); } }
+    if (o.pendiente) f.px(20, dy + 13, '#e8e8f0');
+    if (o.tatu) for (var y = 22; y < 34; y++) for (var x = 24; x < 36; x++) { var q = (y * 48 + x) * 4; if ((x + y) % 2 === 0 && f.d[q + 3] && f.d[q] === hex(SK)[0] && f.d[q + 1] === hex(SK)[1]) f.px(x, y, '#5a6a7a'); }
+    if (o.rotos) { f.px(22, 37 + (fr % 2), '#f2f0ea'); f.px(28, 39, '#f2f0ea'); }
+    if (o.print) { f.rect(23, dy + 22, 6, 2, '#f2efe8'); }
+    if (o.fat) { for (var y = dy + 21; y <= dy + 31; y++) { var w = y < dy + 24 || y > dy + 29 ? 1 : 2; f.rect(31, y, w, 1, y > dy + 27 ? o.pants : o.shirt); } }
+    outline(f);
+    for (var y = 0; y < 48; y++) for (var x = 0; x < 48; x++) { var a = (y * 48 + x) * 4, b2 = (y * 192 + fr * 48 + x) * 4; for (var c2 = 0; c2 < 4; c2++) out.d[b2 + c2] = f.d[a + c2]; }
+  }
+  save(out, 'amigo-' + id + '.png');
+}
+function cuadrilla() { Object.keys(AMIGOS).forEach(function (id) { bustSheet(id); amigoWalk(id); }); }
+
 // ======================= ESTACION DE METRO =======================
 // Entrada (bajando de la calle), el tunel de acero con las pasarelas mecanicas y el
 // vestibulo con las canceladoras; al fondo, el arco que lleva a los andenes.
@@ -1062,4 +1178,4 @@ function metro() {
 
 cocinaCielo(); cocina(); cocinaMesa(); calleCielo(); calleLejos(); calleMedio(); calle();
 sheet(HERMANASTRA, 'npc-hermanastra.png'); sheet(PADRE, 'npc-padre.png'); sheet(LOURDES, 'npc-lourdes.png');
-objetos(); ethanSentado(); metro(); cieloCasa(); pasillo(); habitacion(); friki(); cartera();
+objetos(); ethanSentado(); metro(); cieloCasa(); pasillo(); habitacion(); friki(); cartera(); cuadrilla();
