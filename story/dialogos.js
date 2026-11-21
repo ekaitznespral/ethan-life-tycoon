@@ -450,5 +450,11 @@ window.STORY_TEXT = {
       { "who": "sadaba", "text": "¡Toma ya! ¡Ethan, qué máquina!" },
       { "who": "ekaitz", "text": "¡Vámonos de aquí antes de que vuelvan!" }
     ]
+  },
+  "casa.despierta": {
+    "lines": [
+      { "who": "ethan", "text": "Uf... qué cabeza." },
+      { "who": "ethan", "text": "¿Cómo llegué ayer a casa?" }
+    ]
   }
 };

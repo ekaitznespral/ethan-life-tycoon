@@ -91,12 +91,12 @@ function viajeTick(s, dt) {
   }
 }
 
-// La pelea en la rotonda: llegan tres macarras, aparecen los corazones, uno saca una navaja y empieza
+// La pelea en la rotonda: llegan tres marroquies, aparecen los corazones, uno saca una navaja y empieza
 // el combate. Si te tumban, se repite.
 var MACARRAS_PELEA = [
-  { id: 'macarra1', src: 'sprites/story/macarra-1.png', x: 150, hp: 3 },
-  { id: 'macarra2', src: 'sprites/story/macarra-2.png', x: 182, hp: 3 },
-  { id: 'macarra3', src: 'sprites/story/macarra-3-navaja.png', x: 214, hp: 4, knife: true, wind: 0.45, reach: 28 }
+  { id: 'macarra1', src: 'sprites/story/macarra-1.png', x: 150, hp: 3, wind: 0.48, spd: 62, evade: 0.4 },
+  { id: 'macarra2', src: 'sprites/story/macarra-2.png', x: 182, hp: 3, wind: 0.5, spd: 60, evade: 0.45 },
+  { id: 'macarra3', src: 'sprites/story/macarra-3-navaja.png', x: 214, hp: 4, knife: true, wind: 0.4, reach: 28, spd: 64, evade: 0.5 }
 ];
 async function API_pelea(s) {
   await s.cine(true);
@@ -134,8 +134,19 @@ async function API_pelea(s) {
   s.complete('cubatas');
   await s.wait(1);
   await s.fade(1, 900);
-  await s.card('Continuará...');             // AQUI SIGUE LA HISTORIA (pendiente)
-  await s.fade(0, 700);
+  // la vuelta, rapida: metro y a casa
+  await s.card('Y sin más, al metro y para casa...');
+  s.flag('tajada', 0); s.flag('dia', 1); s.take('cubata');
+  await s.card('1 de enero de 2023');
+  s.clock('11:30');
+  await s.go('habitacion', 'cama');
+  s.lie(24, 150);
+  await s.fade(0, 1400);
+  await s.wait(1.6);
+  await s.talk('casa.despierta');
+  s.lie(null); s.face(1);
+  await s.wait(0.4);
+  s.complete('intro');                        // fin de la introduccion
   await s.cine(false);
 }
 
@@ -169,8 +180,8 @@ window.STORY = {
     sadaba: { name: 'Sadaba', walk: 'sprites/story/amigo-sadaba.png', bust: 'sprites/story/busto-sadaba.png', voice: 150 },
     lier: { name: 'Lier', walk: 'sprites/story/amigo-lier.png', bust: 'sprites/story/busto-lier.png', voice: 210 },
     javi: { name: 'Javi', walk: 'sprites/story/amigo-javi.png', bust: 'sprites/story/busto-javi.png', voice: 190 },
-    macarra1: { name: 'Macarra', walk: 'sprites/story/macarra-1.png', voice: 130 },
-    macarra2: { name: 'Macarra', walk: 'sprites/story/macarra-2.png', voice: 160 },
+    macarra1: { name: 'Marroquí', walk: 'sprites/story/macarra-1.png', voice: 130 },
+    macarra2: { name: 'Marroquí', walk: 'sprites/story/macarra-2.png', voice: 160 },
     macarra3: { name: 'El de la navaja', walk: 'sprites/story/macarra-3.png', voice: 110 },
     igor: { name: 'Igor', walk: 'sprites/story/amigo-igor.png', bust: 'sprites/story/busto-igor.png', voice: 260 }
   },
@@ -205,6 +216,12 @@ window.STORY = {
   },
 
   missions: {
+    // la introduccion entera (Nochevieja); se completa al despertar el 1 de enero
+    intro: {
+      name: 'Nochevieja', type: 'principal',
+      desc: 'La Nochevieja de 2022: la cena con la familia, las campanadas, el metro con la cuadrilla, la Sonora... y la vuelta a casa.',
+      steps: [{ text: 'Sobrevive a la Nochevieja', done: function (g) { return g.flag('mision:intro') === 'hecha'; } }]
+    },
     cena: {
       name: 'La cena de Nochevieja', type: 'principal',   // principal | secundaria
       desc: 'Es Nochevieja y la familia ya está a la mesa. Lourdes quiere que saques su tortilla de la nevera para la cena.',
@@ -624,6 +641,7 @@ window.STORY = {
     { id: 'dentro', name: 'Dentro de la Sonora (02:50)', scene: 'sonora', spawn: 'entrada', clock: '02:50', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop', salida_ok: 1, rotonda: 1, botellas: 1, tajada: 3, en_sonora: 1, 'mision:tajada': 'hecha', 'mision:noche': 'activa' }, inv: ['barik'] },
     { id: 'cubatas', name: 'Cubatas en la rotonda (03:02)', scene: 'rotonda', spawn: 'sonora', clock: '03:02', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop', salida_ok: 1, rotonda: 1, botellas: 1, tajada: 3, en_sonora: 1, 'mision:tajada': 'hecha', 'mision:noche': 'hecha', fuera_cubatas: 1, 'hora:cubatas_salir': 1, 'mision:cubatas': 'activa' }, inv: ['barik'] },
     { id: 'pelea', name: 'Justo antes de la pelea (03:08)', scene: 'rotonda', spawn: 'sonora', clock: '03:08', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop', salida_ok: 1, rotonda: 1, botellas: 1, tajada: 3, en_sonora: 1, 'mision:tajada': 'hecha', tajada: 4, 'mision:noche': 'hecha', fuera_cubatas: 1, 'hora:cubatas_salir': 1, 'mision:cubatas': 'activa', cubatas_cogidos: 1, cubatas: 1 }, inv: ['barik', 'cubata'] },
+    { id: 'manana', name: '1 de enero, despertando (11:30)', scene: 'habitacion', spawn: 'cama', clock: '11:30', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', salida_ok: 1, rotonda: 1, botellas: 1, en_sonora: 1, 'mision:tajada': 'hecha', 'mision:noche': 'hecha', fuera_cubatas: 1, 'hora:cubatas_salir': 1, 'mision:cubatas': 'hecha', cubatas_cogidos: 1, cubatas: 2, pelea_vista: 1, pelea_ganada: 1, dia: 1, tajada: 0, 'mision:intro': 'hecha' }, inv: ['barik'] },
     { id: 'casa', name: 'Pasillo de casa (escena de prueba)', scene: 'pasillo', spawn: 'cocina' },
     { id: 'cuarto', name: 'Cuarto de Ethan (escena de prueba)', scene: 'habitacion', spawn: 'puerta' },
     { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' },
@@ -636,7 +654,8 @@ window.STORY_SCENES = {
     name: 'Cocina', sub: 'Casa de Ethan · Nochevieja',
     w: 640, floor: 196,
     layers: [
-      { src: 'sprites/story/cocina-cielo.png', f: 0.3 },
+      { src: 'sprites/story/cocina-cielo.png', f: 0.3, when: function (g) { return !g.flag('dia'); } },
+      { src: 'sprites/story/cocina-cielo-dia.png', f: 0.3, when: function (g) { return g.flag('dia'); } },
       { src: 'sprites/story/cocina.png', f: 1 },
       { src: 'sprites/story/cocina-mesa.png', f: 1, front: true }
     ],
@@ -668,7 +687,7 @@ window.STORY_SCENES = {
     spawns: { inicio: { x: 150, dir: 1 }, puerta: { x: 606, dir: -1 }, mesa: { x: 520, dir: -1 }, nevera: { x: 76, dir: 1 }, silla: { x: 340, dir: 1 } },
     exits: [{ x: 588, w: 42, to: 'pasillo', spawn: 'cocina', label: 'Salir al pasillo', when: function (g) { return g.flag('ano_nuevo'); }, locked: 'puerta_cerrada' }],
     fx: [
-      { type: 'fireworks', z: 0, x0: 40, x1: 340, y0: 58, y1: 100, rate: 1.1, when: function (g) { return g.flag('ano_nuevo'); }, light: { x: 279, y: 86, r: 240, a: 0.09 } },
+      { type: 'fireworks', z: 0, x0: 40, x1: 340, y0: 58, y1: 100, rate: 1.1, when: function (g) { return g.flag('ano_nuevo') && !g.flag('dia'); }, light: { x: 279, y: 86, r: 240, a: 0.09 } },
       { type: 'tv', x: 539, y: 85, w: 40, h: 25 },
       { type: 'glow', x: 559, y: 97, r: 46, c: '120,160,255', a: 0.16, flicker: 1 },
       { type: 'glow', x: 314, y: 14, r: 90, c: '255,250,225', a: 0.10 },
@@ -702,7 +721,7 @@ window.STORY_SCENES = {
       { x: 1500, w: 60, to: 'metro', spawn: 'entrada', label: 'Bajar al metro', when: function (g) { return g.flag('mision:metro') === 'activa'; } }
     ],
     fx: [
-      { type: 'fireworks', z: 0, x0: 20, x1: 480, y0: 15, y1: 70, rate: 1.4, when: function (g) { return g.flag('ano_nuevo'); }, light: { x: 0, y: 0, r: 0, a: 0.07 } },
+      { type: 'fireworks', z: 0, x0: 20, x1: 480, y0: 15, y1: 70, rate: 1.4, when: function (g) { return g.flag('ano_nuevo') && !g.flag('dia'); }, light: { x: 0, y: 0, r: 0, a: 0.07 } },
       { type: 'blink', x: 304, y: 57, f: 0.3, z: 1 },
       { type: 'blink', x: 322, y: 69, f: 0.3, z: 1, phase: 0.5 },
       { type: 'glow', x: 664, y: 126, r: 46, c: '255,225,150', a: 0.24 },
@@ -755,7 +774,8 @@ window.STORY_SCENES = {
     name: 'Pasillo', sub: 'Casa de Ethan',
     w: 1100, floor: 196,
     layers: [
-      { src: 'sprites/story/casa-cielo.png', f: 0.3 },
+      { src: 'sprites/story/casa-cielo.png', f: 0.3, when: function (g) { return !g.flag('dia'); } },
+      { src: 'sprites/story/casa-cielo-dia.png', f: 0.3, when: function (g) { return g.flag('dia'); } },
       { src: 'sprites/story/pasillo.png', f: 1 }
     ],
     platforms: [
@@ -776,7 +796,7 @@ window.STORY_SCENES = {
       { id: 'padres', name: 'Habitación de Aita y Lourdes', x: 816, reach: 16, py: 128, label: 'Habitación de Aita y Lourdes', run: 'padres' }
     ],
     fx: [
-      { type: 'fireworks', z: 0, x0: 30, x1: 270, y0: 40, y1: 90, rate: 1.2, when: function (g) { return g.flag('ano_nuevo'); }, light: { x: 150, y: 90, r: 160, a: 0.07 } },
+      { type: 'fireworks', z: 0, x0: 30, x1: 270, y0: 40, y1: 90, rate: 1.2, when: function (g) { return g.flag('ano_nuevo') && !g.flag('dia'); }, light: { x: 150, y: 90, r: 160, a: 0.07 } },
       { type: 'glow', x: 600, y: 10, r: 50, c: '255,240,200', a: 0.07 },
       { type: 'glow', x: 780, y: 10, r: 50, c: '255,240,200', a: 0.07 },
       { type: 'glow', x: 980, y: 10, r: 50, c: '255,240,200', a: 0.07 },
@@ -790,18 +810,19 @@ window.STORY_SCENES = {
     name: 'Cuarto de Ethan', sub: 'Casa de Ethan',
     w: 420, floor: 196,
     layers: [
-      { src: 'sprites/story/casa-cielo.png', f: 0.3 },
+      { src: 'sprites/story/casa-cielo.png', f: 0.3, when: function (g) { return !g.flag('dia'); } },
+      { src: 'sprites/story/casa-cielo-dia.png', f: 0.3, when: function (g) { return g.flag('dia'); } },
       { src: 'sprites/story/habitacion.png', f: 1 }
     ],
     platforms: [{ x: 20, y: 166, w: 92 }, { x: 276, y: 158, w: 92 }],   // cama y escritorio
-    spawns: { puerta: { x: 386, dir: -1 } },
+    spawns: { puerta: { x: 386, dir: -1 }, cama: { x: 124, dir: 1 } },
     exits: [{ x: 380, w: 38, to: 'pasillo', spawn: 'ethan', label: 'Salir al pasillo' }],
     objects: [
       { id: 'cartera', name: 'Cartera', x: 290, reach: 14, py: 138, label: 'Mirar la cartera', run: 'cartera' },
       { id: 'pc', name: 'PC', x: 323, reach: 12, py: 112, label: 'Mirar el PC', run: 'pc' }
     ],
     fx: [
-      { type: 'fireworks', z: 0, x0: 190, x1: 260, y0: 40, y1: 90, rate: 1.2, when: function (g) { return g.flag('ano_nuevo'); }, light: { x: 224, y: 90, r: 160, a: 0.07 } },
+      { type: 'fireworks', z: 0, x0: 190, x1: 260, y0: 40, y1: 90, rate: 1.2, when: function (g) { return g.flag('ano_nuevo') && !g.flag('dia'); }, light: { x: 224, y: 90, r: 160, a: 0.07 } },
       { type: 'glow', x: 323, y: 140, r: 36, c: '120,170,255', a: 0.2, flicker: 1 },
       { type: 'glow', x: 200, y: 10, r: 70, c: '255,240,200', a: 0.12 }
     ]
@@ -966,7 +987,7 @@ window.STORY_SCENES = {
       { id: 'cubatas_buscar', name: 'Matorrales', x: 420, reach: 16, py: 150, label: 'Buscar entre los matorrales', run: 'cubatas_buscar', when: function (g) { return g.flag('mision:cubatas') === 'activa' && !g.flag('cubatas_cogidos'); } },
       { id: 'cubata_coger', name: 'Cubatas', x: 420, reach: 16, py: 150, label: 'Coger otro cubata', run: 'cubata_coger', when: function (g) { return g.flag('cubatas_cogidos') && !g.has('cubata') && (g.flag('cubatas') || 0) < 2; } },
       { id: 'cubata_beber', name: 'Cubata', x: 318, reach: 320, py: 150, label: 'Beberte el cubata', run: 'cubata_beber', when: function (g) { return g.has('cubata'); } },
-      { id: 'pelea_otra', name: 'Pelea', x: 318, reach: 320, py: 150, label: 'Plantar cara a los macarras', run: 'pelea_reintentar', when: function (g) { return (g.flag('cubatas') || 0) >= 2 && !g.flag('pelea_ganada'); } },
+      { id: 'pelea_otra', name: 'Pelea', x: 318, reach: 320, py: 150, label: 'Plantar cara', run: 'pelea_reintentar', when: function (g) { return (g.flag('cubatas') || 0) >= 2 && !g.flag('pelea_ganada'); } },
       { id: 'destorni_beber', name: 'Destorni', x: 318, reach: 320, py: 150, label: 'Beberte el destorni', run: 'destorni_beber', when: function (g) { return g.has('destorni'); } },
       { id: 'rot_ekaitz', name: 'Ekaitz', x: 250, reach: 9, py: 144, label: 'Hablar con Ekaitz', run: 'rotonda_amigo', when: function (g) { return g.flag('rotonda'); } },
       { id: 'rot_javi', name: 'Javi', x: 230, reach: 9, py: 144, label: 'Hablar con Javi', run: 'rotonda_amigo', when: function (g) { return g.flag('rotonda'); } },

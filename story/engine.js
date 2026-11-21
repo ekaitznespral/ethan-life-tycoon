@@ -69,7 +69,7 @@
     im.src = src; IMG[src] = e; return e.p;
   }
   function img(src) { return IMG[src] && IMG[src].im; }
-  var ETHAN = 'sprites/ethan-walk.png', SIT = 'sprites/story/ethan-sit.png', OBJ = 'sprites/story/objetos.png', PELEA = 'sprites/story/ethan-pelea.png';
+  var ETHAN = 'sprites/ethan-walk.png', SIT = 'sprites/story/ethan-sit.png', CAMA = 'sprites/story/ethan-cama.png', OBJ = 'sprites/story/objetos.png', PELEA = 'sprites/story/ethan-pelea.png';
   var KEEP = [ETHAN, SIT, OBJ];
 
   // ---------------- estado ----------------
@@ -208,7 +208,7 @@
   function fightStart(cfg, res) {
     fight = { res: res, max: cfg.hp || 3, end: 0, out: null, foes: cfg.foes.map(function (f) {
       loadImg(f.src);
-      return { src: f.src, x: f.x, dir: f.x < P.x ? 1 : -1, hp: f.hp || 3, knife: !!f.knife, wind: f.wind || 0.55, reach: f.reach || 24, spd: f.spd || 55,
+      return { src: f.src, x: f.x, dir: f.x < P.x ? 1 : -1, hp: f.hp || 3, knife: !!f.knife, wind: f.wind || 0.55, reach: f.reach || 24, spd: f.spd || 55, evade: f.evade,
         st: 'walk', t: 0.5 + Math.random() * 0.8, frame: 1, dist: 0, kv: 0, flash: 0 };
     }) };
     P.hp = fight.max; P.inv = 0; P.atkT = 0; P.atkCD = 0; P.dodgeT = 0; P.dodgeCD = 0;
@@ -229,7 +229,13 @@
     if (F.out) { F.end -= dt; if (F.end <= 0) fightEnd(F.out); return; }
     if (pressed.atk && P.atkCD <= 0 && P.dodgeT <= 0) {
       P.atkT = 0.2; P.atkCD = 0.34; sfx('swing');
-      F.foes.forEach(function (e) { if (e.st === 'dead') return; var dx = e.x - P.x; if (Math.abs(dx) < 30 && (Math.sign(dx) === P.dir || Math.abs(dx) < 6)) hurtFoe(e); });
+      F.foes.forEach(function (e) {
+        if (e.st === 'dead') return; var dx = e.x - P.x;
+        if (!(Math.abs(dx) < 30 && (Math.sign(dx) === P.dir || Math.abs(dx) < 6))) return;
+        // a veces lo ven venir y se echan para atras (no si estan preparando su golpe o aturdidos)
+        if ((e.st === 'walk' || e.st === 'rec') && Math.random() < (e.evade || 0.4)) { e.kv = P.dir * 230; e.st = 'rec'; e.t = 0.35; e.back = 0.25; sfx('esquiva'); return; }
+        hurtFoe(e);
+      });
     }
     if (pressed.dodge && P.dodgeCD <= 0) { P.dodgeT = 0.32; P.dodgeCD = 0.6; P.inv = Math.max(P.inv, 0.42); P.vx = -P.dir * 240; sfx('esquiva'); }
     F.foes.forEach(function (e) {
@@ -296,7 +302,7 @@
     });
   }
   function place(spawn, at) {
-    P.hide = false;
+    P.hide = false; P.lie = null;
     var sp = (at && at.x != null) ? at : (scene.spawns[spawn] || { x: 40, dir: 1 });
     P.x = sp.x; P.y = at && at.y != null ? at.y : floorAt(sp.x); P.dir = sp.dir || 1;
     P.vx = P.vy = 0; P.ground = true; P.buf = 0; P.drop = 0;
@@ -604,6 +610,7 @@
     },
     doors: function (id, open) { var o = fx.filter(function (q) { return q.d.id === id; })[0]; if (o) { o.open = o.open || 0; o.dv = open ? 1 : -1; } return API.wait(0.5); },
     hideEthan: function (on) { P.hide = !!on; },
+    lie: function (x, y) { if (x == null) P.lie = null; else { loadImg(CAMA); P.lie = { x: x, y: y }; } },
     hearts: function (on) { if (on) { P.hp = 3; heartsHud(true); sfx('corazones'); } else heartsHud(false); return API.wait(on ? 0.9 : 0.3); },
     fight: function (cfg) { return new Promise(function (res) { fightStart(cfg, res); }); },
     swapActor: function (id, src) { if (actors[id]) { actors[id].src = src; loadImg(src); } },
@@ -618,7 +625,7 @@
     sit: function (x) { if (x == null) { P.sit = null; P.frame = 1; } else { P.sit = { x: x }; P.x = x; P.vx = 0; P.dir = 1; } },
     eat: function (on) { if (run) run.eat = !!on; if (!on) npcs.forEach(function (o) { o.mouth = false; }); },
     fade: function (o, ms) { return fadeTo(o, ms || 600); },
-    clock: function (hm) { if (!game) return; game.clock = hm == null ? null : toMin(hm); clockHud(true); },
+    clock: function (hm) { if (!game) return; game.clock = hm == null ? null : toMin(hm); clkUntil = time + 5; clockHud(true); },
     phone: function (key, title) { var r = run; return new Promise(function (res) { if (r) openPhone(key, title, res); else res(); }); },
     go: function (id, spawn) { return goScene(id, spawn, null, true); },
     fail: function (id) { questBanner('fallo', id); },
@@ -859,8 +866,11 @@
     });
     clockHud();
   }
+  var clkUntil = 0;   // el reloj se ve un rato cuando la historia cambia la hora, o siempre en misiones contrarreloj
   function clockHud(force) {
-    var el = $('clk'), on = !!(game && game.clock != null && scene), h = '';
+    var el = $('clk'), on = !!(game && game.clock != null && scene), h = '', limit = false;
+    if (on) Object.keys(MIS).forEach(function (id) { if (MIS[id].limit && game.flags['mision:' + id] === 'activa') limit = true; });
+    on = on && (limit || time < clkUntil);
     if (on) {
       h = '<b>' + fmt(game.clock) + '</b>';
       Object.keys(MIS).forEach(function (id) {
@@ -1559,7 +1569,7 @@
     if (!scene) return;
     var cx = Math.round(cam.x);
     function layer(l, i) {
-      var im = img(l.src); if (im) ctx.drawImage(im, -Math.round(cx * l.f), l.y || 0);
+      var im = (!l.when || avail(l)) && img(l.src); if (im) ctx.drawImage(im, -Math.round(cx * l.f), l.y || 0);
       fx.forEach(function (o) { if ((o.d.z == null ? scene.layers.length - 1 : o.d.z) === i) fxDraw(o, cx); });
     }
     fx.forEach(function (o) { if (o.d.z === -1) fxDraw(o, cx); });
@@ -1596,6 +1606,7 @@
       else { ctx.save(); ctx.translate(pdx + 24, pdy); ctx.scale(-1, 1); ctx.drawImage(pim, pf * 48, 0, 48, 48, 0, 0, 48, 48); ctx.restore(); }
       ctx.globalAlpha = 1;
     }
+    else if (P.lie && img(CAMA)) ctx.drawImage(img(CAMA), Math.round(P.lie.x) - cx, P.lie.y);
     else if (P.sit && es) ctx.drawImage(es, (P.eatF || 0) * 48, 0, 48, 48, Math.round(P.x) - 24 - cx, Math.round(P.y) - 46, 48, 48);
     else if (e) {
       var dx = Math.round(P.x) - cx, dy = Math.round(P.y) - 46;
@@ -1651,7 +1662,7 @@
       if (game) { game.play = (game.play || 0) + dt; saveT += dt; if (saveT > 10) { saveT = 0; writeSave(); } }
     } else if (state === 'talk' && run) { acc = 0; P.vx = 0; scriptStep(dt); camStep(dt); if (game) game.play = (game.play || 0) + dt; }
     else acc = 0;
-    if (scene) { clockStep(dt); thinkStep(dt); if (state === 'play' || state === 'talk') dustStep(dt); }
+    if (scene) { clockStep(dt); clockHud(); thinkStep(dt); if (state === 'play' || state === 'talk') dustStep(dt); }
     npcs.forEach(function (o) { o.blinkT -= dt; if (o.blinkT <= 0) { o.blink = 0.13; o.blinkT = 2 + Math.random() * 3.5; } o.blink -= dt; });
     if (scene && state !== 'menu') { time += dt; fx.forEach(function (o) { fxStep(o, dt); }); }
     draw(); drunkFx();

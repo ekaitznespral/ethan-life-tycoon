@@ -1397,10 +1397,11 @@ function hojaPelea(walk, o, navaja, name) {     // 4 de paseo + 1 de golpe
   save(out, name);
 }
 function blit(dst, src, ox) { for (var y = 0; y < src.h; y++) for (var x = 0; x < src.w; x++) { var a = (y * src.w + x) * 4; if (!src.d[a + 3]) continue; var b = (y * dst.w + ox + x) * 4; for (var q = 0; q < 4; q++) dst.d[b + q] = src.d[a + q]; } }
+// los tres marroquies de la pelea (ids internos 'macarra-N')
 var MACARRAS = {
-  'macarra-1': { hair: '#1a1414', hairH: '#3a3030', skin: '#e0b088', skinS: '#c08e68', shirt: '#2a2a30', shirtS: '#1c1c22', pants: '#5a5a62', pantsS: '#44444a', style: 'rapado' },
-  'macarra-2': { hair: '#2a1f1a', hairH: '#463630', skin: '#e8b990', skinS: '#c9966b', shirt: '#b8b8bc', shirtS: '#98989c', pants: '#22222a', pantsS: '#16161c', style: 'gorra', cap: '#b8322c' },
-  'macarra-3': { hair: '#241a14', hairH: '#44342a', skin: '#d8a880', skinS: '#b88a60', shirt: '#3a4a6a', shirtS: '#2a3854', pants: '#1c1c22', pantsS: '#121216', style: 'corto', barbita: '#7a5a40' }
+  'macarra-1': { hair: '#1a1414', hairH: '#3a3030', skin: '#c08a60', skinS: '#a06e48', shirt: '#2a2a30', shirtS: '#1c1c22', pants: '#5a5a62', pantsS: '#44444a', style: 'rapado' },
+  'macarra-2': { hair: '#1a1414', hairH: '#3a3030', skin: '#b88058', skinS: '#986440', shirt: '#b8b8bc', shirtS: '#98989c', pants: '#22222a', pantsS: '#16161c', style: 'gorra', cap: '#b8322c' },
+  'macarra-3': { hair: '#1a1414', hairH: '#3a3030', skin: '#a87450', skinS: '#8a5a38', shirt: '#3a4a6a', shirtS: '#2a3854', pants: '#1c1c22', pantsS: '#121216', style: 'corto', barbita: '#7a5a40' }
 };
 function pelea() {
   // Ethan: golpe y esquiva
@@ -1474,6 +1475,39 @@ function sonoraDentro() {
   c.disc(61, 155, 3, '#4a4a54'); c.disc(141, 155, 3, '#4a4a54');
   c.emit = true; c.px(90, 154, '#ff6a3a'); c.px(96, 154, '#7ee0ff'); c.px(104, 154, '#b98cff'); c.emit = false;
   save(c, 'sonora-cabina.png');
+}
+
+
+// ======================= LA MANANA SIGUIENTE =======================
+// Ethan tumbado en la cama (de lado, cabeza a la izquierda, tapado) y el cielo de dia para la casa.
+function ethanCama() {
+  var ew = readPNG(path.join(__dirname, '..', 'sprites', 'ethan-walk.png')), f = new FB(64, 32);
+  // girar el fotograma 1 (48x48) 90 grados: la cabeza queda a la izquierda
+  for (var y = 0; y < 48; y++) for (var x = 8; x < 40; x++) {
+    var k = (y * ew.w + 48 + x) * 4; if (!ew.d[k + 3]) continue;
+    var nx = y + 6, ny = 40 - x; if (ny >= 0 && ny < 32 && nx < 64) f.px(nx, ny, [ew.d[k], ew.d[k + 1], ew.d[k + 2], 255]);
+  }
+  // fuera los pies (asoman por arriba) y la manta por encima del cuerpo, con algo de bulto
+  for (var y = 0; y < 14; y++) for (var x = 30; x < 64; x++) f.px(x, y, [0, 0, 0, 0]);
+  for (var x = 20; x < 64; x++) { var top = 14 - Math.round(3 * Math.sin((x - 20) / 44 * Math.PI)); f.rect(x, top, 1, 28 - top, '#3f6fb0'); f.px(x, top, '#5a8ad0'); }
+  for (var x = 26; x < 60; x += 9) f.rect(x, 19, 4, 1, '#5a8ad0');
+  f.rect(20, 27, 44, 1, '#2f5a94');
+  save(f, 'ethan-cama.png');
+}
+function cielosDia() {
+  [['casa-cielo-dia.png', 700, 19], ['cocina-cielo-dia.png', 480, 7]].forEach(function (c) {
+    var W = c[1], f = new FB(W, 216), r = rng(c[2]);
+    f.vgrad(0, 0, W, 150, ['#7ab4e8', '#9cc8f0', '#c4def4', '#e4eef6']);
+    for (var i = 0; i < 6; i++) { var x = r() * W, y = 20 + r() * 50; f.disc(x, y, 8, '#ffffff'); f.disc(x + 9, y + 2, 7, '#ffffff'); f.disc(x - 8, y + 3, 6, '#f4f8fc'); }
+    var x = 0;
+    while (x < W) {
+      var w = 30 + (r() * 40 | 0), top = 84 + (r() * 26 | 0), col = ['#c8a088', '#d8c4a8', '#b8b4ac', '#e0d6c4'][(r() * 4) | 0];
+      f.rect(x, top, w, 216 - top, col); f.rect(x, top, w, 1, '#f2ece4');
+      for (var wy = top + 5; wy < 210; wy += 8) for (var wx = x + 4; wx < x + w - 4; wx += 7) f.rect(wx, wy, 3, 4, r() < 0.3 ? '#8aa8c8' : '#5a6a7a');
+      x += w + 2;
+    }
+    save(f, c[0]);
+  });
 }
 
 // ======================= ESTACION DE METRO =======================
@@ -1579,4 +1613,4 @@ function metro() {
 
 cocinaCielo(); cocina(); cocinaMesa(); calleCielo(); calleLejos(); calleMedio(); calle();
 sheet(HERMANASTRA, 'npc-hermanastra.png'); sheet(PADRE, 'npc-padre.png'); sheet(LOURDES, 'npc-lourdes.png');
-objetos(); ethanSentado(); metro(); cieloCasa(); pasillo(); habitacion(); friki(); cartera(); cuadrilla(); andenFondo(); anden(); tren(); vagon(); gente(); astraCielo(); astrabudua(); rotonda(); pelea(); sonoraDentro();
+objetos(); ethanSentado(); metro(); cieloCasa(); pasillo(); habitacion(); friki(); cartera(); cuadrilla(); andenFondo(); anden(); tren(); vagon(); gente(); astraCielo(); astrabudua(); rotonda(); pelea(); sonoraDentro(); ethanCama(); cielosDia();
