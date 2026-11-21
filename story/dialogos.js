@@ -355,17 +355,14 @@ window.STORY_TEXT = {
   "tajada.entonado": {
     "lines": [
       { "who": "ethan", "text": "Ya voy entonado, ya..." },
-      { "who": "lier", "text": "¡Ethan ya está tocado!" }
-    ]
-  },
-  "tajada.pedo": {
-    "lines": [
-      { "who": "ethan", "text": "Esto... da vueltas la rotonda, ¿no?" }
+      { "who": "lier", "text": "¡Ethan ya está tocado!" },
+      { "who": "ethan", "text": "Esto... da vueltas la rotonda, ¿no?" },
+      { "who": "ekaitz", "text": "¡Venga, ahora sí, a la Sonora!" }
     ]
   },
   "tajada.basta": {
     "lines": [
-      { "who": "ethan", "text": "Mejor no me pongo más, que si no, no entro." }
+      { "who": "ethan", "text": "Ya voy bien servido. A la Sonora." }
     ]
   },
   "tajada.amigos": {

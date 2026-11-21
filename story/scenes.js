@@ -94,8 +94,8 @@ function viajeTick(s, dt) {
 window.STORY = {
   intro: { cards: ['31 de diciembre de 2022'], scene: 'cocina', spawn: 'inicio' },
 
-  // flag con lo que lleva bebido Ethan (0..6): cuanto mas, mas se tambalea la pantalla
-  borrachera: 'tajada',
+  // flag con lo que lleva bebido Ethan (0..3): cuanto mas, mas se tambalea la pantalla (3 = tajada del todo)
+  borrachera: 'tajada', borracheraMax: 3,
 
   items: {
     tortilla: { name: 'Tortilla de Lourdes', icon: 0, desc: 'La tortilla de Lourdes. Para la cena.' },
@@ -187,7 +187,8 @@ window.STORY = {
       steps: [
         { text: 'Id a la rotonda, a la izquierda de la Sonora', done: function (g) { return g.flag('rotonda'); } },
         { text: 'Que Sadaba saque las botellas', done: function (g) { return g.flag('botellas'); } },
-        { text: function (g) { return 'Bébete unos destornis (' + Math.min(3, g.flag('tajada') || 0) + '/3)'; }, done: function (g) { return (g.flag('tajada') || 0) >= 3; } }
+        { text: function (g) { return 'Bébete unos destornis (' + Math.min(3, g.flag('tajada') || 0) + '/3)'; }, done: function (g) { return (g.flag('tajada') || 0) >= 3; } },
+        { text: 'Entra tajado en la Sonora', done: function (g) { return g.flag('en_sonora'); } }
       ]
     }
   },
@@ -411,7 +412,17 @@ window.STORY = {
       await s.cine(false);
       s.mission('tajada');
     },
-    sonora_puerta: async function (s) { if ((s.flag('tajada') || 0) >= 3) { await s.talk('sonora.puerta_listos'); await s.card('Continuará...'); return; } await s.talk('sonora.puerta'); },
+    sonora_puerta: async function (s) {
+      if ((s.flag('tajada') || 0) < 3) { await s.talk('sonora.puerta'); return; }
+      await s.cine(true);
+      await s.talk('sonora.puerta_listos');
+      s.flag('en_sonora', 1); s.complete('tajada');
+      await s.wait(1.2);
+      await s.fade(1, 900);
+      await s.card('Continuará...');           // AQUI SIGUE LA HISTORIA: dentro de la Sonora (pendiente)
+      await s.fade(0, 700);
+      await s.cine(false);
+    },
     // --- el botellon en la rotonda ---
     rotonda_llegar: async function (s) {
       if (s.flag('rotonda') || s.flag('mision:tajada') !== 'activa') return;
@@ -434,7 +445,7 @@ window.STORY = {
       s.toast('Prepárate un destorni en la rotonda');
     },
     destorni_coger: async function (s) {
-      if ((s.flag('tajada') || 0) >= 6) { await s.talk('tajada.basta'); return; }
+      if ((s.flag('tajada') || 0) >= 3) { await s.talk('tajada.basta'); return; }
       s.give('destorni');
     },
     destorni_beber: async function (s) {
@@ -442,9 +453,8 @@ window.STORY = {
       var n = (s.flag('tajada') || 0) + 1; s.flag('tajada', n);
       await s.wait(0.8);
       if (n === 1) await s.talk('tajada.trago1');
-      else if (n === 3) await s.talk('tajada.entonado');
-      else if (n === 5) await s.talk('tajada.pedo');
-      else s.toast(n === 2 ? 'Entra fino...' : 'Otro más');
+      else if (n === 2) s.toast('Entra fino...');
+      else { await s.talk('tajada.entonado'); s.toast('Ya vas tajado: a la Sonora'); }
     },
     rotonda_amigo: async function (s) { await s.talk((s.flag('tajada') || 0) >= 3 ? 'tajada.amigos_pedo' : 'tajada.amigos'); },
     sonora_cola: async function (s) { await s.talk('sonora.cola'); },
@@ -845,7 +855,7 @@ window.STORY_SCENES = {
       { id: 'igor', x: 400, dir: -1, when: function (g) { return g.flag('rotonda'); } }
     ],
     objects: [
-      { id: 'destorni_coger', name: 'Botellas', x: 318, reach: 14, py: 150, label: 'Prepararte un destorni', run: 'destorni_coger', when: function (g) { return g.flag('botellas') && !g.has('destorni'); } },
+      { id: 'destorni_coger', name: 'Botellas', x: 318, reach: 14, py: 150, label: 'Prepararte un destorni', run: 'destorni_coger', when: function (g) { return g.flag('botellas') && !g.has('destorni') && (g.flag('tajada') || 0) < 3; } },
       { id: 'destorni_beber', name: 'Destorni', x: 318, reach: 320, py: 150, label: 'Beberte el destorni', run: 'destorni_beber', when: function (g) { return g.has('destorni'); } },
       { id: 'rot_ekaitz', name: 'Ekaitz', x: 250, reach: 9, py: 144, label: 'Hablar con Ekaitz', run: 'rotonda_amigo', when: function (g) { return g.flag('rotonda'); } },
       { id: 'rot_javi', name: 'Javi', x: 230, reach: 9, py: 144, label: 'Hablar con Javi', run: 'rotonda_amigo', when: function (g) { return g.flag('rotonda'); } },

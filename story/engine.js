@@ -1421,7 +1421,7 @@
   }
 
   // ---------------- dibujo ----------------
-  function drunk() { var k = STORY.borrachera && game && +game.flags[STORY.borrachera] || 0; return Math.min(1, k / 6); }
+  function drunk() { var k = STORY.borrachera && game && +game.flags[STORY.borrachera] || 0; return Math.min(1, k / (STORY.borracheraMax || 6)); }
   function drunkFx() {
     var k = drunk(); if (!k || !scene || state === 'menu') return;
     var dx = Math.round(Math.sin(time * 1.3) * 3 * k), dy = Math.round(Math.cos(time * 0.9) * 1.5 * k);
