@@ -41,6 +41,55 @@
 // En produccion: false, y desaparece todo eso.
 window.STORY_DEV = true;
 
+// Lineas de metro para el viaje (orden de las paradas en el sentido de la marcha). target = donde hay que
+// bajarse; la parada siguiente es la de "nos hemos pasado". start = hora al salir de la primera.
+var LINEAS = {
+  L2: { color: '#c8ccd2', dir: 'Basauri', start: '01:15', target: 6,
+        stations: ['Sestao', 'Urbinaga', 'Bagatza', 'Barakaldo', 'Ansio', 'Gurutzeta/Cruces', 'San Ignazio', 'Sarriko'] },
+  L1: { color: '#f06a2a', dir: 'Plentzia', start: '01:31', target: 3,
+        stations: ['San Ignazio', 'Lutxana', 'Erandio', 'Astrabudua', 'Leioa'] }
+};
+function horaViaje(L, i) { var p = L.start.split(':'), m = (+p[0]) * 60 + (+p[1]) + i * 2; return ('0' + Math.floor(m / 60) % 24).slice(-2) + ':' + ('0' + m % 60).slice(-2); }
+// El metro en marcha: ~7 s entre paradas, 4 s parado (12 s en la parada buena). Lo que pasa por la
+// ventana, el plano de la linea y las puertas salen de aqui. Solo corre mientras se juega (no en dialogos).
+var TRAMO = 900;
+function viajeTick(s, dt) {
+  var m = s.mem, L = LINEAS[s.flag('viaje:linea') || 'L2'], out = s.fxo('fuera'), map = s.fxo('plano');
+  if (!out || !map) return;
+  if (!m.init) {
+    m.init = 1; m.i = s.flag('viaje:i') || 0; m.phase = s.flag('viaje:fase') || 'move'; m.t = 0;
+    out.pos = m.i * TRAMO; out.v = 0; map.line = L;
+    if (m.phase === 'stop') ['p1', 'p2'].forEach(function (id) { var d = s.fxo(id); if (d) d.open = 1; });
+  }
+  if (s.flag('en_astrabudua')) { m.phase = 'stop'; m.t = 0; }   // ya han llegado: el metro se queda ahi
+  m.t += dt;
+  if (m.phase === 'move') {
+    var T = 7, k = Math.min(1, m.t / T), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    var j = k < 0.5 ? m.i : m.i + 1;
+    out.pos = m.i * TRAMO + TRAMO * e; out.v = Math.sin(Math.PI * k) * 1.6;
+    out.station = { u: j * TRAMO + 192, name: L.stations[j] };
+    map.cur = m.i; map.next = m.i + 1; map.label = 'Próxima: ' + L.stations[m.i + 1];
+    if (!m.warned && m.i + 1 === L.target && m.t > 2) { m.warned = 1; s.start('viaje_aviso'); }
+    if (k >= 1) {
+      m.i++; m.phase = 'stop'; m.t = 0; out.v = 0;
+      s.flag('viaje:i', m.i); s.flag('viaje:fase', 'stop'); s.clock(horaViaje(L, m.i));
+      s.sfx('puertas'); s.doors('p1', true); s.doors('p2', true);
+      if (m.i === L.target) s.start('viaje_destino');
+      else if (m.i > L.target) s.start('viaje_pasado');
+    }
+  } else {
+    out.station = { u: m.i * TRAMO + 192, name: L.stations[m.i] }; out.pos = m.i * TRAMO;
+    map.cur = m.i; map.next = null; map.label = L.stations[m.i];
+    var wait = m.i === L.target ? 12 : 4;
+    ['p1', 'p2'].forEach(function (id) { var d = s.fxo(id); if (d) d.blink = m.t > wait - 1.5; });
+    if (m.t > wait && m.i < L.stations.length - 1) {
+      ['p1', 'p2'].forEach(function (id) { var d = s.fxo(id); if (d) d.blink = false; });
+      s.doors('p1', false); s.doors('p2', false); s.sfx('arranca');
+      m.phase = 'move'; m.t = 0; m.warned = 0; s.flag('viaje:fase', 'move');
+    }
+  }
+}
+
 window.STORY = {
   intro: { cards: ['31 de diciembre de 2022'], scene: 'cocina', spawn: 'inicio' },
 
@@ -85,7 +134,7 @@ window.STORY = {
   // para que de tiempo justo a ir, volver a casa a por la Barik y llegar).
   // events: guiones que saltan a una hora (una sola vez; se rearman borrando la flag "hora:<id>").
   clock: {
-    rate: function (g) { return g.flag('mision:metro') === 'activa' ? 1.4 : g.flag('en_anden') ? 3 : 0.8; },
+    rate: function (g) { return g.flag('mision:metro') === 'activa' ? 1.4 : g.flag('en_metro') ? 4 : g.flag('en_anden') ? 3 : 0.8; },
     events: [
       { id: 'campanadas', at: '23:59', run: 'campanadas', when: function (g) { return g.flag('cena_hecha'); } },
       { id: 'quedada', at: '00:30', run: 'quedada', when: function (g) { return g.flag('ano_nuevo'); } },
@@ -113,6 +162,14 @@ window.STORY = {
       steps: [
         { text: 'Vuelve a casa a por la Barik', when: function (g) { return g.flag('barik_olvidada'); }, done: function (g) { return g.has('barik') || g.flag('metro_ok'); } },
         { text: 'Pasa las canceladoras antes de la 1:15', done: function (g) { return g.flag('metro_ok'); } }
+      ]
+    },
+    sonora: {
+      name: 'Rumbo a la Sonora', type: 'principal',
+      desc: 'La cuadrilla va a la discoteca Sonora, en Astrabudua. Desde Sestao, la L2 hasta San Ignazio; allí, transbordo a la L1 dirección Plentzia.',
+      steps: [
+        { text: 'Haz transbordo en San Ignazio', done: function (g) { return g.flag('transbordo'); } },
+        { text: 'Bájate en Astrabudua', done: function (g) { return g.flag('en_astrabudua'); } }
       ]
     }
   },
@@ -266,8 +323,8 @@ window.STORY = {
       await s.wait(0.3);
       s.sfx('puertas'); await s.doors('tren', true);
       await s.talk('anden.tren');
-      // cada uno a la puerta que le pilla mas cerca (puertas en x = 20 + 60, 140, 220, 364, 444, 524)
-      var sube = [['ekaitz', 160], ['manso', 240], ['sadaba', 384], ['lier', 384], ['javi', 464], ['igor', 464]];
+      // todos al mismo vagon, por la misma puerta (x = 20 + 220)
+      var sube = [['ekaitz', 240], ['manso', 240], ['sadaba', 240], ['lier', 240], ['javi', 240], ['igor', 240]];
       await Promise.all(sube.map(function (a) { return s.actorWalk(a[0], a[1]).then(function () { s.actor(a[0], null); }); }).concat([s.walkTo(240)]));
       s.hideEthan(true);
       await s.wait(0.6);
@@ -277,10 +334,57 @@ window.STORY = {
       s.sfx('arranca');
       await s.fxMove('tren', -700, 3.4, 'in');  // arranca hacia la izquierda
       await s.fade(1, 900);
-      await s.card('Continuará...');           // AQUI SIGUE LA HISTORIA (pendiente)
+      // dentro del vagon: L2 hasta San Ignazio
+      s.flag('viaje:linea', 'L2'); s.flag('viaje:i', 0); s.flag('viaje:fase', 'move');
+      await s.go('vagon', 'centro');
+      await s.fade(0, 900);
+      await s.cine(false);
+      s.mission('sonora');
+    },
+    // --- el viaje en metro (lo mueve el tick del escenario "vagon") ---
+    viaje_aviso: async function (s) { await s.talk('vagon.aviso_' + (s.flag('viaje:linea') || 'L2')); },
+    viaje_destino: async function (s) { await s.talk('vagon.destino_' + (s.flag('viaje:linea') || 'L2')); },
+    viaje_pasado: async function (s) {
+      var L = LINEAS[s.flag('viaje:linea') || 'L2'];
+      await s.cine(true);
+      await s.talk('vagon.pasado');
+      await s.fade(1, 800);
+      await s.card('Bajan en ' + L.stations[L.target + 1] + ' y vuelven en el siguiente...');
+      s.flag('viaje:i', L.target); s.flag('viaje:fase', 'stop');
+      s.clock(horaViaje(L, L.target + 3));      // se pierden unos minutos
+      await s.go('vagon', 'centro');
       await s.fade(0, 700);
       await s.cine(false);
     },
+    bajar: async function (s) {
+      var lin = s.flag('viaje:linea') || 'L2', L = LINEAS[lin], i = s.flag('viaje:i') || 0;
+      if (i !== L.target) { await s.talk('vagon.aqui_no_' + lin); return; }
+      if (s.flag('en_astrabudua')) { await s.card('Continuará...'); return; }
+      await s.cine(true);
+      await s.fade(1, 800);
+      if (lin === 'L2') {                        // transbordo en San Ignazio
+        s.flag('transbordo', 1);
+        await s.card('San Ignazio · transbordo a la L1, dirección Plentzia');
+        s.flag('viaje:linea', 'L1'); s.flag('viaje:i', 0); s.flag('viaje:fase', 'move');
+        s.clock(LINEAS.L1.start);
+        await s.go('vagon', 'centro');
+        await s.fade(0, 800);
+        await s.cine(false);
+        s.toast('L1 · dirección Plentzia');
+        return;
+      }
+      s.flag('en_astrabudua', 1); s.complete('sonora');
+      await s.card('Astrabudua');
+      await s.card('Continuará...');           // AQUI SIGUE LA HISTORIA: la Sonora (pendiente)
+      await s.fade(0, 700);
+      await s.cine(false);
+    },
+    vagon_ekaitz: async function (s) { await s.talk('vagon.ekaitz'); },
+    vagon_manso: async function (s) { await s.talk('vagon.manso'); },
+    vagon_sadaba: async function (s) { await s.talk('vagon.sadaba'); },
+    vagon_lier: async function (s) { await s.talk('vagon.lier'); },
+    vagon_javi: async function (s) { await s.talk('vagon.javi'); },
+    vagon_igor: async function (s) { await s.talk('vagon.igor'); },
     ekaitz: async function (s) { await s.talk(s.has('barik') ? 'ekaitz.vamos' : 'ekaitz.esperando'); },
     // la cartera, en el escritorio del cuarto de Ethan: ahi esta la Barik (solo la cogen los curiosos)
     cartera: async function (s) {
@@ -318,6 +422,9 @@ window.STORY = {
     { id: 'sin_barik', name: 'Sin la Barik: de vuelta a casa (00:52)', scene: 'pasillo', spawn: 'portal', clock: '00:52', flags: { ekaitz_llega: 1, ekaitz_espera: 1, 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1 } },
     { id: 'con_barik', name: 'Con la Barik, saliendo del portal (00:56)', scene: 'calle', spawn: 'portal', clock: '00:56', flags: { ekaitz_llega: 1, ekaitz_espera: 1, 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1, barik_cogida: 1 }, inv: ['barik'] },
     { id: 'anden', name: 'En el andén con la cuadrilla (01:13)', scene: 'anden', spawn: 'cuadrilla', clock: '01:13', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1 }, inv: ['barik'] },
+    { id: 'vagon_l2', name: 'En el metro, L2 saliendo de Sestao (01:15)', scene: 'vagon', spawn: 'centro', clock: '01:15', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, 'mision:sonora': 'activa', 'viaje:linea': 'L2', 'viaje:i': 0, 'viaje:fase': 'move' }, inv: ['barik'] },
+    { id: 'vagon_san', name: 'En el metro, llegando a San Ignazio (01:25)', scene: 'vagon', spawn: 'centro', clock: '01:25', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, 'mision:sonora': 'activa', 'viaje:linea': 'L2', 'viaje:i': 5, 'viaje:fase': 'move' }, inv: ['barik'] },
+    { id: 'vagon_l1', name: 'En el metro, L1 hacia Astrabudua (01:31)', scene: 'vagon', spawn: 'centro', clock: '01:31', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, 'mision:sonora': 'activa', transbordo: 1, 'viaje:linea': 'L1', 'viaje:i': 0, 'viaje:fase': 'move' }, inv: ['barik'] },
     { id: 'casa', name: 'Pasillo de casa (escena de prueba)', scene: 'pasillo', spawn: 'cocina' },
     { id: 'cuarto', name: 'Cuarto de Ethan (escena de prueba)', scene: 'habitacion', spawn: 'puerta' },
     { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' },
@@ -552,6 +659,41 @@ window.STORY_SCENES = {
       { type: 'glow', x: 111, y: 77, r: 26, c: '120,170,255', a: 0.2 },
       { type: 'glow', x: 315, y: 77, r: 26, c: '120,170,255', a: 0.2 },
       { type: 'glow', x: 515, y: 77, r: 26, c: '120,170,255', a: 0.2 }
+    ]
+  },
+
+  // Dentro del metro: un vagon con toda la cuadrilla. El viaje lo lleva viajeTick (arriba).
+  vagon: {
+    name: 'Metro', sub: 'Todos en el mismo vagón',
+    w: 640, floor: 196,
+    layers: [{ src: 'sprites/story/vagon.png', f: 1 }],
+    tick: viajeTick,
+    spawns: { centro: { x: 250, dir: 1 } },
+    actors: [
+      { id: 'ekaitz', x: 214, dir: 1 },
+      { id: 'manso', x: 300, dir: -1 },
+      { id: 'sadaba', x: 356, dir: -1 },
+      { id: 'lier', x: 420, dir: -1 },
+      { id: 'javi', x: 536, dir: -1 },
+      { id: 'igor', x: 590, dir: -1 }
+    ],
+    objects: [
+      { id: 'puerta1', name: 'Puerta', x: 170, reach: 20, py: 50, label: 'Bajarse aquí', run: 'bajar', when: function (g) { return g.flag('viaje:fase') === 'stop'; } },
+      { id: 'puerta2', name: 'Puerta', x: 470, reach: 20, py: 50, label: 'Bajarse aquí', run: 'bajar', when: function (g) { return g.flag('viaje:fase') === 'stop'; } },
+      { id: 'vagon_ekaitz', name: 'Ekaitz', x: 214, reach: 12, py: 140, label: 'Hablar con Ekaitz', run: 'vagon_ekaitz' },
+      { id: 'vagon_manso', name: 'Manso', x: 300, reach: 12, py: 140, label: 'Hablar con Manso', run: 'vagon_manso' },
+      { id: 'vagon_sadaba', name: 'Sadaba', x: 356, reach: 12, py: 140, label: 'Hablar con Sadaba', run: 'vagon_sadaba' },
+      { id: 'vagon_lier', name: 'Lier', x: 420, reach: 12, py: 140, label: 'Hablar con Lier', run: 'vagon_lier' },
+      { id: 'vagon_javi', name: 'Javi', x: 536, reach: 12, py: 140, label: 'Hablar con Javi', run: 'vagon_javi' },
+      { id: 'vagon_igor', name: 'Igor', x: 590, reach: 12, py: 140, label: 'Hablar con Igor', run: 'vagon_igor' }
+    ],
+    fx: [
+      { type: 'outside', id: 'fuera', z: -1 },
+      { type: 'cardoor', id: 'p1', x: 170, z: 0 },
+      { type: 'cardoor', id: 'p2', x: 470, z: 0 },
+      { type: 'routemap', id: 'plano', x: 222, y: 34, w: 196, z: 0 },
+      { type: 'glow', x: 160, y: 10, r: 60, c: '255,250,235', a: 0.08 },
+      { type: 'glow', x: 480, y: 10, r: 60, c: '255,250,235', a: 0.08 }
     ]
   }
 };

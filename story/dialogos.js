@@ -223,5 +223,71 @@ window.STORY_TEXT = {
     "lines": [
       { "who": "sadaba", "text": "¡Venga, todos dentro!" }
     ]
+  },
+  "vagon.aviso_L2": {
+    "lines": [
+      { "who": "sadaba", "text": "En la próxima, San Ignazio. Ahí cambiamos a la L1." }
+    ]
+  },
+  "vagon.aviso_L1": {
+    "lines": [
+      { "who": "ekaitz", "text": "¡La próxima es Astrabudua! Preparaos." }
+    ]
+  },
+  "vagon.destino_L2": {
+    "lines": [
+      { "who": "ekaitz", "text": "¡San Ignazio! ¡Venga, que nos bajamos!" }
+    ]
+  },
+  "vagon.destino_L1": {
+    "lines": [
+      { "who": "javi", "text": "¡Astrabudua! ¡A la Sonora!" }
+    ]
+  },
+  "vagon.pasado": {
+    "lines": [
+      { "who": "sadaba", "text": "Eh... ¿no teníamos que bajarnos en la anterior?" },
+      { "who": "ekaitz", "text": "¡Nos hemos pasado la parada!" }
+    ]
+  },
+  "vagon.aqui_no_L2": {
+    "lines": [
+      { "who": "ethan", "text": "Aquí no es. Nos bajamos en San Ignazio." }
+    ]
+  },
+  "vagon.aqui_no_L1": {
+    "lines": [
+      { "who": "ethan", "text": "Aquí no es. Nos bajamos en Astrabudua." }
+    ]
+  },
+  "vagon.ekaitz": {
+    "lines": [
+      { "who": "ekaitz", "text": "En San Ignazio cambiamos a la L1, dirección Plentzia. Y de ahí a Astrabudua." }
+    ]
+  },
+  "vagon.manso": {
+    "lines": [
+      { "who": "manso", "text": "¿Cuántas paradas quedan?" }
+    ]
+  },
+  "vagon.sadaba": {
+    "lines": [
+      { "who": "sadaba", "text": "La Sonora va a estar a reventar esta noche." }
+    ]
+  },
+  "vagon.lier": {
+    "lines": [
+      { "who": "lier", "text": "Yo no me muevo de aquí, que vengo reventado del Arena." }
+    ]
+  },
+  "vagon.javi": {
+    "lines": [
+      { "who": "javi", "text": "¡Esta noche se sale!" }
+    ]
+  },
+  "vagon.igor": {
+    "lines": [
+      { "who": "igor", "text": "Avisadme cuando lleguemos, que me quedo frito." }
+    ]
   }
 };

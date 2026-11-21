@@ -1147,6 +1147,45 @@ function tren() {
   save(f, 'tren.png');
 }
 
+
+// ======================= DENTRO DEL METRO (un vagon) =======================
+// Ventanas y puertas transparentes: por detras el motor pinta el tunel o la estacion (fx 'outside')
+// y por delante las hojas de las puertas (fx 'cardoor') y el plano de la linea (fx 'routemap').
+var VAGON_W = 640, VAGON_PUERTAS = [170, 470];
+function vagon() {
+  var W = VAGON_W, f = new FB(W, 216);
+  // techo con las luces
+  f.rect(0, 0, W, 32, '#e6e2da'); f.rect(0, 31, W, 1, '#c8c2b8');
+  f.emit = true; for (var x = 8; x < W; x += 64) { f.rect(x, 6, 48, 3, '#fffaf0'); f.rect(x + 2, 9, 44, 1, '#f0e8d8'); } f.emit = false;
+  f.rect(0, 14, W, 2, '#d0cac0');
+  // pared crema, franja de ventanas y panel de abajo
+  f.rect(0, 32, W, 164, '#efe9df'); f.rect(0, 128, W, 68, '#ddd5c8'); f.rect(0, 128, W, 1, '#c8c0b4');
+  for (var x = 0; x < W; x += 80) f.rect(x, 130, 1, 64, '#cfc6b8');
+  // soporte del plano de la linea
+  f.rect(0, 33, W, 18, '#2a2c30'); f.rect(0, 50, W, 1, '#c8c2b8');
+  // ventanas (huecos) entre puertas
+  function ventana(x, w) { f.rect(x - 3, 56, w + 6, 76, '#c8c0b4'); f.rect(x - 1, 58, w + 2, 72, '#1c1d20'); hueco(f, x, 60, w, 68); }
+  [[14, 120], [222, 90], [326, 92], [522, 104]].forEach(function (v) { ventana(v[0], v[1]); });
+  // marcos de las puertas (las hojas las pinta el motor)
+  VAGON_PUERTAS.forEach(function (d) { f.rect(d - 26, 52, 52, 144, '#a8a49c'); f.rect(d - 24, 54, 48, 142, '#000000', 0); f.rect(d - 26, 52, 52, 2, '#8a867e'); });
+  // barras: verticales y la horizontal de arriba
+  for (var x = 0; x < W; x++) if (VAGON_PUERTAS.every(function (d) { return Math.abs(x - d) > 30; })) f.px(x, 54, '#c8ccd2');
+  [64, 118, 270, 322, 386, 584].forEach(function (x) { f.rect(x, 32, 2, 164, '#c8ccd2'); f.rect(x, 32, 1, 164, '#eef0f4'); });
+  // asientos rojos de perfil, en parejas enfrentadas
+  function asiento(x, mira) { // mira: 1 derecha, -1 izquierda; x = respaldo
+    var bx = mira > 0 ? x : x - 4, sx = mira > 0 ? x : x - 24;
+    f.rect(bx, 140, 5, 50, '#5a5c62'); f.rect(bx + (mira > 0 ? 1 : 0), 142, 4, 36, '#d8262e');
+    f.rect(sx, 176, 28, 6, '#5a5c62'); f.rect(sx + (mira > 0 ? 4 : 0), 174, 24, 4, '#d8262e'); f.rect(sx + (mira > 0 ? 4 : 0), 174, 24, 1, '#ee4a50');
+    f.rect(sx + 10, 182, 6, 14, '#3a3c42');
+    f.rect(bx + 1, 132, 3, 8, '#c8ccd2'); f.rect(bx + 1, 132, 3, 1, '#eef0f4');            // asidero
+  };
+  [[10, 1], [82, -1], [92, 1], [140, -1], [214, 1], [262, -1], [276, 1], [324, -1], [334, 1], [382, -1], [392, 1], [444, -1], [512, 1], [560, -1], [570, 1], [630, -1]]
+    .forEach(function (a) { asiento(a[0], a[1]); });
+  // suelo
+  f.rect(0, 196, W, 20, '#7e7e82'); f.rect(0, 196, W, 1, '#9a9aa0'); for (var x = 0; x < W; x += 6) f.px(x, 204, '#727276');
+  save(f, 'vagon.png');
+}
+
 // ======================= ESTACION DE METRO =======================
 // Entrada (bajando de la calle), el tunel de acero con las pasarelas mecanicas y el
 // vestibulo con las canceladoras; al fondo, el arco que lleva a los andenes.
@@ -1250,4 +1289,4 @@ function metro() {
 
 cocinaCielo(); cocina(); cocinaMesa(); calleCielo(); calleLejos(); calleMedio(); calle();
 sheet(HERMANASTRA, 'npc-hermanastra.png'); sheet(PADRE, 'npc-padre.png'); sheet(LOURDES, 'npc-lourdes.png');
-objetos(); ethanSentado(); metro(); cieloCasa(); pasillo(); habitacion(); friki(); cartera(); cuadrilla(); andenFondo(); anden(); tren();
+objetos(); ethanSentado(); metro(); cieloCasa(); pasillo(); habitacion(); friki(); cartera(); cuadrilla(); andenFondo(); anden(); tren(); vagon();

@@ -185,6 +185,7 @@
     scene = s; sceneId = id;
     fx = (s.fx || []).map(function (d) { return makeFx(d); });
     npcs = (s.npcs || []).map(function (d) { return { d: d, blinkT: 1 + Math.random() * 3, blink: 0, mouth: false }; });
+    API.mem = {};
     actors = {};
     (s.actors || []).forEach(function (a) { if (avail(a)) actors[a.id] = { id: a.id, x: a.x, dir: a.dir || 1, frame: 1, dist: 0, walk: null }; });
   }
@@ -514,6 +515,8 @@
     },
     doors: function (id, open) { var o = fx.filter(function (q) { return q.d.id === id; })[0]; if (o) { o.open = o.open || 0; o.dv = open ? 1 : -1; } return API.wait(0.5); },
     hideEthan: function (on) { P.hide = !!on; },
+    start: function (name) { if (state === 'play') runScript(name); },          // lanzar un guion desde un tick
+    fxo: function (id) { return fx.filter(function (q) { return q.d.id === id; })[0] || null; },
     actorFace: function (id, d) { if (actors[id]) actors[id].dir = d < 0 ? -1 : 1; },
     closeup: function (id) { var r = run; return new Promise(function (res) { if (r && (STORY.views || {})[id]) openLook(id, res); else res(null); }); },
     wait: function (sec) { var r = run; return new Promise(function (res) { if (r) r.waits.push({ t: sec, res: res }); else res(); }); },
@@ -1274,6 +1277,57 @@
   function fxDraw(o, cx) {
     var d = o.d, f = d.f == null ? 1 : d.f, ox = Math.round(cx * f);
     if (d.when && d.type !== 'fireworks' && d.type !== 'paddles' && !avail(d)) return;
+    if (d.type === 'outside') {                      // lo que se ve por las ventanas del metro: tunel o estacion
+      var pos = o.pos || 0, st = o.station;          // st = { u: posicion de la estacion, name }
+      ctx.fillStyle = '#121418'; ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = '#1c1f25'; ctx.fillRect(0, 70, VW, 50);
+      var sp = Math.abs(o.v || 0);
+      for (var lx = -((pos * 1) % 140) - 140; lx < VW + 140; lx += 140) {   // luces del tunel
+        ctx.fillStyle = '#e8d8a0'; ctx.fillRect(Math.round(lx), 78, 6 + Math.round(sp * 30), 2);
+        ctx.fillStyle = '#3a3e46'; ctx.fillRect(Math.round(lx) + 40, 100, 70, 1);
+      }
+      if (sp > 0.3) { ctx.globalAlpha = Math.min(0.5, sp * 0.4); ctx.fillStyle = '#6a7080'; for (var k = 0; k < 6; k++) ctx.fillRect(((k * 97 - pos * 2) % VW + VW) % VW, 66 + k * 11, 40 + sp * 60, 1); ctx.globalAlpha = 1; }
+      if (st) {
+        var sx = Math.round(st.u - pos - cx * 0.0);
+        if (sx > -700 && sx < VW + 700) {
+          ctx.fillStyle = '#e8e2d6'; ctx.fillRect(sx - 340, 40, 680, 120);
+          ctx.fillStyle = '#d4ccbc'; for (var tx = sx - 340; tx < sx + 340; tx += 12) ctx.fillRect(tx, 40, 1, 120);
+          ctx.fillStyle = '#c8bfae'; ctx.fillRect(sx - 340, 118, 680, 2);
+          ctx.fillStyle = '#f2ece0'; ctx.fillRect(sx - 340, 150, 680, 40);
+          [-200, 120].forEach(function (k) {        // carteles con el nombre de la estacion
+            var bx = sx + k; ctx.fillStyle = '#d81e26'; ctx.fillRect(bx, 74, 96, 16);
+            ctx.fillStyle = '#ffffff'; ctx.font = '6px "Press Start 2P", monospace'; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+            ctx.fillText(st.name.toUpperCase(), bx + 48, 82.5); ctx.textAlign = 'left';
+          });
+        }
+      }
+      return;
+    }
+    if (d.type === 'cardoor') {                      // hojas de una puerta del vagon (o.open 0..1)
+      var x0 = d.x - ox, op = o.open || 0, hw = 24, sl = Math.round(op * 20);
+      ctx.save(); ctx.beginPath(); ctx.rect(x0 - hw, 52, hw * 2, 144); ctx.clip();
+      [[-1, x0 - hw - sl], [1, x0 + sl]].forEach(function (q) {
+        var lx = q[1]; ctx.fillStyle = '#b8b4ac'; ctx.fillRect(lx, 54, hw, 142);
+        ctx.fillStyle = '#1c1d20'; ctx.fillRect(lx + 5, 66, hw - 10, 60);
+        ctx.fillStyle = '#9a968e'; ctx.fillRect(lx + (q[0] < 0 ? hw - 1 : 0), 54, 1, 142);
+      });
+      ctx.restore();
+      if (o.blink && Math.floor(o.t * 3) % 2) { ctx.fillStyle = '#ff4a3a'; ctx.fillRect(x0 - 3, 46, 6, 3); }
+      return;
+    }
+    if (d.type === 'routemap') {                     // plano de la linea y el letrero de la proxima parada
+      var L = o.line; if (!L) return;
+      var x0 = d.x - ox, w = d.w, n = L.stations.length, cur = o.cur || 0, nxt = o.next;
+      ctx.fillStyle = L.color; ctx.fillRect(x0 + 4, d.y + 7, w - 8, 2);
+      for (var i = 0; i < n; i++) {
+        var px2 = x0 + 4 + Math.round((w - 8) * i / (n - 1));
+        ctx.fillStyle = i < cur ? '#6a6c72' : '#ffffff'; ctx.fillRect(px2 - 1, d.y + 6, 3, 4);
+        if (i === (nxt == null ? cur : nxt) && Math.floor(o.t * 2.5) % 2) { ctx.fillStyle = '#ffd75e'; ctx.fillRect(px2 - 2, d.y + 5, 5, 6); }
+      }
+      ctx.fillStyle = '#ff5040'; ctx.font = '5px "Press Start 2P", monospace'; ctx.textBaseline = 'top';
+      ctx.fillText(o.label || '', x0 + 4, d.y + 12);
+      return;
+    }
     if (d.type === 'train') {                        // el metro: imagen que se mueve (o.x) y puertas que se abren (o.open)
       var ti = img(d.src); if (!ti) return;
       var tx = Math.round(o.x == null ? d.x : o.x) - ox;
@@ -1357,6 +1411,7 @@
       var im = img(l.src); if (im) ctx.drawImage(im, -Math.round(cx * l.f), l.y || 0);
       fx.forEach(function (o) { if ((o.d.z == null ? scene.layers.length - 1 : o.d.z) === i) fxDraw(o, cx); });
     }
+    fx.forEach(function (o) { if (o.d.z === -1) fxDraw(o, cx); });
     scene.layers.forEach(function (l, i) { if (!l.front) layer(l, i); });
     npcs.forEach(function (o) {                       // personajes: miran hacia Ethan y parpadean
       var im = img(o.d.sprite); if (!im) return;
@@ -1432,6 +1487,7 @@
       if (pressed.jump) P.buf = JBUF;
       acc += dt;
       while (acc >= STEP) { step(STEP); acc -= STEP; }
+      if (scene.tick) { try { scene.tick(API, dt); } catch (e) { console.error('[historia] tick', e); } }
       camStep(dt); updatePrompt();
       if (game) { game.play = (game.play || 0) + dt; saveT += dt; if (saveT > 10) { saveT = 0; writeSave(); } }
     } else if (state === 'talk' && run) { acc = 0; P.vx = 0; scriptStep(dt); camStep(dt); if (game) game.play = (game.play || 0) + dt; }
@@ -1448,5 +1504,5 @@
   var ver = document.querySelector('script[src*="engine.js"]'); if (ver && $('mver')) $('mver').textContent = 'versión ' + (ver.src.split('v=')[1] || '?');
   showMenu();
   requestAnimationFrame(frame);
-  window.__historia = { P: P, cam: cam, get state() { return state; }, get scene() { return sceneId; }, get slot() { return slot; }, get fx() { return fx; }, get flashes() { return flashes.length; }, go: goScene }; // para pruebas
+  window.__historia = { P: P, cam: cam, get state() { return state; }, get scene() { return sceneId; }, get slot() { return slot; }, get game() { return game; }, get fx() { return fx; }, get flashes() { return flashes.length; }, go: goScene }; // para pruebas
 })();
