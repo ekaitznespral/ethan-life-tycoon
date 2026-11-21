@@ -178,7 +178,7 @@ window.STORY_TEXT = {
   },
   "anden.llegan": {
     "lines": [
-      { "who": "javi", "text": "¡Mira quién aparece!" },
+      { "who": "igor", "text": "¡Mira quién aparece!" },
       { "who": "sadaba", "text": "¡Ya era hora, que se nos va el metro!" },
       { "who": "lier", "text": "Al final he llegado del Arena. Por los pelos." },
       { "who": "ethan", "text": "¡Feliz año, cuadrilla!" }
@@ -202,11 +202,6 @@ window.STORY_TEXT = {
   "anden.lier": {
     "lines": [
       { "who": "lier", "text": "Del Arena hasta aquí corriendo. Me debéis una." }
-    ]
-  },
-  "anden.javi": {
-    "lines": [
-      { "who": "javi", "text": "¡Feliz año! Esta noche promete." }
     ]
   },
   "anden.igor": {
@@ -288,6 +283,12 @@ window.STORY_TEXT = {
   "vagon.igor": {
     "lines": [
       { "who": "igor", "text": "Avisadme cuando lleguemos, que me quedo frito." }
+    ]
+  },
+  "vagon.javi_sube": {
+    "lines": [
+      { "who": "javi", "text": "¡Buenas, cuadrilla! ¿Qué pasa?" },
+      { "who": "sadaba", "text": "¡Javi! Justo a tiempo, como buen barakaldés." }
     ]
   }
 };

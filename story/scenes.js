@@ -74,7 +74,8 @@ function viajeTick(s, dt) {
       m.i++; m.phase = 'stop'; m.t = 0; out.v = 0;
       s.flag('viaje:i', m.i); s.flag('viaje:fase', 'stop'); s.clock(horaViaje(L, m.i));
       s.sfx('puertas'); s.doors('p1', true); s.doors('p2', true);
-      if (m.i === L.target) s.start('viaje_destino');
+      if (L === LINEAS.L2 && L.stations[m.i] === 'Barakaldo' && !s.flag('javi_sube')) s.start('javi_sube');
+      else if (m.i === L.target) s.start('viaje_destino');
       else if (m.i > L.target) s.start('viaje_pasado');
     }
   } else {
@@ -312,7 +313,6 @@ window.STORY = {
     amigo_manso: async function (s) { await s.talk('anden.manso'); },
     amigo_sadaba: async function (s) { await s.talk('anden.sadaba'); },
     amigo_lier: async function (s) { await s.talk('anden.lier'); },
-    amigo_javi: async function (s) { await s.talk('anden.javi'); },
     amigo_igor: async function (s) { await s.talk('anden.igor'); },
     anden_salir: async function (s) { await s.talk('anden.no_salir'); },
     // 01:15: llega el metro, suben todos y se va
@@ -324,7 +324,7 @@ window.STORY = {
       s.sfx('puertas'); await s.doors('tren', true);
       await s.talk('anden.tren');
       // todos al mismo vagon, por la misma puerta (x = 20 + 220)
-      var sube = [['ekaitz', 240], ['manso', 240], ['sadaba', 240], ['lier', 240], ['javi', 240], ['igor', 240]];
+      var sube = [['ekaitz', 240], ['manso', 240], ['sadaba', 240], ['lier', 240], ['igor', 240]];
       await Promise.all(sube.map(function (a) { return s.actorWalk(a[0], a[1]).then(function () { s.actor(a[0], null); }); }).concat([s.walkTo(240)]));
       s.hideEthan(true);
       await s.wait(0.6);
@@ -379,6 +379,14 @@ window.STORY = {
       await s.fade(0, 700);
       await s.cine(false);
     },
+    // Barakaldo: sube Javi (es de ahi)
+    javi_sube: async function (s) {
+      s.actor('javi', 170, -1);
+      await s.actorWalk('javi', 128);
+      s.actorFace('javi', 1);
+      s.flag('javi_sube', 1);
+      await s.talk('vagon.javi_sube');
+    },
     vagon_ekaitz: async function (s) { await s.talk('vagon.ekaitz'); },
     vagon_manso: async function (s) { await s.talk('vagon.manso'); },
     vagon_sadaba: async function (s) { await s.talk('vagon.sadaba'); },
@@ -423,8 +431,8 @@ window.STORY = {
     { id: 'con_barik', name: 'Con la Barik, saliendo del portal (00:56)', scene: 'calle', spawn: 'portal', clock: '00:56', flags: { ekaitz_llega: 1, ekaitz_espera: 1, 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'activa', barik_olvidada: 1, barik_cogida: 1 }, inv: ['barik'] },
     { id: 'anden', name: 'En el andén con la cuadrilla (01:13)', scene: 'anden', spawn: 'cuadrilla', clock: '01:13', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1 }, inv: ['barik'] },
     { id: 'vagon_l2', name: 'En el metro, L2 saliendo de Sestao (01:15)', scene: 'vagon', spawn: 'centro', clock: '01:15', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, 'mision:sonora': 'activa', 'viaje:linea': 'L2', 'viaje:i': 0, 'viaje:fase': 'move' }, inv: ['barik'] },
-    { id: 'vagon_san', name: 'En el metro, llegando a San Ignazio (01:25)', scene: 'vagon', spawn: 'centro', clock: '01:25', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, 'mision:sonora': 'activa', 'viaje:linea': 'L2', 'viaje:i': 5, 'viaje:fase': 'move' }, inv: ['barik'] },
-    { id: 'vagon_l1', name: 'En el metro, L1 hacia Astrabudua (01:31)', scene: 'vagon', spawn: 'centro', clock: '01:31', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, 'mision:sonora': 'activa', transbordo: 1, 'viaje:linea': 'L1', 'viaje:i': 0, 'viaje:fase': 'move' }, inv: ['barik'] },
+    { id: 'vagon_san', name: 'En el metro, llegando a San Ignazio (01:25)', scene: 'vagon', spawn: 'centro', clock: '01:25', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, 'mision:sonora': 'activa', 'viaje:linea': 'L2', 'viaje:i': 5, javi_sube: 1, 'viaje:fase': 'move' }, inv: ['barik'] },
+    { id: 'vagon_l1', name: 'En el metro, L1 hacia Astrabudua (01:31)', scene: 'vagon', spawn: 'centro', clock: '01:31', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, 'mision:sonora': 'activa', transbordo: 1, javi_sube: 1, 'viaje:linea': 'L1', 'viaje:i': 0, 'viaje:fase': 'move' }, inv: ['barik'] },
     { id: 'casa', name: 'Pasillo de casa (escena de prueba)', scene: 'pasillo', spawn: 'cocina' },
     { id: 'cuarto', name: 'Cuarto de Ethan (escena de prueba)', scene: 'habitacion', spawn: 'puerta' },
     { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' },
@@ -643,7 +651,6 @@ window.STORY_SCENES = {
       { id: 'manso', x: 300, dir: -1, when: function (g) { return !g.flag('en_metro'); } },
       { id: 'sadaba', x: 336, dir: -1, when: function (g) { return !g.flag('en_metro'); } },
       { id: 'lier', x: 372, dir: -1, when: function (g) { return !g.flag('en_metro'); } },
-      { id: 'javi', x: 412, dir: -1, when: function (g) { return !g.flag('en_metro'); } },
       { id: 'igor', x: 448, dir: -1, when: function (g) { return !g.flag('en_metro'); } }
     ],
     objects: [
@@ -651,7 +658,6 @@ window.STORY_SCENES = {
       { id: 'amigo_manso', name: 'Manso', x: 300, reach: 13, py: 140, label: 'Hablar con Manso', run: 'amigo_manso', when: function (g) { return !g.flag('en_metro'); } },
       { id: 'amigo_sadaba', name: 'Sadaba', x: 336, reach: 13, py: 140, label: 'Hablar con Sadaba', run: 'amigo_sadaba', when: function (g) { return !g.flag('en_metro'); } },
       { id: 'amigo_lier', name: 'Lier', x: 372, reach: 13, py: 140, label: 'Hablar con Lier', run: 'amigo_lier', when: function (g) { return !g.flag('en_metro'); } },
-      { id: 'amigo_javi', name: 'Javi', x: 412, reach: 13, py: 140, label: 'Hablar con Javi', run: 'amigo_javi', when: function (g) { return !g.flag('en_metro'); } },
       { id: 'amigo_igor', name: 'Igor', x: 448, reach: 13, py: 140, label: 'Hablar con Igor', run: 'amigo_igor', when: function (g) { return !g.flag('en_metro'); } }
     ],
     fx: [
@@ -674,7 +680,7 @@ window.STORY_SCENES = {
       { id: 'manso', x: 300, dir: -1 },
       { id: 'sadaba', x: 356, dir: -1 },
       { id: 'lier', x: 420, dir: -1 },
-      { id: 'javi', x: 536, dir: -1 },
+      { id: 'javi', x: 128, dir: 1, when: function (g) { return g.flag('javi_sube'); } },   // sube en Barakaldo
       { id: 'igor', x: 590, dir: -1 }
     ],
     objects: [
@@ -684,7 +690,7 @@ window.STORY_SCENES = {
       { id: 'vagon_manso', name: 'Manso', x: 300, reach: 12, py: 140, label: 'Hablar con Manso', run: 'vagon_manso' },
       { id: 'vagon_sadaba', name: 'Sadaba', x: 356, reach: 12, py: 140, label: 'Hablar con Sadaba', run: 'vagon_sadaba' },
       { id: 'vagon_lier', name: 'Lier', x: 420, reach: 12, py: 140, label: 'Hablar con Lier', run: 'vagon_lier' },
-      { id: 'vagon_javi', name: 'Javi', x: 536, reach: 12, py: 140, label: 'Hablar con Javi', run: 'vagon_javi' },
+      { id: 'vagon_javi', name: 'Javi', x: 128, reach: 12, py: 140, label: 'Hablar con Javi', run: 'vagon_javi', when: function (g) { return g.flag('javi_sube'); } },
       { id: 'vagon_igor', name: 'Igor', x: 590, reach: 12, py: 140, label: 'Hablar con Igor', run: 'vagon_igor' }
     ],
     fx: [

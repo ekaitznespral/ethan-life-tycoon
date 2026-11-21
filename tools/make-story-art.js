@@ -969,7 +969,7 @@ function cartera() {
 var AMIGOS = {
   ekaitz: { hair: '#3b2a1f', hairH: '#5e4533', shirt: '#26272b', shirtS: '#18191c', pants: '#b8c6d6', pantsS: '#94a4b8', style: 'tupe' },
   manso:  { hair: '#2a1f1a', hairH: '#463630', shirt: '#2f4a3a', shirtS: '#22382b', pants: '#2a2a30', pantsS: '#1c1c22', style: 'flequillo' },
-  sadaba: { hair: '#5a3a24', hairH: '#7a5236', shirt: '#24304a', shirtS: '#18223a', pants: '#d8ccb0', pantsS: '#b8ac90', style: 'corto', barba: '#4a2e1c', fat: true, skin: '#e8b08e', skinS: '#c88a68' },
+  sadaba: { hair: '#5a3a24', hairH: '#7a5236', shirt: '#24304a', shirtS: '#18223a', pants: '#d8ccb0', pantsS: '#b8ac90', style: 'corto', barba: '#4a2e1c', fat: true, bolsas: true, skin: '#e8b08e', skinS: '#c88a68' },
   lier:   { hair: '#3a2c22', hairH: '#56443a', shirt: '#1e1f23', shirtS: '#121316', pants: '#2a3448', pantsS: '#1e2636', style: 'rapado', barbita: '#b8907a', pendiente: true, tatu: true, skin: '#ecc0a0', skinS: '#cc9a7a' },
   javi:   { hair: '#2a1f1a', hairH: '#463630', shirt: '#f2f0ea', shirtS: '#cfcac0', pants: '#a8c4e0', pantsS: '#86a4c4', style: 'corto', rotos: true, skin: '#e6b08a', skinS: '#c68e68' },
   igor:   { hair: '#241a14', hairH: '#44342a', shirt: '#3a3a40', shirtS: '#2a2a30', pants: '#22222a', pantsS: '#16161c', style: 'rizos', print: true }
@@ -1067,6 +1067,17 @@ function amigoWalk(id) {
     if (o.tatu) for (var y = 22; y < 34; y++) for (var x = 24; x < 36; x++) { var q = (y * 48 + x) * 4; if ((x + y) % 2 === 0 && f.d[q + 3] && f.d[q] === hex(SK)[0] && f.d[q + 1] === hex(SK)[1]) f.px(x, y, '#5a6a7a'); }
     if (o.rotos) { f.px(22, 37 + (fr % 2), '#f2f0ea'); f.px(28, 39, '#f2f0ea'); }
     if (o.print) { f.rect(23, dy + 22, 6, 2, '#f2efe8'); }
+    if (o.bolsas) {                              // bolsas de plastico amarillas colgando de las manos
+      var hx = -1, hy = -1;
+      for (var y = 22; y < 36; y++) for (var x = 24; x < 38; x++) { var q = (y * 48 + x) * 4; if (f.d[q + 3] && f.d[q] === hex(SK)[0] && f.d[q + 1] === hex(SK)[1] && y >= hy) { hy = y; hx = x; } }
+      if (hy > 0) {
+        var by = hy + 3;
+        f.rect(hx - 6, by + 1, 6, 7, '#c89e18'); f.rect(hx - 7, by + 3, 1, 4, '#c89e18');                  // la de detras
+        f.rect(hx - 2, by + 1, 7, 7, '#f2d23a'); f.rect(hx - 3, by + 3, 1, 4, '#f2d23a'); f.rect(hx + 5, by + 3, 1, 4, '#d8b428');
+        f.rect(hx - 2, by + 1, 7, 1, '#fbe878'); f.rect(hx + 3, by + 2, 2, 6, '#d8b428'); f.rect(hx - 1, by + 7, 5, 1, '#d8b428');
+        f.px(hx - 1, by, '#f2d23a'); f.px(hx, by - 1, '#f2d23a'); f.px(hx + 2, by - 1, '#f2d23a'); f.px(hx + 3, by, '#f2d23a');   // asas
+      }
+    }
     if (o.fat) { for (var y = dy + 21; y <= dy + 31; y++) { var w = y < dy + 24 || y > dy + 29 ? 1 : 2; f.rect(31, y, w, 1, y > dy + 27 ? o.pants : o.shirt); } }
     outline(f);
     for (var y = 0; y < 48; y++) for (var x = 0; x < 48; x++) { var a = (y * 48 + x) * 4, b2 = (y * 192 + fr * 48 + x) * 4; for (var c2 = 0; c2 < 4; c2++) out.d[b2 + c2] = f.d[a + c2]; }
