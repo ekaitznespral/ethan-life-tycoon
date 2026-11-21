@@ -374,5 +374,81 @@ window.STORY_TEXT = {
     "lines": [
       { "who": "javi", "text": "¡Mírale, ya va fino!" }
     ]
+  },
+  "dentro.pronto": {
+    "lines": [
+      { "who": "ethan", "text": "¿Salir ya? Si acabamos de entrar." }
+    ]
+  },
+  "dentro.barra": {
+    "lines": [
+      { "who": "ethan", "text": "Con lo que cobran aquí por un cubata... mejor no." }
+    ]
+  },
+  "dentro.ekaitz": {
+    "lines": [
+      { "who": "ekaitz", "text": "¡Esto es otra cosa! ¡Qué temazo!" }
+    ]
+  },
+  "dentro.manso": {
+    "lines": [
+      { "who": "manso", "text": "Yo de aquí no me muevo, que en la de reggaeton no se cabe." }
+    ]
+  },
+  "dentro.igor": {
+    "lines": [
+      { "who": "igor", "text": "¡Ethan, a bailar, que para eso hemos venido!" }
+    ]
+  },
+  "dentro.sadaba": {
+    "lines": [
+      { "who": "sadaba", "text": "Aquí en el reggaeton se está de lujo." }
+    ]
+  },
+  "dentro.lier": {
+    "lines": [
+      { "who": "lier", "text": "¿Has visto el precio de la barra? Menudo robo." }
+    ]
+  },
+  "dentro.javi": {
+    "lines": [
+      { "who": "javi", "text": "Yo me pido algo... o no, que vale un riñón." }
+    ]
+  },
+  "cubatas.salir": {
+    "lines": [
+      { "who": "ekaitz", "text": "Coño, vamos a ponernos unos cubatas, que los tenemos escondidos en la rotonda." },
+      { "who": "sadaba", "text": "¡Eso, eso! Que aquí dentro cuestan una pasta." }
+    ]
+  },
+  "cubatas.encontrados": {
+    "lines": [
+      { "who": "ethan", "text": "¡Aquí están, donde los dejamos!" }
+    ]
+  },
+  "cubatas.trago1": {
+    "lines": [
+      { "who": "ethan", "text": "Esto ya es otro nivel..." }
+    ]
+  },
+  "pelea.provocan": {
+    "lines": [
+      { "who": "macarra1", "text": "¿Qué miráis, eh?" },
+      { "who": "macarra2", "text": "¿Tenéis algún problema o qué?" },
+      { "who": "ethan", "text": "Tranquilos, que no buscamos movida." },
+      { "who": "macarra3", "text": "Pues la habéis encontrado." }
+    ]
+  },
+  "pelea.navaja": {
+    "lines": [
+      { "who": null, "text": "Uno de ellos saca una navaja." },
+      { "who": "ekaitz", "text": "¡Ethan, cuidado!" }
+    ]
+  },
+  "pelea.ganada": {
+    "lines": [
+      { "who": "sadaba", "text": "¡Toma ya! ¡Ethan, qué máquina!" },
+      { "who": "ekaitz", "text": "¡Vámonos de aquí antes de que vuelvan!" }
+    ]
   }
 };

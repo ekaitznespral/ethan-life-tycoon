@@ -90,6 +90,20 @@ body{display:flex;align-items:center;justify-content:center;font-family:var(--px
 #lkl{margin:0;min-height:1.6em;font-size:calc(var(--s)*5px);color:#f3eedb}
 #look small{font-size:calc(var(--s)*3.4px);color:#9a9488}
 @keyframes lkin{from{transform:scale(.9);opacity:0}}
+/* corazones (pelea) */
+#hearts{position:absolute;left:calc(var(--s)*8px);top:calc(var(--s)*30px);display:flex;gap:calc(var(--s)*2px);pointer-events:none;z-index:3}
+#hearts i{display:block;width:calc(var(--s)*17.6px);height:calc(var(--s)*16px);background:url(sprites/story/corazon.png) 0 0/calc(var(--s)*35.2px) calc(var(--s)*16px) no-repeat;image-rendering:pixelated;opacity:0;filter:drop-shadow(0 calc(var(--s)*1px) 0 #000a)}
+#hearts.on i{animation:hrtin .5s cubic-bezier(.2,1.6,.4,1) forwards}
+#hearts i.off{background-position:calc(var(--s)*-17.6px) 0}
+#hearts i.pop{animation:hrtpop .45s ease-out forwards}
+@keyframes hrtin{from{opacity:0;transform:translateY(calc(var(--s)*-30px)) scale(.4)}to{opacity:1;transform:none}}
+@keyframes hrtpop{0%{opacity:1;transform:scale(1.5)}40%{transform:scale(.8) rotate(-12deg)}100%{opacity:1;transform:none}}
+#stage.shake{animation:shk .3s}
+@keyframes shk{20%{transform:translate(4px,-2px)}40%{transform:translate(-4px,2px)}60%{transform:translate(3px,1px)}80%{transform:translate(-2px,-1px)}}
+.fighting #touch [data-k=atk],.fighting #touch [data-k=dodge]{display:block}
+#touch [data-k=atk],#touch [data-k=dodge]{display:none}
+#touch [data-k=atk]{right:calc(var(--s)*8px);bottom:calc(var(--s)*46px)}
+#touch [data-k=dodge]{right:calc(var(--s)*44px);bottom:calc(var(--s)*46px)}
 /* inventario */
 #inv{background:#000a}
 .ivb{width:calc(var(--s)*170px);max-width:92%;background:#1d1a17;border:calc(var(--s)*1px) solid #f3eedb;padding:calc(var(--s)*5px);text-align:left}
@@ -274,6 +288,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
  <div id="cbt" class="cb"></div><div id="cbb" class="cb"></div>
  <div id="mis" hidden></div>
  <div id="clk" hidden></div>
+ <div id="hearts"></div>
  <div id="toasts"></div>
  <div id="got"><div class="slot"><i class="ico"></i></div><div class="tx"><small>OBJETO CONSEGUIDO</small><b></b><span></span></div></div>
  <div id="camp" hidden><b id="campn"></b></div>
@@ -292,7 +307,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
  <div id="inv" class="ov" hidden><div class="ivb"><div class="dh"><b>Inventario</b><button id="invx" aria-label="Cerrar">✕</button></div><div id="invl"></div></div></div>
  <div id="touch" aria-hidden="true">
   <button data-k="left">◀</button><button data-k="right">▶</button>
-  <button id="trun" aria-label="Correr">»</button><button data-k="act">E</button><button data-k="jump">▲</button><button data-k="menu">II</button>
+  <button id="trun" aria-label="Correr">»</button><button data-k="act">E</button><button data-k="atk" aria-label="Pegar">👊</button><button data-k="dodge" aria-label="Esquivar">↩</button><button data-k="jump">▲</button><button data-k="menu">II</button>
  </div>
  <div id="fade"></div>
  <div id="loading" hidden>Cargando</div>
@@ -351,7 +366,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
 </div>
 <div id="rot">Gira el móvil<br>para jugar en horizontal</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="story/dialogos.js?v=20261121f"></script>
-<script src="story/scenes.js?v=20261121f"></script>
-<script src="story/engine.js?v=20261121f"></script>
+<script src="story/dialogos.js?v=20261122b"></script>
+<script src="story/scenes.js?v=20261122b"></script>
+<script src="story/engine.js?v=20261122b"></script>
 </body></html>

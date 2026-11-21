@@ -91,6 +91,54 @@ function viajeTick(s, dt) {
   }
 }
 
+// La pelea en la rotonda: llegan tres macarras, aparecen los corazones, uno saca una navaja y empieza
+// el combate. Si te tumban, se repite.
+var MACARRAS_PELEA = [
+  { id: 'macarra1', src: 'sprites/story/macarra-1.png', x: 150, hp: 3 },
+  { id: 'macarra2', src: 'sprites/story/macarra-2.png', x: 182, hp: 3 },
+  { id: 'macarra3', src: 'sprites/story/macarra-3-navaja.png', x: 214, hp: 4, knife: true, wind: 0.45, reach: 28 }
+];
+async function API_pelea(s) {
+  await s.cine(true);
+  if (!s.flag('pelea_vista')) {
+    MACARRAS_PELEA.forEach(function (m, i) { s.actor(m.id, -30 - i * 22, 1); });
+    s.face(-1);
+    await Promise.all(MACARRAS_PELEA.map(function (m) { return s.actorWalk(m.id, m.x); }));
+    await s.talk('pelea.provocan');
+    await s.hearts(true);
+    s.swapActor('macarra3', 'sprites/story/macarra-3-navaja.png'); s.sfx('navaja');
+    await s.wait(0.5);
+    await s.talk('pelea.navaja');
+    s.flag('pelea_vista', 1);
+  } else { await s.hearts(true); }
+  MACARRAS_PELEA.forEach(function (m) { s.actor(m.id, null); });
+  // la cuadrilla se aparta a mirar
+  await Promise.all([['ekaitz', 500], ['javi', 522], ['sadaba', 544], ['manso', 566], ['lier', 588], ['igor', 608]].map(function (a) { return s.actorWalk(a[0], a[1], 110).then(function () { s.actorFace(a[0], -1); }); }));
+  await s.cine(false);
+  s.toast('Clic izquierdo: pegar · Clic derecho: esquivar');
+  for (;;) {
+    var r = await s.fight({ hp: 3, foes: MACARRAS_PELEA.map(function (m) { return Object.assign({}, m); }) });
+    if (r === 'win') break;
+    await s.cine(true);
+    await s.fade(1, 700);
+    await s.card('Te han dejado KO...');
+    await s.walkTo(300); s.face(-1);
+    await s.fade(0, 600);
+    await s.hearts(true);
+    await s.cine(false);
+  }
+  await s.hearts(false);
+  s.flag('pelea_ganada', 1);
+  await s.cine(true);
+  await s.talk('pelea.ganada');
+  s.complete('cubatas');
+  await s.wait(1);
+  await s.fade(1, 900);
+  await s.card('Continuará...');             // AQUI SIGUE LA HISTORIA (pendiente)
+  await s.fade(0, 700);
+  await s.cine(false);
+}
+
 window.STORY = {
   intro: { cards: ['31 de diciembre de 2022'], scene: 'cocina', spawn: 'inicio' },
 
@@ -109,6 +157,7 @@ window.STORY = {
     // solo se ven en la rotonda (no van al inventario)
     vodka: { name: 'Vodka', icon: 8 },
     fanta: { name: 'Fanta de naranja', icon: 9 },
+    cubata: { name: 'Cubata', icon: 10, desc: 'Un cubata de los que dejasteis escondidos en la rotonda.' },
     barik: { name: 'Barik', icon: 6, desc: 'La tarjeta del metro. Estaba en la cartera, en el escritorio.', flag: 'barik_cogida' }   // flag: se pone al darlo desde el panel
   },
 
@@ -120,6 +169,9 @@ window.STORY = {
     sadaba: { name: 'Sadaba', walk: 'sprites/story/amigo-sadaba.png', bust: 'sprites/story/busto-sadaba.png', voice: 150 },
     lier: { name: 'Lier', walk: 'sprites/story/amigo-lier.png', bust: 'sprites/story/busto-lier.png', voice: 210 },
     javi: { name: 'Javi', walk: 'sprites/story/amigo-javi.png', bust: 'sprites/story/busto-javi.png', voice: 190 },
+    macarra1: { name: 'Macarra', walk: 'sprites/story/macarra-1.png', voice: 130 },
+    macarra2: { name: 'Macarra', walk: 'sprites/story/macarra-2.png', voice: 160 },
+    macarra3: { name: 'El de la navaja', walk: 'sprites/story/macarra-3.png', voice: 110 },
     igor: { name: 'Igor', walk: 'sprites/story/amigo-igor.png', bust: 'sprites/story/busto-igor.png', voice: 260 }
   },
 
@@ -142,10 +194,11 @@ window.STORY = {
   // para que de tiempo justo a ir, volver a casa a por la Barik y llegar).
   // events: guiones que saltan a una hora (una sola vez; se rearman borrando la flag "hora:<id>").
   clock: {
-    rate: function (g) { return g.flag('mision:metro') === 'activa' ? 1.4 : g.flag('en_metro') ? 4 : g.flag('en_anden') ? 3 : 0.8; },
+    rate: function (g) { return g.flag('mision:metro') === 'activa' ? 1.4 : g.flag('en_sonora') && !g.flag('fuera_cubatas') ? 1 : g.flag('en_metro') ? 4 : g.flag('en_anden') ? 3 : 0.8; },
     events: [
       { id: 'campanadas', at: '23:59', run: 'campanadas', when: function (g) { return g.flag('cena_hecha'); } },
       { id: 'quedada', at: '00:30', run: 'quedada', when: function (g) { return g.flag('ano_nuevo'); } },
+      { id: 'cubatas_salir', at: '03:00', run: 'cubatas_salir', when: function (g) { return g.flag('en_sonora') && !g.flag('fuera_cubatas'); } },
       { id: 'tren', at: '01:15', run: 'tren', when: function (g) { return g.flag('en_anden') && !g.flag('en_metro'); } },
       { id: 'metro_perdido', at: '01:15', run: 'metro_perdido', when: function (g) { return g.flag('mision:metro') === 'activa'; } }
     ]
@@ -189,6 +242,20 @@ window.STORY = {
         { text: 'Que Sadaba saque las botellas', done: function (g) { return g.flag('botellas'); } },
         { text: function (g) { return 'Bébete unos destornis (' + Math.min(3, g.flag('tajada') || 0) + '/3)'; }, done: function (g) { return (g.flag('tajada') || 0) >= 3; } },
         { text: 'Entra tajado en la Sonora', done: function (g) { return g.flag('en_sonora'); } }
+      ]
+    },
+    noche: {
+      name: 'Noche en la Sonora', type: 'principal',
+      desc: 'Dos salas: tecno y reggaeton. A pasarlo bien.',
+      steps: [{ text: 'Pasa un rato en la Sonora (hasta las 3:00)', done: function (g) { return g.flag('fuera_cubatas'); } }]
+    },
+    cubatas: {
+      name: 'Cubatas en la rotonda', type: 'principal',
+      desc: 'Los cubatas están escondidos entre los matorrales de la rotonda. Un par más y para dentro... si os dejan.',
+      steps: [
+        { text: 'Busca los cubatas escondidos en la rotonda', done: function (g) { return g.flag('cubatas_cogidos'); } },
+        { text: function (g) { return 'Tómate un par de cubatas (' + Math.min(2, g.flag('cubatas') || 0) + '/2)'; }, done: function (g) { return (g.flag('cubatas') || 0) >= 2; } },
+        { text: 'Sal entero de la pelea', when: function (g) { return (g.flag('cubatas') || 0) >= 2; }, done: function (g) { return g.flag('pelea_ganada'); } }
       ]
     }
   },
@@ -419,9 +486,45 @@ window.STORY = {
       s.flag('en_sonora', 1); s.complete('tajada');
       await s.wait(1.2);
       await s.fade(1, 900);
-      await s.card('Continuará...');           // AQUI SIGUE LA HISTORIA: dentro de la Sonora (pendiente)
+      s.clock('02:00');
+      await s.go('sonora', 'entrada');
       await s.fade(0, 700);
       await s.cine(false);
+      s.mission('noche');
+    },
+    // --- dentro de la Sonora ---
+    sonora_salir: async function (s) { await s.talk('dentro.pronto'); },
+    sonora_barra: async function (s) { await s.talk('dentro.barra'); },
+    dentro_ekaitz: async function (s) { await s.talk('dentro.ekaitz'); },
+    dentro_manso: async function (s) { await s.talk('dentro.manso'); },
+    dentro_igor: async function (s) { await s.talk('dentro.igor'); },
+    dentro_sadaba: async function (s) { await s.talk('dentro.sadaba'); },
+    dentro_lier: async function (s) { await s.talk('dentro.lier'); },
+    dentro_javi: async function (s) { await s.talk('dentro.javi'); },
+    dentro_amigo: async function (s) { await s.talk('dentro.' + (['ekaitz', 'manso', 'sadaba', 'lier', 'javi', 'igor'][Math.floor(Math.random() * 6)])); },
+    // 03:00: salen a por los cubatas escondidos en la rotonda
+    cubatas_salir: async function (s) {
+      await s.cine(true);
+      await s.talk('cubatas.salir');
+      s.flag('fuera_cubatas', 1); s.complete('noche');
+      await s.fade(1, 900);
+      await s.go('rotonda', 'sonora');
+      await s.walkTo(400); s.face(-1);
+      await s.fade(0, 700);
+      await s.cine(false);
+      s.mission('cubatas');
+    },
+    cubatas_buscar: async function (s) {
+      await s.talk('cubatas.encontrados');
+      s.flag('cubatas_cogidos', 1); s.give('cubata');
+    },
+    cubata_coger: async function (s) { s.give('cubata'); },
+    cubata_beber: async function (s) {
+      s.take('cubata'); s.sfx('trago');
+      var n = (s.flag('cubatas') || 0) + 1; s.flag('cubatas', n); s.flag('tajada', (s.flag('tajada') || 0) + 1);
+      await s.wait(0.8);
+      if (n === 1) { await s.talk('cubatas.trago1'); return; }
+      await API_pelea(s);
     },
     // --- el botellon en la rotonda ---
     rotonda_llegar: async function (s) {
@@ -456,6 +559,7 @@ window.STORY = {
       else if (n === 2) s.toast('Entra fino...');
       else { await s.talk('tajada.entonado'); s.toast('Ya vas tajado: a la Sonora'); }
     },
+    pelea_reintentar: async function (s) { await API_pelea(s); },
     rotonda_amigo: async function (s) { await s.talk((s.flag('tajada') || 0) >= 3 ? 'tajada.amigos_pedo' : 'tajada.amigos'); },
     sonora_cola: async function (s) { await s.talk('sonora.cola'); },
     sonora_ekaitz: async function (s) { await s.talk('sonora.ekaitz'); },
@@ -517,6 +621,9 @@ window.STORY = {
     { id: 'astra', name: 'Astrabudua: saliendo del metro (01:39)', scene: 'astrabudua', spawn: 'metro', clock: '01:39', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop' }, inv: ['barik'] },
     { id: 'sonora', name: 'Fuera de la Sonora, misión Tajada (01:41)', scene: 'astrabudua', spawn: 'fuera', clock: '01:41', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop', salida_ok: 1, 'mision:tajada': 'activa' }, inv: ['barik'] },
     { id: 'botellon', name: 'Botellón en la rotonda, botellas fuera (01:50)', scene: 'rotonda', spawn: 'sonora', clock: '01:50', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop', salida_ok: 1, 'mision:tajada': 'activa', rotonda: 1, botellas: 1 }, inv: ['barik'] },
+    { id: 'dentro', name: 'Dentro de la Sonora (02:50)', scene: 'sonora', spawn: 'entrada', clock: '02:50', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop', salida_ok: 1, rotonda: 1, botellas: 1, tajada: 3, en_sonora: 1, 'mision:tajada': 'hecha', 'mision:noche': 'activa' }, inv: ['barik'] },
+    { id: 'cubatas', name: 'Cubatas en la rotonda (03:02)', scene: 'rotonda', spawn: 'sonora', clock: '03:02', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop', salida_ok: 1, rotonda: 1, botellas: 1, tajada: 3, en_sonora: 1, 'mision:tajada': 'hecha', 'mision:noche': 'hecha', fuera_cubatas: 1, 'hora:cubatas_salir': 1, 'mision:cubatas': 'activa' }, inv: ['barik'] },
+    { id: 'pelea', name: 'Justo antes de la pelea (03:08)', scene: 'rotonda', spawn: 'sonora', clock: '03:08', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop', salida_ok: 1, rotonda: 1, botellas: 1, tajada: 3, en_sonora: 1, 'mision:tajada': 'hecha', tajada: 4, 'mision:noche': 'hecha', fuera_cubatas: 1, 'hora:cubatas_salir': 1, 'mision:cubatas': 'activa', cubatas_cogidos: 1, cubatas: 1 }, inv: ['barik', 'cubata'] },
     { id: 'casa', name: 'Pasillo de casa (escena de prueba)', scene: 'pasillo', spawn: 'cocina' },
     { id: 'cuarto', name: 'Cuarto de Ethan (escena de prueba)', scene: 'habitacion', spawn: 'puerta' },
     { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' },
@@ -856,6 +963,10 @@ window.STORY_SCENES = {
     ],
     objects: [
       { id: 'destorni_coger', name: 'Botellas', x: 318, reach: 14, py: 150, label: 'Prepararte un destorni', run: 'destorni_coger', when: function (g) { return g.flag('botellas') && !g.has('destorni') && (g.flag('tajada') || 0) < 3; } },
+      { id: 'cubatas_buscar', name: 'Matorrales', x: 420, reach: 16, py: 150, label: 'Buscar entre los matorrales', run: 'cubatas_buscar', when: function (g) { return g.flag('mision:cubatas') === 'activa' && !g.flag('cubatas_cogidos'); } },
+      { id: 'cubata_coger', name: 'Cubatas', x: 420, reach: 16, py: 150, label: 'Coger otro cubata', run: 'cubata_coger', when: function (g) { return g.flag('cubatas_cogidos') && !g.has('cubata') && (g.flag('cubatas') || 0) < 2; } },
+      { id: 'cubata_beber', name: 'Cubata', x: 318, reach: 320, py: 150, label: 'Beberte el cubata', run: 'cubata_beber', when: function (g) { return g.has('cubata'); } },
+      { id: 'pelea_otra', name: 'Pelea', x: 318, reach: 320, py: 150, label: 'Plantar cara a los macarras', run: 'pelea_reintentar', when: function (g) { return (g.flag('cubatas') || 0) >= 2 && !g.flag('pelea_ganada'); } },
       { id: 'destorni_beber', name: 'Destorni', x: 318, reach: 320, py: 150, label: 'Beberte el destorni', run: 'destorni_beber', when: function (g) { return g.has('destorni'); } },
       { id: 'rot_ekaitz', name: 'Ekaitz', x: 250, reach: 9, py: 144, label: 'Hablar con Ekaitz', run: 'rotonda_amigo', when: function (g) { return g.flag('rotonda'); } },
       { id: 'rot_javi', name: 'Javi', x: 230, reach: 9, py: 144, label: 'Hablar con Javi', run: 'rotonda_amigo', when: function (g) { return g.flag('rotonda'); } },
@@ -868,12 +979,55 @@ window.STORY_SCENES = {
       { item: 'vodka', x: 306, y: 188, when: function (g) { return g.flag('botellas'); } },
       { item: 'fanta', x: 320, y: 188, when: function (g) { return g.flag('botellas'); } },
       { item: 'fanta', x: 332, y: 188, when: function (g) { return g.flag('botellas'); } },
-      { item: 'destorni', x: 346, y: 188, when: function (g) { return g.flag('botellas'); } }
+      { item: 'destorni', x: 346, y: 188, when: function (g) { return g.flag('botellas'); } },
+      { item: 'cubata', x: 414, y: 186, when: function (g) { return g.flag('cubatas_cogidos') && (g.flag('cubatas') || 0) < 2; } },
+      { item: 'cubata', x: 426, y: 186, when: function (g) { return g.flag('cubatas_cogidos') && (g.flag('cubatas') || 0) < 1; } }
     ],
     fx: [
       { type: 'glow', x: 104, y: 44, r: 70, c: '255,240,200', a: 0.16 },
       { type: 'glow', x: 514, y: 44, r: 70, c: '255,240,200', a: 0.16 },
       { type: 'glow', x: 300, y: 160, r: 90, c: '255,220,160', a: 0.08 }
+    ]
+  },
+
+  // Dentro de la Sonora: sala tecno (izquierda) y sala de reggaeton (derecha)
+  sonora: {
+    name: 'La Sonora', sub: 'Sala tecno · Sala reggaeton',
+    w: 1000, floor: 196,
+    layers: [
+      { src: 'sprites/story/sonora-dentro.png', f: 1 },
+      { src: 'sprites/story/sonora-cabina.png', f: 1, front: true }
+    ],
+    spawns: { entrada: { x: 930, dir: -1 } },
+    exits: [{ x: 950, w: 40, to: 'astrabudua', spawn: 'fuera', label: 'Salir', when: function () { return false; }, locked: 'sonora_salir' }],
+    platforms: [{ x: 578, y: 172, w: 64 }, { x: 600, y: 154, w: 56 }, { x: 660, y: 176, w: 50 }],
+    actors: [
+      { id: 'ekaitz', x: 230, dir: 1, when: function (g) { return !g.flag('fuera_cubatas'); } },
+      { id: 'manso', x: 290, dir: -1, when: function (g) { return !g.flag('fuera_cubatas'); } },
+      { id: 'igor', x: 340, dir: 1, when: function (g) { return !g.flag('fuera_cubatas'); } },
+      { id: 'sadaba', x: 640, dir: 1, when: function (g) { return !g.flag('fuera_cubatas'); } },
+      { id: 'lier', x: 700, dir: -1, when: function (g) { return !g.flag('fuera_cubatas'); } },
+      { id: 'javi', x: 800, dir: -1, when: function (g) { return !g.flag('fuera_cubatas'); } }
+    ],
+    objects: [
+      { id: 'barra', name: 'Barra', x: 792, reach: 30, py: 120, label: 'Pedir en la barra', run: 'sonora_barra' },
+      { id: 'dentro_ekaitz', name: 'Ekaitz', x: 230, reach: 9, py: 144, label: 'Hablar con Ekaitz', run: 'dentro_ekaitz', when: function (g) { return !g.flag('fuera_cubatas'); } },
+      { id: 'dentro_manso', name: 'Manso', x: 290, reach: 9, py: 144, label: 'Hablar con Manso', run: 'dentro_manso', when: function (g) { return !g.flag('fuera_cubatas'); } },
+      { id: 'dentro_igor', name: 'Igor', x: 340, reach: 9, py: 144, label: 'Hablar con Igor', run: 'dentro_igor', when: function (g) { return !g.flag('fuera_cubatas'); } },
+      { id: 'dentro_sadaba', name: 'Sadaba', x: 640, reach: 9, py: 144, label: 'Hablar con Sadaba', run: 'dentro_sadaba', when: function (g) { return !g.flag('fuera_cubatas'); } },
+      { id: 'dentro_lier', name: 'Lier', x: 700, reach: 9, py: 144, label: 'Hablar con Lier', run: 'dentro_lier', when: function (g) { return !g.flag('fuera_cubatas'); } },
+      { id: 'dentro_javi', name: 'Javi', x: 800, reach: 9, py: 144, label: 'Hablar con Javi', run: 'dentro_javi', when: function (g) { return !g.flag('fuera_cubatas'); } }
+    ],
+    fx: [
+      { type: 'tubes', z: 0, bpm: 2.2, every: 4, lines: [[83, 21, 157, 23], [85, 30, 155, 14], [85, 22, 155, 22], [100, 27, 140, 17], [90, 16, 150, 28], [221, 18, 299, 18], [241, 21, 279, 15], [236, 18, 284, 18], [229, 9, 291, 27], [223, 21, 297, 15], [379, 32, 421, 16], [363, 27, 437, 21], [362, 27, 438, 21], [377, 15, 423, 33], [386, 20, 414, 28], [447, 12, 493, 20], [427, 18, 513, 14], [437, 16, 503, 16], [445, 17, 495, 15], [431, 16, 509, 16]] },
+      { type: 'beams', z: 0, spots: [{ x: 120, y: 30, c: '160,200,255', v: 0.9, len: 180 }, { x: 330, y: 30, c: '255,255,255', v: 1.3 }, { x: 480, y: 30, c: '120,160,255', v: 0.7 }, { x: 640, y: 24, c: '255,80,40', v: 0.8, arc: 0.5 }, { x: 780, y: 24, c: '255,150,60', v: 1.1, arc: 0.4 }] },
+      { type: 'crowd', z: 0, src: 'sprites/story/gente.png', dance: 2.4, jump: 4, people: [{ x: 206, n: 1, dir: 1 }, { x: 228, n: 4, dir: -1 }, { x: 251, n: 7, dir: -1 }, { x: 271, n: 10, dir: -1 }, { x: 291, n: 13, dir: 1 }, { x: 314, n: 0, dir: -1 }, { x: 336, n: 3, dir: -1 }, { x: 359, n: 6, dir: -1 }, { x: 383, n: 9, dir: 1 }, { x: 403, n: 12, dir: -1 }, { x: 425, n: 15, dir: -1 }, { x: 447, n: 2, dir: -1 }, { x: 468, n: 5, dir: 1 }, { x: 492, n: 8, dir: -1 }, { x: 514, n: 11, dir: -1 }] },
+      { type: 'crowd', z: 0, src: 'sprites/story/gente.png', dance: 1.6, jump: 1, people: [{ x: 604, n: 2, dir: -1 }, { x: 626, n: 7, dir: 1 }, { x: 652, n: 12, dir: -1 }, { x: 680, n: 1, dir: 1 }, { x: 702, n: 6, dir: -1 }, { x: 727, n: 11, dir: 1 }] },
+      { type: 'crowd', z: 0, src: 'sprites/story/gente.png', dance: 1.2, jump: 1, dir: 1, people: [{ x: 84, n: 9, dir: 1 }, { x: 122, n: 4, dir: 1 }] },
+      { type: 'glow', x: 102, y: 160, r: 50, c: '110,220,240', a: 0.25 },
+      { type: 'glow', x: 792, y: 120, r: 60, c: '255,170,80', a: 0.25 },
+      { type: 'glow', x: 700, y: 120, r: 120, c: '255,60,30', a: 0.12 },
+      { type: 'glow', x: 970, y: 110, r: 24, c: '60,220,100', a: 0.25 }
     ]
   }
 };
