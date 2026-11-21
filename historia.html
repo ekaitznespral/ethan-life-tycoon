@@ -236,6 +236,11 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
 #dev label{display:flex;flex-direction:column;gap:calc(var(--s)*1.5px)}
 #dev label.dck{flex-direction:row;align-items:center;gap:calc(var(--s)*2px);line-height:1.5}
 #dev .dt{color:#ffd75e;margin-top:calc(var(--s)*3px)}
+#ditems{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--s)*44px),1fr));gap:calc(var(--s)*1.5px)}
+#ditems button{display:flex;align-items:center;gap:calc(var(--s)*2px);opacity:.6}
+#ditems button.on{opacity:1;border-color:#ffd75e;background:#3a3420}
+#ditems button.on::after{content:'✓';margin-left:auto;color:#8dff9e}
+#ditems .ico{--k:.75}
 #dcps{display:flex;flex-direction:column;gap:calc(var(--s)*1.5px)}
 #dev .drow{display:flex;gap:calc(var(--s)*1.5px)}
 #dev .drow select{flex:1;min-width:0}
@@ -332,6 +337,8 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
   <label>Partida<select id="dslot"></select></label>
   <div class="dt">Punto de la historia</div>
   <div id="dcps"></div>
+  <div class="dt">Inventario (clic: dar / quitar)</div>
+  <div id="ditems"></div>
   <div class="dt">Ir a un escenario</div>
   <div class="drow"><select id="dscene"></select><select id="dspawn"></select><button id="dgo">Ir</button></div>
   <div class="dt">Editar textos</div>
@@ -344,7 +351,7 @@ kbd{font-family:var(--px);background:#f3eedb;color:#1d1a17;padding:0 calc(var(--
 </div>
 <div id="rot">Gira el móvil<br>para jugar en horizontal</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="story/dialogos.js?v=20261115b"></script>
-<script src="story/scenes.js?v=20261115b"></script>
-<script src="story/engine.js?v=20261115b"></script>
+<script src="story/dialogos.js?v=20261121a"></script>
+<script src="story/scenes.js?v=20261121a"></script>
+<script src="story/engine.js?v=20261121a"></script>
 </body></html>

@@ -52,13 +52,13 @@ window.STORY = {
     uvas: { name: 'Uvas', icon: 3 },
     lacasitos: { name: 'Lacasitos', icon: 4 },
     nuggets: { name: 'Nuggets del Burger King', icon: 5 },
-    barik: { name: 'Barik', icon: 6, desc: 'La tarjeta del metro. Estaba en la cartera, en el escritorio.' }
+    barik: { name: 'Barik', icon: 6, desc: 'La tarjeta del metro. Estaba en la cartera, en el escritorio.', flag: 'barik_cogida' }   // flag: se pone al darlo desde el panel
   },
 
   // La cuadrilla (Calentaos 4.0): walk = andando de lado, bust = retrato para dialogos y movil.
   // En los dialogos, who: 'ekaitz' (el id). alias = otros nombres con los que salen en el chat.
   people: {
-    ekaitz: { name: 'Ekaitz', walk: 'sprites/story/amigo-ekaitz.png', bust: 'sprites/story/busto-ekaitz.png', voice: 240 },
+    ekaitz: { name: 'Ekaitz', alias: ['ekabi'], walk: 'sprites/story/amigo-ekaitz.png', bust: 'sprites/story/busto-ekaitz.png', voice: 240 },
     manso: { name: 'Manso', walk: 'sprites/story/amigo-manso.png', bust: 'sprites/story/busto-manso.png', voice: 270 },
     sadaba: { name: 'Sadaba', walk: 'sprites/story/amigo-sadaba.png', bust: 'sprites/story/busto-sadaba.png', voice: 150 },
     lier: { name: 'Lier', walk: 'sprites/story/amigo-lier.png', bust: 'sprites/story/busto-lier.png', voice: 210 },

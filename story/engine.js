@@ -355,6 +355,20 @@
     Object.keys(SCENES).forEach(function (id) { var o = document.createElement('option'); o.value = id; o.textContent = SCENES[id].name + ' (' + id + ')'; sc.appendChild(o); });
     sc.value = sceneId || Object.keys(SCENES)[0]; fillSpawns();
     $('ddebug').checked = debug; fillTextOwners();
+    var di = $('ditems'); di.innerHTML = '';
+    Object.keys(ITEMS).forEach(function (id) {   // dar o quitar cualquier objeto
+      var it = ITEMS[id], b = document.createElement('button'), ic = document.createElement('i');
+      icon(ic, id); b.appendChild(ic); b.appendChild(document.createTextNode(it.name)); b.title = id;
+      b.classList.toggle('on', !!(game && GS.has(id)));
+      b.disabled = !game;
+      b.onclick = function () {
+        if (!game) return;
+        if (GS.has(id)) { API.take(id); if (it.flag) GS.flag(it.flag, null); }
+        else { game.inv.push(id); if (it.flag) GS.flag(it.flag, 1); refreshHud(); }
+        writeSave(); renderDev();
+      };
+      di.appendChild(b);
+    });
     $('ddata').textContent = game ? JSON.stringify(Object.assign({}, game, { play: Math.round(game.play || 0) }, sceneId ? { scene: sceneId, x: Math.round(P.x), y: Math.round(P.y) } : {}), null, 1) : '(no hay partida en juego)';
   }
   function fillSpawns() {
