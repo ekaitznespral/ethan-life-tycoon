@@ -1168,7 +1168,9 @@
       if (P.x > c.x && P.x < c.x + c.w) P.x += convV(c) * dt;
     });
     (scene.blocks || []).forEach(function (b) {                                  // barreras (p. ej. canceladoras cerradas)
-      if (avail(b) && P.x + hw > b.x && P.x - hw < b.x + 6) { P.x = b.x - hw; if (P.vx > 0) P.vx = 0; }
+      if (!avail(b)) return;
+      if (b.dir === -1) { if (P.x - hw < b.x && P.x + hw > b.x - 6) { P.x = b.x + hw; if (P.vx < 0) P.vx = 0; } }   // bloquea yendo a la izquierda
+      else if (P.x + hw > b.x && P.x - hw < b.x + 6) { P.x = b.x - hw; if (P.vx > 0) P.vx = 0; }
     });
     if (P.x < hw + 4) { P.x = hw + 4; P.vx = 0; }
     if (P.x > scene.w - hw - 4) { P.x = scene.w - hw - 4; P.vx = 0; }
@@ -1277,6 +1279,18 @@
   function fxDraw(o, cx) {
     var d = o.d, f = d.f == null ? 1 : d.f, ox = Math.round(cx * f);
     if (d.when && d.type !== 'fireworks' && d.type !== 'paddles' && !avail(d)) return;
+    if (d.type === 'crowd') {                        // gente quieta (p. ej. una cola): src con 2 fotogramas por persona
+      var gi = img(d.src); if (!gi) return;
+      var np = Math.floor(gi.width / 96);
+      d.people.forEach(function (q, i) {
+        var n = (q.n != null ? q.n : i * 7) % np, fr = (Math.floor(o.t / 1.7 + i * 0.37) % 5 === 0) ? 1 : 0;
+        var x = Math.round(q.x) - ox, y = Math.round(floorAt(q.x)) - 46;
+        if (x < -48 || x > VW + 48) return;
+        if ((q.dir || d.dir || -1) > 0) ctx.drawImage(gi, (n * 2 + fr) * 48, 0, 48, 48, x - 24, y, 48, 48);
+        else { ctx.save(); ctx.translate(x + 24, y); ctx.scale(-1, 1); ctx.drawImage(gi, (n * 2 + fr) * 48, 0, 48, 48, 0, 0, 48, 48); ctx.restore(); }
+      });
+      return;
+    }
     if (d.type === 'outside') {                      // lo que se ve por las ventanas del metro: tunel o estacion
       var pos = o.pos || 0, st = o.station;          // st = { u: posicion de la estacion, name }
       ctx.fillStyle = '#121418'; ctx.fillRect(0, 0, VW, VH);

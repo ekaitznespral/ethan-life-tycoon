@@ -290,5 +290,32 @@ window.STORY_TEXT = {
       { "who": "javi", "text": "¡Buenas, cuadrilla! ¿Qué pasa?" },
       { "who": "sadaba", "text": "¡Javi! Justo a tiempo, como buen barakaldés." }
     ]
+  },
+  "sonora.llegan": {
+    "lines": [
+      { "who": "ekaitz", "text": "Bueno, pues aquí está la Sonora." },
+      { "who": "igor", "text": "Madre mía la cola que hay." },
+      { "who": "sadaba", "text": "Tranquilos, que yo vengo preparado." }
+    ]
+  },
+  "sonora.puerta": {
+    "lines": [
+      { "who": "ethan", "text": "Todavía no. Primero lo primero." }
+    ]
+  },
+  "sonora.cola": {
+    "lines": [
+      { "who": "Alguien de la cola", "text": "¡Eh, a la cola como todo el mundo!" }
+    ]
+  },
+  "sonora.ekaitz": {
+    "lines": [
+      { "who": "ekaitz", "text": "Con esta cola vamos a tardar un rato en entrar." }
+    ]
+  },
+  "sonora.sadaba": {
+    "lines": [
+      { "who": "sadaba", "text": "Las bolsas no se tocan hasta que yo diga." }
+    ]
   }
 };

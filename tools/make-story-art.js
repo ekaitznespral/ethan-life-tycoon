@@ -1029,8 +1029,8 @@ function bustSheet(id) {
 }
 // --- andando de lado (sobre el cuerpo de Ethan) ---
 var EW = null;
-function amigoWalk(id) {
-  var o = AMIGOS[id];
+function amigoWalk(id, oo) {          // oo: descripcion suelta (gente al azar); entonces no se guarda
+  var o = oo || AMIGOS[id];
   if (!EW) EW = readPNG(path.join(__dirname, '..', 'sprites', 'ethan-walk.png'));
   var out = new FB(192, 48), SK = o.skin || '#e8b990', SKS = o.skinS || '#c9966b';
   for (var fr = 0; fr < 4; fr++) {
@@ -1051,12 +1051,15 @@ function amigoWalk(id) {
       if (out_) f.px(x, y, out_); else f.px(x, y, [c[0], c[1], c[2], 255]);
     }
     // pelo nuevo
-    var H = o.hair, L = o.hairH, T0 = dy + { tupe: 0, flequillo: 2, corto: 3, rapado: 3, rizos: 1 }[o.style];
+    var H = o.hair, L = o.hairH, T0 = dy + { tupe: 0, flequillo: 2, corto: 3, rapado: 3, rizos: 1, largo: 1, coleta: 2, gorra: 2 }[o.style];
     for (var y = T0; y <= dy + 7; y++) { var c0 = y === T0 ? 3 : y === T0 + 1 ? 1 : 0; f.rect(15 + c0, y, 15 - c0 * 2, 1, H); }
     f.rect(14, dy + 4, 3, 10, o.style === 'rapado' ? '#9a8070' : H);                   // nuca
     f.rect(16, dy + 8, 1, 5, H);                                                         // patilla
     if (o.style === 'tupe') { [16, 20, 24].forEach(function (x) { f.rect(x, dy - 1 < 0 ? 0 : dy - 1, 3, 1, H); }); f.rect(27, dy + 1, 4, 3, H); f.rect(18, dy + 1, 8, 1, L); f.rect(14, dy + 6, 2, 6, L); }
     if (o.style === 'flequillo') { f.rect(24, dy + 8, 6, 1, H); f.rect(26, dy + 9, 3, 1, H); f.rect(28, dy + 3, 2, 5, H); f.rect(18, dy + 3, 8, 1, L); }
+    if (o.style === 'largo') { f.rect(12, dy + 4, 5, 18, H); f.rect(13, dy + 5, 1, 15, L); f.rect(18, dy + 2, 9, 1, L); f.rect(26, dy + 3, 4, 4, H); }
+    if (o.style === 'coleta') { f.rect(11, dy + 5, 4, 3, H); f.rect(10, dy + 8, 3, 8, H); f.px(11, dy + 9, L); f.rect(18, dy + 3, 8, 1, L); }
+    if (o.style === 'gorra') { f.rect(15, T0 - 1, 15, 4, o.cap); f.rect(28, T0 + 2, 6, 2, o.cap); f.rect(16, T0 - 1, 10, 1, '#ffffff', 60); }
     if (o.style === 'corto') { f.rect(18, dy + 4, 8, 1, L); f.rect(28, dy + 4, 1, 3, H); }
     if (o.style === 'rapado') { f.rect(18, dy + 4, 9, 1, L); f.rect(15, dy + 6, 13, 2, '#7a6050'); }
     if (o.style === 'rizos') { for (var x = 15; x < 30; x += 3) { f.disc(x + 1, T0 + 1, 2, H); f.px(x + 1, T0 + 1, L); } f.px(18, dy + 4, L); f.px(23, dy + 5, L); f.px(15, dy + 9, L); }
@@ -1082,7 +1085,8 @@ function amigoWalk(id) {
     outline(f);
     for (var y = 0; y < 48; y++) for (var x = 0; x < 48; x++) { var a = (y * 48 + x) * 4, b2 = (y * 192 + fr * 48 + x) * 4; for (var c2 = 0; c2 < 4; c2++) out.d[b2 + c2] = f.d[a + c2]; }
   }
-  save(out, 'amigo-' + id + '.png');
+  if (!oo) save(out, 'amigo-' + id + '.png');
+  return out;
 }
 function cuadrilla() { Object.keys(AMIGOS).forEach(function (id) { bustSheet(id); amigoWalk(id); }); }
 
@@ -1197,6 +1201,108 @@ function vagon() {
   save(f, 'vagon.png');
 }
 
+
+// ======================= GENTE AL AZAR (la cola de la Sonora) =======================
+// Personas inventadas sobre el mismo cuerpo: pelo, piel y ropa al azar. gente.png: 2 fotogramas
+// quietos por persona (piernas juntas), seguidos: persona n = fotogramas 2n y 2n+1.
+var GENTE_N = 16;
+function gente() {
+  var r = rng(2023), pick = function (a) { return a[(r() * a.length) | 0]; };
+  var pelos = [['#2a1f1a', '#463630'], ['#3b2a1f', '#5e4533'], ['#6b4a2a', '#8a6440'], ['#c9a04e', '#f0d892'], ['#1a1414', '#3a3030'], ['#8a3a2a', '#b05a40'], ['#2a1a2a', '#8a3a7a']];
+  var pieles = [['#e8b990', '#c9966b'], ['#f0c8a8', '#d0a080'], ['#d8a07a', '#b8805a'], ['#b8805a', '#98603e'], ['#8a5a3a', '#6a4028']];
+  var camis = [['#26272b', '#18191c'], ['#8a2a32', '#6a1e24'], ['#2f5fb8', '#1f4486'], ['#f2f0ea', '#cfcac0'], ['#3f6b4a', '#2e5238'], ['#c8a030', '#a07e20'], ['#5a3a8a', '#42286a'], ['#d86a9a', '#b04f7c'], ['#3a3a40', '#2a2a30'], ['#c86a2a', '#a0521e']];
+  var pants = [['#2a3448', '#1e2636'], ['#22222a', '#16161c'], ['#b8c6d6', '#94a4b8'], ['#d8ccb0', '#b8ac90'], ['#5a5a62', '#44444a']];
+  var estilos = ['tupe', 'flequillo', 'corto', 'rapado', 'rizos', 'largo', 'largo', 'coleta', 'gorra'];
+  var out = new FB(48 * 2 * GENTE_N, 48);
+  for (var n = 0; n < GENTE_N; n++) {
+    var pe = pick(pelos), pi = pick(pieles), c = pick(camis), pa = pick(pants);
+    var o = { hair: pe[0], hairH: pe[1], skin: pi[0], skinS: pi[1], shirt: c[0], shirtS: c[1], pants: pa[0], pantsS: pa[1], style: pick(estilos), cap: pick(['#1a1a20', '#b8322c', '#f2f0ea', '#2f5fb8']) };
+    if (r() < 0.15) o.barbita = '#9a7a60';
+    if (r() < 0.12) o.fat = true;
+    var sh = amigoWalk(null, o);
+    [1, 3].forEach(function (fr, k) {
+      for (var y = 0; y < 48; y++) for (var x = 0; x < 48; x++) { var a = (y * 192 + fr * 48 + x) * 4, b = (y * out.w + (n * 2 + k) * 48 + x) * 4; for (var q = 0; q < 4; q++) out.d[b + q] = sh.d[a + q]; }
+    });
+  }
+  save(out, 'gente.png');
+}
+
+// ======================= ASTRABUDUA: SALIDA DEL METRO Y LA SONORA =======================
+// De derecha a izquierda: el anden elevado y la caseta de cristal con las canceladoras (se sale por
+// ahi), el aparcamiento y la nave de ladrillo de la Sonora con la cola de gente. Noche.
+var ASTRA_W = 1400;
+function astraCielo() {
+  var W = 760, f = new FB(W, 216), r = rng(51);
+  f.vgrad(0, 0, W, 216, ['#0a1128', '#141c3c', '#262350', '#3a2c58']);
+  for (var i = 0; i < 120; i++) f.px(r() * W, r() * 90, r() < 0.3 ? '#f7e8b0' : '#cfd6ff', 120 + (r() * 135 | 0));
+  // torre de pisos al fondo y arboles
+  f.rect(470, 44, 90, 172, '#2a2e40'); f.rect(470, 44, 90, 3, '#3a3e52');
+  for (var y = 52; y < 200; y += 10) for (var x = 476; x < 556; x += 9) if (r() < 0.45) f.rect(x, y, 5, 5, r() < 0.85 ? '#f0c75a' : '#9fc3ff');
+  for (var i = 0; i < 26; i++) { var x = r() * W, y = 120 + r() * 30; f.disc(x, y, 14 + r() * 12, '#16241c'); f.disc(x - 4, y - 5, 8, '#1c2e22'); }
+  f.rect(0, 150, W, 66, '#121c16');
+  save(f, 'astra-cielo.png');
+}
+function astrabudua() {
+  var W = ASTRA_W, f = new FB(W, 216), r = rng(61);
+  // suelo: aparcamiento y acera
+  f.rect(0, 200, W, 16, '#4a4a50'); f.rect(0, 200, W, 1, '#6a6a72');
+  for (var i = 0; i < 260; i++) f.px(r() * W, 201 + r() * 15, r() < 0.5 ? '#55555c' : '#404046');
+  // ---- la Sonora (40..640) ----
+  var X0 = 40, X1 = 640;
+  f.rect(X0, 78, X1 - X0, 122, '#b8624a');
+  for (var y = 80; y < 200; y += 3) for (var x = X0 + ((y / 3) % 2 ? 0 : 4); x < X1; x += 8) f.px(x, y, '#a2543e');
+  f.rect(X0, 60, X1 - X0, 22, '#8aa898'); for (var x = X0; x < X1; x += 4) f.rect(x, 60, 1, 22, '#6e8a7c'); f.rect(X0, 58, X1 - X0, 2, '#5e7a6c');
+  for (var x = X0 + 30; x < X1; x += 70) { f.rect(x, 56, 6, 144, '#c8705a'); f.rect(x, 56, 1, 144, '#d8866e'); }            // pilastras
+  for (var x = X0 + 8; x < X1 - 20; x += 70) { f.rect(x, 88, 54, 12, '#2a3038'); f.rect(x, 88, 54, 1, '#4a5260'); f.rect(x + 2, 104, 50, 4, '#3a3a40'); }   // ventanales y viseras
+  // torre central con el frontón y el ojo de buey
+  var CX = 330;
+  f.rect(CX - 34, 44, 68, 156, '#c06a52'); for (var y = 46; y < 200; y += 3) for (var x = CX - 34 + ((y / 3) % 2 ? 0 : 4); x < CX + 34; x += 8) f.px(x, y, '#a8584a');
+  for (var i = 0; i < 18; i++) f.rect(CX - 34 + i * 2, 44 - i, 68 - i * 4, 1, '#c06a52');
+  f.line(CX - 34, 44, CX, 26, '#8a4232'); f.line(CX, 26, CX + 34, 44, '#8a4232');
+  [CX - 28, CX + 24].forEach(function (x) { f.rect(x, 50, 3, 150, '#9a4c3c'); });
+  f.disc(CX, 120, 9, '#7a3a2c'); f.disc(CX, 120, 7, '#2a3038'); f.px(CX - 3, 116, '#5a6a7a');
+  f.rect(CX - 20, 98, 10, 7, '#1c1d20'); f.rect(CX + 10, 98, 10, 7, '#1c1d20');                                            // focos
+  // entrada: puertas de cristal iluminadas con carteles
+  f.rect(CX - 26, 160, 52, 40, '#3a3a40'); f.emit = true; f.rect(CX - 24, 162, 48, 38, '#f0c070');
+  f.rect(CX - 20, 166, 10, 14, '#e8463a'); f.rect(CX - 6, 166, 10, 14, '#7ee0ff'); f.rect(CX + 8, 166, 10, 14, '#ff9ad5'); f.emit = false;
+  f.rect(CX, 162, 1, 38, '#3a3a40');
+  // cartel SONORA
+  f.rect(X0 + 150, 120, 40, 10, '#16171a'); f.emit = true; f.text(X0 + 152, 123, 'SONORA', '#f2efe8'); f.emit = false;
+  // persianas metalicas y valla verde delante
+  [[X0 + 140, 150], [X0 + 420, 150]].forEach(function (p) { persianaMetal(f, p[0], p[1], 46, 50, '#9a9894', '#84827e'); });
+  for (var x = X0 - 10; x < X1 + 10; x += 22) f.rect(x, 168, 2, 32, '#3f6b4a');
+  f.rect(X0 - 10, 168, X1 - X0 + 20, 1, '#3f6b4a');
+  f.rect(X0 - 10, 192, X1 - X0 + 20, 8, '#cfc8b8'); for (var x = X0; x < X1; x += 9) f.px(x, 195, '#b0a898');                 // murete con pintadas
+  [[X0 + 60, '#e8463a'], [X0 + 250, '#3f8fe0'], [X0 + 480, '#ffd23f']].forEach(function (g) { f.line(g[0], 197, g[0] + 18, 194, g[1]); f.line(g[0] + 4, 198, g[0] + 22, 195, g[1]); });
+  // ---- aparcamiento (640..1100) ----
+  [[690, 96, 40, '#c0302a', '#8a2020', '#e85a50', true], [800, 100, 40, '#2f5fb8', '#1f4486', '#5a86d8', false], [918, 98, 42, '#f2f0ea', '#c8c4bc', '#ffffff', true]].forEach(function (c) { coche(f, c[0], c[1], c[2], c[3], c[4], c[5], c[6]); });
+  [660, 1050].forEach(function (x) { f.rect(x, 120, 2, 80, '#3f6b4a'); f.disc(x + 1, 116, 5, '#e8e8d8'); });               // farolas
+  // poste rojo del metro (sin logotipo)
+  f.rect(1080, 90, 3, 110, '#c8c8cc'); f.rect(1074, 80, 15, 12, '#d81e26'); f.disc(1081, 86, 3, '#ffffff');
+  // ---- el metro: anden elevado y la caseta de cristal con las canceladoras (1110..1400) ----
+  f.rect(1100, 104, 300, 10, '#8a8680'); f.rect(1100, 102, 300, 2, '#a8a49c'); f.rect(1100, 114, 300, 3, '#6a6660');
+  for (var x = 1104; x < 1400; x += 6) f.rect(x, 92, 1, 10, '#6a6660'); f.rect(1100, 92, 300, 1, '#6a6660');
+  [1160, 1290].forEach(function (x) { f.rect(x, 60, 3, 44, '#7a7a80'); f.rect(x - 14, 64, 30, 1, '#5a5a60'); });              // catenaria
+  for (var i = 0; i < 40; i++) f.rect(1340 + i, 114 + i * 2, 24, 2, i % 2 ? '#8a8680' : '#9a968e');                              // escalera
+  f.rect(1120, 140, 200, 60, '#d8d4cc'); f.rect(1120, 136, 210, 5, '#e8e4dc'); f.rect(1120, 141, 210, 1, '#b0aca4');
+  f.emit = true; f.rect(1124, 146, 192, 54, '#f2ead8'); f.emit = false;
+  for (var x = 1124; x < 1318; x += 16) f.rect(x, 146, 1, 54, '#9a968e');
+  f.rect(1124, 170, 192, 1, '#b8b4ac');
+  // canceladoras (dos cabinas) dentro de la caseta
+  [1168, 1208].forEach(function (x) {
+    f.rect(x, 164, 14, 36, '#a8abb1'); f.rect(x, 164, 14, 1, '#e2e4e8'); f.rect(x + 13, 164, 1, 36, '#7e8187');
+    f.emit = true; f.rect(x + 2, 158, 10, 6, '#9fd4ff'); f.rect(x + 3, 170, 8, 5, '#f06a2a'); f.emit = false;
+  });
+  nightPass(f);
+  f.emit = true;
+  f.rect(CX - 24, 162, 48, 38, '#f0c070'); f.rect(CX - 20, 166, 10, 14, '#e8463a'); f.rect(CX - 6, 166, 10, 14, '#7ee0ff'); f.rect(CX + 8, 166, 10, 14, '#ff9ad5'); f.rect(CX, 162, 1, 38, '#3a3a40');
+  f.text(X0 + 152, 123, 'SONORA', '#f2efe8');
+  [660, 1050].forEach(function (x) { f.disc(x + 1, 116, 4, '#fff6d0'); });
+  f.disc(1081, 86, 3, '#ffffff');
+  f.emit = false;
+  save(f, 'astrabudua.png');
+}
+
 // ======================= ESTACION DE METRO =======================
 // Entrada (bajando de la calle), el tunel de acero con las pasarelas mecanicas y el
 // vestibulo con las canceladoras; al fondo, el arco que lleva a los andenes.
@@ -1300,4 +1406,4 @@ function metro() {
 
 cocinaCielo(); cocina(); cocinaMesa(); calleCielo(); calleLejos(); calleMedio(); calle();
 sheet(HERMANASTRA, 'npc-hermanastra.png'); sheet(PADRE, 'npc-padre.png'); sheet(LOURDES, 'npc-lourdes.png');
-objetos(); ethanSentado(); metro(); cieloCasa(); pasillo(); habitacion(); friki(); cartera(); cuadrilla(); andenFondo(); anden(); tren(); vagon();
+objetos(); ethanSentado(); metro(); cieloCasa(); pasillo(); habitacion(); friki(); cartera(); cuadrilla(); andenFondo(); anden(); tren(); vagon(); gente(); astraCielo(); astrabudua();

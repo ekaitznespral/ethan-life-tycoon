@@ -172,6 +172,12 @@ window.STORY = {
         { text: 'Haz transbordo en San Ignazio', done: function (g) { return g.flag('transbordo'); } },
         { text: 'Bájate en Astrabudua', done: function (g) { return g.flag('en_astrabudua'); } }
       ]
+    },
+    // PENDIENTE: los pasos los ira contando el autor
+    tajada: {
+      name: 'Tajada', type: 'principal',
+      desc: 'Hay que entrar en la Sonora... pero no a palo seco.',
+      steps: []
     }
   },
 
@@ -374,11 +380,30 @@ window.STORY = {
         return;
       }
       s.flag('en_astrabudua', 1); s.complete('sonora');
-      await s.card('Astrabudua');
-      await s.card('Continuará...');           // AQUI SIGUE LA HISTORIA: la Sonora (pendiente)
+      await s.go('astrabudua', 'metro');
       await s.fade(0, 700);
       await s.cine(false);
+      s.toast('Pasa la canceladora para salir');
     },
+    // Astrabudua: salir por las canceladoras; fuera esta la Sonora con su cola
+    salida_metro: async function (s) {
+      await s.cine(true);
+      await s.walkTo(1205); s.face(-1);
+      s.sfx('bip'); await s.wait(0.4);
+      s.flag('salida_ok', 1); s.sfx('portillas');
+      await s.wait(0.4);
+      var fuera = [['ekaitz', 770], ['manso', 800], ['sadaba', 836], ['lier', 866], ['javi', 896], ['igor', 926]];
+      await Promise.all(fuera.map(function (a) { return s.actorWalk(a[0], a[1]).then(function () { s.actorFace(a[0], -1); }); }).concat([s.walkTo(730)]));
+      s.face(1);
+      await s.talk('sonora.llegan');
+      s.face(-1);
+      await s.cine(false);
+      s.mission('tajada');
+    },
+    sonora_puerta: async function (s) { await s.talk('sonora.puerta'); },
+    sonora_cola: async function (s) { await s.talk('sonora.cola'); },
+    sonora_ekaitz: async function (s) { await s.talk('sonora.ekaitz'); },
+    sonora_sadaba: async function (s) { await s.talk('sonora.sadaba'); },
     // Barakaldo: sube Javi (es de ahi)
     javi_sube: async function (s) {
       s.actor('javi', 170, -1);
@@ -433,6 +458,8 @@ window.STORY = {
     { id: 'vagon_l2', name: 'En el metro, L2 saliendo de Sestao (01:15)', scene: 'vagon', spawn: 'centro', clock: '01:15', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, 'mision:sonora': 'activa', 'viaje:linea': 'L2', 'viaje:i': 0, 'viaje:fase': 'move' }, inv: ['barik'] },
     { id: 'vagon_san', name: 'En el metro, llegando a San Ignazio (01:25)', scene: 'vagon', spawn: 'centro', clock: '01:25', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, 'mision:sonora': 'activa', 'viaje:linea': 'L2', 'viaje:i': 5, javi_sube: 1, 'viaje:fase': 'move' }, inv: ['barik'] },
     { id: 'vagon_l1', name: 'En el metro, L1 hacia Astrabudua (01:31)', scene: 'vagon', spawn: 'centro', clock: '01:31', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, 'mision:sonora': 'activa', transbordo: 1, javi_sube: 1, 'viaje:linea': 'L1', 'viaje:i': 0, 'viaje:fase': 'move' }, inv: ['barik'] },
+    { id: 'astra', name: 'Astrabudua: saliendo del metro (01:39)', scene: 'astrabudua', spawn: 'metro', clock: '01:39', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop' }, inv: ['barik'] },
+    { id: 'sonora', name: 'Fuera de la Sonora, misión Tajada (01:41)', scene: 'astrabudua', spawn: 'fuera', clock: '01:41', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop', salida_ok: 1, 'mision:tajada': 'activa' }, inv: ['barik'] },
     { id: 'casa', name: 'Pasillo de casa (escena de prueba)', scene: 'pasillo', spawn: 'cocina' },
     { id: 'cuarto', name: 'Cuarto de Ethan (escena de prueba)', scene: 'habitacion', spawn: 'puerta' },
     { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' },
@@ -700,6 +727,53 @@ window.STORY_SCENES = {
       { type: 'routemap', id: 'plano', x: 222, y: 34, w: 196, z: 0 },
       { type: 'glow', x: 160, y: 10, r: 60, c: '255,250,235', a: 0.08 },
       { type: 'glow', x: 480, y: 10, r: 60, c: '255,250,235', a: 0.08 }
+    ]
+  },
+
+  // Astrabudua: salida del metro, aparcamiento y la Sonora con su cola
+  astrabudua: {
+    name: 'Astrabudua', sub: 'La Sonora · 01:40',
+    w: 1400, floor: 200,
+    layers: [
+      { src: 'sprites/story/astra-cielo.png', f: 0.3 },
+      { src: 'sprites/story/astrabudua.png', f: 1 }
+    ],
+    spawns: { metro: { x: 1290, dir: -1 }, fuera: { x: 730, dir: -1 } },
+    blocks: [{ x: 1196, dir: -1, when: function (g) { return !g.flag('salida_ok'); } }],   // canceladoras de salida
+    platforms: [{ x: 694, y: 162, w: 88 }, { x: 806, y: 162, w: 88 }, { x: 922, y: 160, w: 88 }],   // techos de los coches
+    actors: [
+      { id: 'ekaitz', x: 1250, dir: -1, when: function (g) { return !g.flag('salida_ok'); } },
+      { id: 'ekaitz', x: 770, dir: -1, when: function (g) { return g.flag('salida_ok'); } },
+      { id: 'manso', x: 1268, dir: -1, when: function (g) { return !g.flag('salida_ok'); } },
+      { id: 'manso', x: 800, dir: -1, when: function (g) { return g.flag('salida_ok'); } },
+      { id: 'sadaba', x: 1286, dir: -1, when: function (g) { return !g.flag('salida_ok'); } },
+      { id: 'sadaba', x: 836, dir: -1, when: function (g) { return g.flag('salida_ok'); } },
+      { id: 'lier', x: 1304, dir: -1, when: function (g) { return !g.flag('salida_ok'); } },
+      { id: 'lier', x: 866, dir: -1, when: function (g) { return g.flag('salida_ok'); } },
+      { id: 'javi', x: 1322, dir: -1, when: function (g) { return !g.flag('salida_ok'); } },
+      { id: 'javi', x: 896, dir: -1, when: function (g) { return g.flag('salida_ok'); } },
+      { id: 'igor', x: 1340, dir: -1, when: function (g) { return !g.flag('salida_ok'); } },
+      { id: 'igor', x: 926, dir: -1, when: function (g) { return g.flag('salida_ok'); } }
+    ],
+    objects: [
+      { id: 'canceladora_salida', name: 'Canceladora', x: 1206, reach: 16, py: 146, label: 'Pasar la canceladora', run: 'salida_metro', when: function (g) { return !g.flag('salida_ok'); } },
+      { id: 'puerta_sonora', name: 'Puerta de la Sonora', x: 330, reach: 22, py: 150, label: 'Entrar en la Sonora', run: 'sonora_puerta' },
+      { id: 'cola', name: 'La cola', x: 520, reach: 120, py: 140, label: 'Hablar con la gente de la cola', run: 'sonora_cola' },
+      { id: 'sonora_ekaitz', name: 'Ekaitz', x: 770, reach: 12, py: 144, label: 'Hablar con Ekaitz', run: 'sonora_ekaitz', when: function (g) { return g.flag('salida_ok'); } },
+      { id: 'sonora_sadaba', name: 'Sadaba', x: 836, reach: 12, py: 144, label: 'Hablar con Sadaba', run: 'sonora_sadaba', when: function (g) { return g.flag('salida_ok'); } }
+    ],
+    fx: [
+      { type: 'crowd', src: 'sprites/story/gente.png', dir: -1, people: [
+        { x: 366, n: 3 }, { x: 387, n: 8 }, { x: 406, n: 13 }, { x: 426, n: 2 }, { x: 445, n: 7, dir: 1 }, { x: 467, n: 12 }, { x: 492, n: 1 }, { x: 514, n: 6 }, { x: 539, n: 11 }, { x: 559, n: 0, dir: 1 }, { x: 578, n: 5 }, { x: 603, n: 10 }, { x: 625, n: 15 }, { x: 646, n: 4 }
+      ] },
+      { type: 'paddles', x: 1195, y: 174, h: 22, when: function (g) { return !g.flag('salida_ok'); } },
+      { type: 'glow', x: 330, y: 182, r: 46, c: '255,200,120', a: 0.3 },
+      { type: 'glow', x: 315, y: 100, r: 60, c: '255,240,210', a: 0.12 },
+      { type: 'glow', x: 345, y: 100, r: 60, c: '255,240,210', a: 0.12 },
+      { type: 'glow', x: 661, y: 118, r: 40, c: '255,240,200', a: 0.22 },
+      { type: 'glow', x: 1051, y: 118, r: 40, c: '255,240,200', a: 0.22 },
+      { type: 'glow', x: 1220, y: 172, r: 70, c: '255,240,215', a: 0.16 },
+      { type: 'glow', x: 1081, y: 86, r: 16, c: '255,60,60', a: 0.25 }
     ]
   }
 };
