@@ -94,6 +94,9 @@ function viajeTick(s, dt) {
 window.STORY = {
   intro: { cards: ['31 de diciembre de 2022'], scene: 'cocina', spawn: 'inicio' },
 
+  // flag con lo que lleva bebido Ethan (0..6): cuanto mas, mas se tambalea la pantalla
+  borrachera: 'tajada',
+
   items: {
     tortilla: { name: 'Tortilla de Lourdes', icon: 0, desc: 'La tortilla de Lourdes. Para la cena.' },
     jamon: { name: 'Jamón', icon: 1, desc: 'Un jamón con su jamonero.' },
@@ -102,6 +105,10 @@ window.STORY = {
     uvas: { name: 'Uvas', icon: 3 },
     lacasitos: { name: 'Lacasitos', icon: 4 },
     nuggets: { name: 'Nuggets del Burger King', icon: 5 },
+    destorni: { name: 'Destorni', icon: 7, desc: 'Fanta de naranja con vodka, en vaso de plástico. Lo ha preparado uno mismo.' },
+    // solo se ven en la rotonda (no van al inventario)
+    vodka: { name: 'Vodka', icon: 8 },
+    fanta: { name: 'Fanta de naranja', icon: 9 },
     barik: { name: 'Barik', icon: 6, desc: 'La tarjeta del metro. Estaba en la cartera, en el escritorio.', flag: 'barik_cogida' }   // flag: se pone al darlo desde el panel
   },
 
@@ -176,8 +183,12 @@ window.STORY = {
     // PENDIENTE: los pasos los ira contando el autor
     tajada: {
       name: 'Tajada', type: 'principal',
-      desc: 'Hay que entrar en la Sonora... pero no a palo seco.',
-      steps: []
+      desc: 'Hay que entrar en la Sonora... pero no a palo seco. Botellón en la rotonda, a la izquierda de la Sonora: Sadaba trae las botellas.',
+      steps: [
+        { text: 'Id a la rotonda, a la izquierda de la Sonora', done: function (g) { return g.flag('rotonda'); } },
+        { text: 'Que Sadaba saque las botellas', done: function (g) { return g.flag('botellas'); } },
+        { text: function (g) { return 'Bébete unos destornis (' + Math.min(3, g.flag('tajada') || 0) + '/3)'; }, done: function (g) { return (g.flag('tajada') || 0) >= 3; } }
+      ]
     }
   },
 
@@ -400,7 +411,42 @@ window.STORY = {
       await s.cine(false);
       s.mission('tajada');
     },
-    sonora_puerta: async function (s) { await s.talk('sonora.puerta'); },
+    sonora_puerta: async function (s) { if ((s.flag('tajada') || 0) >= 3) { await s.talk('sonora.puerta_listos'); await s.card('Continuará...'); return; } await s.talk('sonora.puerta'); },
+    // --- el botellon en la rotonda ---
+    rotonda_llegar: async function (s) {
+      if (s.flag('rotonda') || s.flag('mision:tajada') !== 'activa') return;
+      await s.cine(true);
+      var sitio = [['ekaitz', 250], ['manso', 340], ['sadaba', 300], ['lier', 370], ['javi', 230], ['igor', 400]];
+      sitio.forEach(function (a, i) { s.actor(a[0], 660 + i * 16, -1); });
+      await Promise.all(sitio.map(function (a) { return s.actorWalk(a[0], a[1]).then(function () { s.actorFace(a[0], a[1] < 300 ? 1 : -1); }); }).concat([s.walkTo(270)]));
+      s.flag('rotonda', 1);
+      await s.talk('tajada.rotonda');
+      await s.cine(false);
+    },
+    sadaba_botellas: async function (s) {
+      if (s.flag('botellas')) { await s.talk('tajada.sadaba'); return; }
+      await s.cine(true);
+      await s.talk('tajada.sadaba_saca');
+      s.sfx('objeto'); s.flag('botellas', 1);
+      await s.wait(0.6);
+      await s.talk('tajada.destornis');
+      await s.cine(false);
+      s.toast('Prepárate un destorni en la rotonda');
+    },
+    destorni_coger: async function (s) {
+      if ((s.flag('tajada') || 0) >= 6) { await s.talk('tajada.basta'); return; }
+      s.give('destorni');
+    },
+    destorni_beber: async function (s) {
+      s.take('destorni'); s.sfx('trago');
+      var n = (s.flag('tajada') || 0) + 1; s.flag('tajada', n);
+      await s.wait(0.8);
+      if (n === 1) await s.talk('tajada.trago1');
+      else if (n === 3) await s.talk('tajada.entonado');
+      else if (n === 5) await s.talk('tajada.pedo');
+      else s.toast(n === 2 ? 'Entra fino...' : 'Otro más');
+    },
+    rotonda_amigo: async function (s) { await s.talk((s.flag('tajada') || 0) >= 3 ? 'tajada.amigos_pedo' : 'tajada.amigos'); },
     sonora_cola: async function (s) { await s.talk('sonora.cola'); },
     sonora_ekaitz: async function (s) { await s.talk('sonora.ekaitz'); },
     sonora_sadaba: async function (s) { await s.talk('sonora.sadaba'); },
@@ -460,6 +506,7 @@ window.STORY = {
     { id: 'vagon_l1', name: 'En el metro, L1 hacia Astrabudua (01:31)', scene: 'vagon', spawn: 'centro', clock: '01:31', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, 'mision:sonora': 'activa', transbordo: 1, javi_sube: 1, 'viaje:linea': 'L1', 'viaje:i': 0, 'viaje:fase': 'move' }, inv: ['barik'] },
     { id: 'astra', name: 'Astrabudua: saliendo del metro (01:39)', scene: 'astrabudua', spawn: 'metro', clock: '01:39', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop' }, inv: ['barik'] },
     { id: 'sonora', name: 'Fuera de la Sonora, misión Tajada (01:41)', scene: 'astrabudua', spawn: 'fuera', clock: '01:41', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop', salida_ok: 1, 'mision:tajada': 'activa' }, inv: ['barik'] },
+    { id: 'botellon', name: 'Botellón en la rotonda, botellas fuera (01:50)', scene: 'rotonda', spawn: 'sonora', clock: '01:50', flags: { 'mision:cena': 'hecha', 'nevera:tortilla': 1, cena_hecha: 1, 'mesa:tortilla': 1, 'hora:campanadas': 1, ano_nuevo: 1, 'mesa:uvas_lourdes': 1, 'mesa:uvas_aita': 1, 'mesa:lacasitos': 1, 'mesa:nuggets': 1, 'hora:quedada': 1, 'mision:metro': 'hecha', metro_ok: 1, canceladora_ok: 1, ekaitz_llega: 1, en_anden: 1, 'hora:tren': 1, en_metro: 1, transbordo: 1, javi_sube: 1, en_astrabudua: 1, 'mision:sonora': 'hecha', 'viaje:linea': 'L1', 'viaje:i': 3, 'viaje:fase': 'stop', salida_ok: 1, 'mision:tajada': 'activa', rotonda: 1, botellas: 1 }, inv: ['barik'] },
     { id: 'casa', name: 'Pasillo de casa (escena de prueba)', scene: 'pasillo', spawn: 'cocina' },
     { id: 'cuarto', name: 'Cuarto de Ethan (escena de prueba)', scene: 'habitacion', spawn: 'puerta' },
     { id: 'calle', name: 'Calle (escena de prueba)', scene: 'calle', spawn: 'portal' },
@@ -738,29 +785,30 @@ window.STORY_SCENES = {
       { src: 'sprites/story/astra-cielo.png', f: 0.3 },
       { src: 'sprites/story/astrabudua.png', f: 1 }
     ],
-    spawns: { metro: { x: 1290, dir: -1 }, fuera: { x: 730, dir: -1 } },
+    spawns: { metro: { x: 1290, dir: -1 }, fuera: { x: 730, dir: -1 }, rotonda: { x: 30, dir: 1 } },
+    exits: [{ x: 0, w: 22, to: 'rotonda', spawn: 'sonora', label: 'Ir a la rotonda', when: function (g) { return g.flag('salida_ok'); } }],
     blocks: [{ x: 1196, dir: -1, when: function (g) { return !g.flag('salida_ok'); } }],   // canceladoras de salida
     platforms: [{ x: 694, y: 162, w: 88 }, { x: 806, y: 162, w: 88 }, { x: 922, y: 160, w: 88 }],   // techos de los coches
     actors: [
       { id: 'ekaitz', x: 1250, dir: -1, when: function (g) { return !g.flag('salida_ok'); } },
-      { id: 'ekaitz', x: 770, dir: -1, when: function (g) { return g.flag('salida_ok'); } },
+      { id: 'ekaitz', x: 770, dir: -1, when: function (g) { return g.flag('salida_ok') && !g.flag('rotonda'); } },
       { id: 'manso', x: 1268, dir: -1, when: function (g) { return !g.flag('salida_ok'); } },
-      { id: 'manso', x: 800, dir: -1, when: function (g) { return g.flag('salida_ok'); } },
+      { id: 'manso', x: 800, dir: -1, when: function (g) { return g.flag('salida_ok') && !g.flag('rotonda'); } },
       { id: 'sadaba', x: 1286, dir: -1, when: function (g) { return !g.flag('salida_ok'); } },
-      { id: 'sadaba', x: 836, dir: -1, when: function (g) { return g.flag('salida_ok'); } },
+      { id: 'sadaba', x: 836, dir: -1, when: function (g) { return g.flag('salida_ok') && !g.flag('rotonda'); } },
       { id: 'lier', x: 1304, dir: -1, when: function (g) { return !g.flag('salida_ok'); } },
-      { id: 'lier', x: 866, dir: -1, when: function (g) { return g.flag('salida_ok'); } },
+      { id: 'lier', x: 866, dir: -1, when: function (g) { return g.flag('salida_ok') && !g.flag('rotonda'); } },
       { id: 'javi', x: 1322, dir: -1, when: function (g) { return !g.flag('salida_ok'); } },
-      { id: 'javi', x: 896, dir: -1, when: function (g) { return g.flag('salida_ok'); } },
+      { id: 'javi', x: 896, dir: -1, when: function (g) { return g.flag('salida_ok') && !g.flag('rotonda'); } },
       { id: 'igor', x: 1340, dir: -1, when: function (g) { return !g.flag('salida_ok'); } },
-      { id: 'igor', x: 926, dir: -1, when: function (g) { return g.flag('salida_ok'); } }
+      { id: 'igor', x: 926, dir: -1, when: function (g) { return g.flag('salida_ok') && !g.flag('rotonda'); } }
     ],
     objects: [
       { id: 'canceladora_salida', name: 'Canceladora', x: 1206, reach: 16, py: 146, label: 'Pasar la canceladora', run: 'salida_metro', when: function (g) { return !g.flag('salida_ok'); } },
       { id: 'puerta_sonora', name: 'Puerta de la Sonora', x: 330, reach: 22, py: 150, label: 'Entrar en la Sonora', run: 'sonora_puerta' },
       { id: 'cola', name: 'La cola', x: 520, reach: 120, py: 140, label: 'Hablar con la gente de la cola', run: 'sonora_cola' },
-      { id: 'sonora_ekaitz', name: 'Ekaitz', x: 770, reach: 12, py: 144, label: 'Hablar con Ekaitz', run: 'sonora_ekaitz', when: function (g) { return g.flag('salida_ok'); } },
-      { id: 'sonora_sadaba', name: 'Sadaba', x: 836, reach: 12, py: 144, label: 'Hablar con Sadaba', run: 'sonora_sadaba', when: function (g) { return g.flag('salida_ok'); } }
+      { id: 'sonora_ekaitz', name: 'Ekaitz', x: 770, reach: 12, py: 144, label: 'Hablar con Ekaitz', run: 'sonora_ekaitz', when: function (g) { return g.flag('salida_ok') && !g.flag('rotonda'); } },
+      { id: 'sonora_sadaba', name: 'Sadaba', x: 836, reach: 12, py: 144, label: 'Hablar con Sadaba', run: 'sonora_sadaba', when: function (g) { return g.flag('salida_ok') && !g.flag('rotonda'); } }
     ],
     fx: [
       { type: 'crowd', src: 'sprites/story/gente.png', dir: -1, people: [
@@ -774,6 +822,48 @@ window.STORY_SCENES = {
       { type: 'glow', x: 1051, y: 118, r: 40, c: '255,240,200', a: 0.22 },
       { type: 'glow', x: 1220, y: 172, r: 70, c: '255,240,215', a: 0.16 },
       { type: 'glow', x: 1081, y: 86, r: 16, c: '255,60,60', a: 0.25 }
+    ]
+  },
+
+  // La rotonda a la izquierda de la Sonora: el botellon
+  rotonda: {
+    name: 'La rotonda', sub: 'Astrabudua · botellón',
+    w: 640, floor: 200,
+    layers: [
+      { src: 'sprites/story/astra-cielo.png', f: 0.3 },
+      { src: 'sprites/story/rotonda.png', f: 1 }
+    ],
+    onEnter: 'rotonda_llegar',
+    spawns: { sonora: { x: 610, dir: -1 } },
+    exits: [{ x: 620, w: 20, to: 'astrabudua', spawn: 'rotonda', label: 'Volver a la Sonora' }],
+    actors: [
+      { id: 'ekaitz', x: 250, dir: 1, when: function (g) { return g.flag('rotonda'); } },
+      { id: 'javi', x: 230, dir: 1, when: function (g) { return g.flag('rotonda'); } },
+      { id: 'sadaba', x: 300, dir: -1, when: function (g) { return g.flag('rotonda'); } },
+      { id: 'manso', x: 340, dir: -1, when: function (g) { return g.flag('rotonda'); } },
+      { id: 'lier', x: 370, dir: -1, when: function (g) { return g.flag('rotonda'); } },
+      { id: 'igor', x: 400, dir: -1, when: function (g) { return g.flag('rotonda'); } }
+    ],
+    objects: [
+      { id: 'destorni_coger', name: 'Botellas', x: 318, reach: 14, py: 150, label: 'Prepararte un destorni', run: 'destorni_coger', when: function (g) { return g.flag('botellas') && !g.has('destorni'); } },
+      { id: 'destorni_beber', name: 'Destorni', x: 318, reach: 320, py: 150, label: 'Beberte el destorni', run: 'destorni_beber', when: function (g) { return g.has('destorni'); } },
+      { id: 'rot_ekaitz', name: 'Ekaitz', x: 250, reach: 9, py: 144, label: 'Hablar con Ekaitz', run: 'rotonda_amigo', when: function (g) { return g.flag('rotonda'); } },
+      { id: 'rot_javi', name: 'Javi', x: 230, reach: 9, py: 144, label: 'Hablar con Javi', run: 'rotonda_amigo', when: function (g) { return g.flag('rotonda'); } },
+      { id: 'rot_sadaba', name: 'Sadaba', x: 300, reach: 9, py: 144, label: 'Hablar con Sadaba', run: 'sadaba_botellas', when: function (g) { return g.flag('rotonda'); } },
+      { id: 'rot_manso', name: 'Manso', x: 340, reach: 9, py: 144, label: 'Hablar con Manso', run: 'rotonda_amigo', when: function (g) { return g.flag('rotonda'); } },
+      { id: 'rot_lier', name: 'Lier', x: 370, reach: 9, py: 144, label: 'Hablar con Lier', run: 'rotonda_amigo', when: function (g) { return g.flag('rotonda'); } },
+      { id: 'rot_igor', name: 'Igor', x: 400, reach: 9, py: 144, label: 'Hablar con Igor', run: 'rotonda_amigo', when: function (g) { return g.flag('rotonda'); } }
+    ],
+    props: [
+      { item: 'vodka', x: 306, y: 188, when: function (g) { return g.flag('botellas'); } },
+      { item: 'fanta', x: 320, y: 188, when: function (g) { return g.flag('botellas'); } },
+      { item: 'fanta', x: 332, y: 188, when: function (g) { return g.flag('botellas'); } },
+      { item: 'destorni', x: 346, y: 188, when: function (g) { return g.flag('botellas'); } }
+    ],
+    fx: [
+      { type: 'glow', x: 104, y: 44, r: 70, c: '255,240,200', a: 0.16 },
+      { type: 'glow', x: 514, y: 44, r: 70, c: '255,240,200', a: 0.16 },
+      { type: 'glow', x: 300, y: 160, r: 90, c: '255,220,160', a: 0.08 }
     ]
   }
 };

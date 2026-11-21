@@ -358,7 +358,7 @@ var LOURDES = {
 // ======================= OBJETOS (iconos 16x16) =======================
 // 0 tortilla de Lourdes · 1 jamon · 2 langostinos · 3 copa de uvas · 4 tubo de lacasitos · 5 nuggets
 function objetos() {
-  var f = new FB(112, 16);
+  var f = new FB(160, 16);
   // tortilla en su plato
   f.rect(1, 12, 14, 2, '#f6f4ee'); f.rect(2, 14, 12, 1, '#cfccc3');
   f.rect(2, 6, 12, 6, '#f0c34a'); f.rect(3, 5, 10, 1, '#d99a2e'); f.rect(2, 6, 12, 1, '#d99a2e'); f.rect(2, 11, 12, 1, '#c98a28');
@@ -395,6 +395,19 @@ function objetos() {
   [[9, 6], [8, 7], [11, 7], [8, 9], [12, 9], [9, 10], [11, 11], [13, 6], [13, 11]].forEach(function (q) { f.px(o + q[0], q[1], '#9a9a9a'); });
   f.rect(o + 10, 8, 2, 1, '#b8b8b8');
   f.rect(o + 2, 5, 2, 1, '#2a2622'); f.rect(o + 4, 5, 3, 1, '#e8463a');
+  // destorni: vaso de plastico con Fanta de naranja y vodka (y su hielo)
+  o = 112;
+  f.rect(o + 4, 4, 8, 11, '#f2f2f6', 230); f.rect(o + 5, 15, 6, 1, '#d8d8de');
+  f.rect(o + 5, 6, 6, 8, '#f59a1e'); f.rect(o + 5, 6, 6, 1, '#ffc060'); f.rect(o + 6, 8, 2, 2, '#ffe0a0'); f.px(o + 9, 11, '#ffd080');
+  f.line(o + 10, 1, o + 8, 7, '#e8463a');                                                            // pajita
+  // botella de vodka (transparente, etiqueta sin marca)
+  o = 128;
+  f.rect(o + 7, 1, 2, 3, '#d8d8de'); f.rect(o + 6, 4, 4, 2, '#e8eef4', 200); f.rect(o + 5, 6, 6, 9, '#e8eef4', 200); f.rect(o + 6, 7, 1, 7, '#ffffff');
+  f.rect(o + 5, 9, 6, 3, '#2f5fb8'); f.rect(o + 6, 10, 4, 1, '#f2f2f6');
+  // botella de Fanta de naranja (sin marca)
+  o = 144;
+  f.rect(o + 7, 1, 2, 2, '#2a7a3a'); f.rect(o + 6, 3, 4, 3, '#f59a1e'); f.rect(o + 5, 6, 6, 9, '#f59a1e'); f.rect(o + 6, 7, 1, 7, '#ffc060');
+  f.rect(o + 5, 9, 6, 3, '#2f5fb8'); f.rect(o + 6, 10, 3, 1, '#ffffff');
   outline(f);
   save(f, 'objetos.png');
 }
@@ -1303,6 +1316,51 @@ function astrabudua() {
   save(f, 'astrabudua.png');
 }
 
+
+// ======================= LA ROTONDA (a la izquierda de la Sonora): el botellon =======================
+// Naves industriales grises con la franja blanca y las luces naranjas, vallas de obra rojas y blancas,
+// y la rotonda con su monticulo de hierba. A la derecha, el final de la nave de la Sonora.
+function rotonda() {
+  var W = 640, f = new FB(W, 216), r = rng(71);
+  // naves al fondo
+  f.rect(0, 70, 600, 130, '#3e4654'); f.rect(0, 70, 600, 2, '#5a6272');
+  f.rect(300, 46, 300, 154, '#363e4c'); f.rect(300, 46, 300, 2, '#525a6a');
+  [[10, 78, 90], [110, 78, 90], [210, 78, 80], [320, 54, 60], [390, 54, 60], [460, 54, 60], [530, 54, 60]].forEach(function (b) { f.rect(b[0], b[1], b[2], 22, '#d8dcde'); f.rect(b[0], b[1], b[2], 1, '#f2f4f6'); for (var x = b[0]; x < b[0] + b[2]; x += 4) f.px(x, b[1] + 10, '#c0c4c8'); });
+  f.rect(250, 150, 40, 50, '#2a3038'); f.rect(470, 146, 50, 54, '#2a3038');                       // portones
+  for (var x = 8; x < 600; x += 40) { f.rect(x, 116, 4, 3, '#c86a2a'); }
+  // valla de obra al fondo
+  for (var x = 0; x < 600; x += 16) f.rect(x, 168, 1, 24, '#8a8e94'); f.rect(0, 168, 600, 1, '#8a8e94'); f.rect(0, 180, 600, 1, '#7a7e84');
+  // farolas altas
+  [110, 520].forEach(function (x) { f.rect(x, 40, 2, 160, '#8a8e94'); f.rect(x - 6, 40, 8, 2, '#8a8e94'); f.rect(x - 9, 41, 5, 2, '#d8d8c8'); });
+  // la rotonda: bordillo, monticulo de hierba con matorrales y un arbolito
+  var C = 300, RX = 140;
+  for (var x = C - RX; x <= C + RX; x++) {
+    var k = (x - C) / RX, h = Math.round(24 * Math.sqrt(Math.max(0, 1 - k * k)));
+    f.rect(x, 186 - h, 1, h, (x * 7 + h) % 5 ? '#3f7a3a' : '#4f8a44');
+    f.rect(x, 186, 1, 5, '#c8c8c4'); f.px(x, 186, '#e8e8e4'); f.px(x, 190, '#9a9a96');
+  }
+  for (var i = 0; i < 26; i++) { var x = C - 110 + r() * 220, y = 168 + r() * 14; f.disc(x, y, 4 + r() * 5, r() < 0.5 ? '#4a8a3e' : '#5c9a4a'); f.px(x - 1, y - 3, '#7ab85a'); }
+  f.rect(C - 1, 128, 3, 40, '#5a4030'); f.disc(C, 124, 10, '#3f7a3a'); f.disc(C - 6, 130, 7, '#4a8a3e'); f.disc(C + 6, 128, 7, '#4f8a44');
+  // vallas de plastico rojas y blancas (barreras de obra)
+  function barrera(x, col) { f.rect(x, 180, 18, 16, col); f.rect(x + 2, 176, 14, 4, col); f.rect(x, 180, 18, 1, '#ffffff', 120); f.rect(x + 4, 186, 10, 4, col === '#e8e8e4' ? '#3f6fb0' : '#c02a2a'); f.rect(x, 194, 18, 2, '#6a6a6a'); }
+  [20, 40, 60, 80, 100, 120].forEach(function (x, i) { barrera(x, i % 2 ? '#e8e8e4' : '#d8262e'); });
+  [470, 490, 510, 530, 550].forEach(function (x, i) { barrera(x, i % 2 ? '#d8262e' : '#e8e8e4'); });
+  // suelo: asfalto con marcas
+  f.rect(0, 196, W, 20, '#4a4a50'); f.rect(0, 196, W, 1, '#6a6a72');
+  for (var i = 0; i < 220; i++) f.px(r() * W, 197 + r() * 18, r() < 0.5 ? '#55555c' : '#404046');
+  for (var x = 10; x < 560; x += 30) f.rect(x, 208, 16, 2, '#d8d8d4');
+  // final de la nave de la Sonora, a la derecha
+  f.rect(600, 60, 40, 140, '#b8624a'); f.rect(600, 60, 40, 22, '#8aa898'); for (var x = 600; x < 640; x += 4) f.rect(x, 60, 1, 22, '#6e8a7c');
+  for (var y = 84; y < 200; y += 3) for (var x = 600 + ((y / 3) % 2 ? 0 : 4); x < 640; x += 8) f.px(x, y, '#a2543e');
+  f.rect(600, 82, 3, 118, '#9a4c3c');
+  nightPass(f);
+  f.emit = true;
+  for (var x = 8; x < 600; x += 40) { f.rect(x, 116, 4, 3, '#ff9a3a'); }
+  [110, 520].forEach(function (x) { f.rect(x - 9, 41, 5, 2, '#fff6d0'); });
+  f.emit = false;
+  save(f, 'rotonda.png');
+}
+
 // ======================= ESTACION DE METRO =======================
 // Entrada (bajando de la calle), el tunel de acero con las pasarelas mecanicas y el
 // vestibulo con las canceladoras; al fondo, el arco que lleva a los andenes.
@@ -1406,4 +1464,4 @@ function metro() {
 
 cocinaCielo(); cocina(); cocinaMesa(); calleCielo(); calleLejos(); calleMedio(); calle();
 sheet(HERMANASTRA, 'npc-hermanastra.png'); sheet(PADRE, 'npc-padre.png'); sheet(LOURDES, 'npc-lourdes.png');
-objetos(); ethanSentado(); metro(); cieloCasa(); pasillo(); habitacion(); friki(); cartera(); cuadrilla(); andenFondo(); anden(); tren(); vagon(); gente(); astraCielo(); astrabudua();
+objetos(); ethanSentado(); metro(); cieloCasa(); pasillo(); habitacion(); friki(); cartera(); cuadrilla(); andenFondo(); anden(); tren(); vagon(); gente(); astraCielo(); astrabudua(); rotonda();

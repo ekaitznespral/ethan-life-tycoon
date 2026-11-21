@@ -229,6 +229,7 @@
     await fadeTo(0, 380);
     busy = false;
     if (scene && sceneId === id && state !== 'menu') showSceneName();
+    if (scene && scene.onEnter && state === 'play') runScript(scene.onEnter);
   }
 
   var nameT = 0;
@@ -689,14 +690,15 @@
   }
   function gotOut() { var el = $('got'); el.classList.remove('on'); el.classList.add('out'); gotTm = setTimeout(gotNext, 300); }
   var hudSig = '';
+  function stepText(st) { try { return typeof st.text === 'function' ? st.text(GS) : st.text; } catch (e) { return ''; } }
   function refreshHud() {
     var box = $('mis'), h = '';
     if (game) Object.keys(MIS).forEach(function (id) {
       if (game.flags['mision:' + id] !== 'activa') return;
       var m = MIS[id];
       h += '<div class="mt ' + (m.type === 'secundaria' ? 'side' : 'main') + '"><i></i>' + esc(m.name) + '</div>';
-      (m.steps || []).forEach(function (st) { if (st.when && !avail(st)) return; h += '<div class="ms' + (avail({ when: st.done }) ? ' ok' : '') + '"><i></i>' + esc(st.text) + '</div>'; });
-      (m.extra || []).forEach(function (st) { h += '<div class="ms ex' + (avail({ when: st.done }) ? ' ok' : '') + '"><i></i>' + esc(st.text) + '</div>'; });
+      (m.steps || []).forEach(function (st) { if (st.when && !avail(st)) return; h += '<div class="ms' + (avail({ when: st.done }) ? ' ok' : '') + '"><i></i>' + esc(stepText(st)) + '</div>'; });
+      (m.extra || []).forEach(function (st) { h += '<div class="ms ex' + (avail({ when: st.done }) ? ' ok' : '') + '"><i></i>' + esc(stepText(st)) + '</div>'; });
     });
     if (h === hudSig) return; hudSig = h;
     box.innerHTML = h; box.hidden = !h;
@@ -742,7 +744,7 @@
           if (st.when && !avail(st)) return;
           var ok = g[0] === 'hecha' && i < (m.steps || []).length || avail({ when: st.done });
           var r = document.createElement('div'); r.className = 'ms' + (ok ? ' ok' : '') + (i >= (m.steps || []).length ? ' ex' : '');
-          r.innerHTML = '<i></i>'; r.appendChild(document.createTextNode(st.text)); c.appendChild(r);
+          r.innerHTML = '<i></i>'; r.appendChild(document.createTextNode(stepText(st))); c.appendChild(r);
         });
         box.appendChild(c);
       });
@@ -898,6 +900,7 @@
     hecha: function () { [392, 523.25, 659.25].forEach(function (f, i) { bell(f, i * 0.1, 0.5, 0.12); }); [523.25, 659.25, 783.99, 1046.5].forEach(function (f) { bell(f, 0.38, 1.7, 0.08); }); tn(130.81, 0.38, 1.9, 'sine', 0.12); },
     objeto: function () { tn(880, 0, 0.12, 'triangle', 0.1, 1320); tn(1760, 0.09, 0.25, 'sine', 0.06); },
     sel: function () { tn(660, 0, 0.05, 'triangle', 0.05); },
+    trago: function () { [0, 0.18, 0.36].forEach(function (t) { tn(180, t, 0.1, 'sine', 0.12, 120); }); tn(900, 0.6, 0.08, 'sine', 0.04); },
     bip: function () { tn(1568, 0, 0.12, 'square', 0.05); tn(2093, 0.13, 0.16, 'square', 0.05); },
     error: function () { tn(220, 0, 0.18, 'square', 0.06); tn(208, 0.22, 0.3, 'square', 0.06); },
     tren: function () { tn(55, 0, 3.2, 'sawtooth', 0.05, 40); tn(110, 0.2, 2.8, 'triangle', 0.04, 70); tn(1760, 2.2, 0.9, 'sine', 0.015, 1200); },
@@ -1145,7 +1148,8 @@
   // ---------------- fisica de Ethan ----------------
   var WALK = 82, RUN = 132, ACC = 950, AIR = 620, FRIC = 1100, G = 920, FALLG = 1.5, JUMP = 312, CUT = 190, MAXF = 480, JBUF = 0.15;
   function step(dt) {
-    var ax = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), max = keys.run || touchRun ? RUN : WALK;
+    var ax = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), max = keys.run || touchRun ? RUN : WALK, dk = drunk();
+    if (dk && P.ground && ax) P.vx += Math.sin(time * 2.1) * 140 * dk * dt;          // borracho: se va un poco de lado
     if (ax) {
       if (P.vx * ax < 0) P.vx += ax * FRIC * dt;                         // giro rapido
       P.vx += ax * (P.ground ? ACC : AIR) * dt;
@@ -1417,6 +1421,15 @@
   }
 
   // ---------------- dibujo ----------------
+  function drunk() { var k = STORY.borrachera && game && +game.flags[STORY.borrachera] || 0; return Math.min(1, k / 6); }
+  function drunkFx() {
+    var k = drunk(); if (!k || !scene || state === 'menu') return;
+    var dx = Math.round(Math.sin(time * 1.3) * 3 * k), dy = Math.round(Math.cos(time * 0.9) * 1.5 * k);
+    ctx.globalAlpha = 0.28 * k; ctx.drawImage(cv, dx, dy); ctx.drawImage(cv, -dx, 0); ctx.globalAlpha = 1;
+    var g = ctx.createRadialGradient(VW / 2, VH / 2, VH * 0.35, VW / 2, VH / 2, VH * 0.85);
+    g.addColorStop(0, 'rgba(255,170,60,0)'); g.addColorStop(1, 'rgba(255,150,40,' + (0.18 * k) + ')');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, VW, VH);
+  }
   function draw() {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VW, VH);
     if (!scene) return;
@@ -1509,7 +1522,7 @@
     if (scene) { clockStep(dt); thinkStep(dt); if (state === 'play' || state === 'talk') dustStep(dt); }
     npcs.forEach(function (o) { o.blinkT -= dt; if (o.blinkT <= 0) { o.blink = 0.13; o.blinkT = 2 + Math.random() * 3.5; } o.blink -= dt; });
     if (scene && state !== 'menu') { time += dt; fx.forEach(function (o) { fxStep(o, dt); }); }
-    draw();
+    draw(); drunkFx();
     pressed = {};
     requestAnimationFrame(frame);
   }

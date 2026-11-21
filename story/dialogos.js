@@ -295,7 +295,8 @@ window.STORY_TEXT = {
     "lines": [
       { "who": "ekaitz", "text": "Bueno, pues aquí está la Sonora." },
       { "who": "igor", "text": "Madre mía la cola que hay." },
-      { "who": "sadaba", "text": "Tranquilos, que yo vengo preparado." }
+      { "who": "sadaba", "text": "Tranquilos, que yo vengo preparado." },
+      { "who": "ekaitz", "text": "Vamos a la rotonda de ahí a la izquierda, que ahí estamos a gusto." }
     ]
   },
   "sonora.puerta": {
@@ -316,6 +317,65 @@ window.STORY_TEXT = {
   "sonora.sadaba": {
     "lines": [
       { "who": "sadaba", "text": "Las bolsas no se tocan hasta que yo diga." }
+    ]
+  },
+  "sonora.puerta_listos": {
+    "lines": [
+      { "who": "ethan", "text": "Ahora sí... ahora sí que estamos listos." }
+    ]
+  },
+  "tajada.rotonda": {
+    "lines": [
+      { "who": "sadaba", "text": "Aquí mismo. Buen sitio." },
+      { "who": "javi", "text": "¡Sadaba, saca eso ya!" }
+    ]
+  },
+  "tajada.sadaba_saca": {
+    "lines": [
+      { "who": "sadaba", "text": "Bueno, bueno... A ver qué traigo yo aquí." },
+      { "who": null, "text": "Sadaba saca de las bolsas amarillas un vodka y unas Fantas de naranja." }
+    ]
+  },
+  "tajada.destornis": {
+    "lines": [
+      { "who": "ekaitz", "text": "¡Destornis para todos!" },
+      { "who": "igor", "text": "Yo me lo pongo cargadito." }
+    ]
+  },
+  "tajada.sadaba": {
+    "lines": [
+      { "who": "sadaba", "text": "Servíos, que para eso las he traído." }
+    ]
+  },
+  "tajada.trago1": {
+    "lines": [
+      { "who": "ethan", "text": "Uf... qué bien entra." }
+    ]
+  },
+  "tajada.entonado": {
+    "lines": [
+      { "who": "ethan", "text": "Ya voy entonado, ya..." },
+      { "who": "lier", "text": "¡Ethan ya está tocado!" }
+    ]
+  },
+  "tajada.pedo": {
+    "lines": [
+      { "who": "ethan", "text": "Esto... da vueltas la rotonda, ¿no?" }
+    ]
+  },
+  "tajada.basta": {
+    "lines": [
+      { "who": "ethan", "text": "Mejor no me pongo más, que si no, no entro." }
+    ]
+  },
+  "tajada.amigos": {
+    "lines": [
+      { "who": "ekaitz", "text": "Venga, ponte un destorni, que vas muy seco." }
+    ]
+  },
+  "tajada.amigos_pedo": {
+    "lines": [
+      { "who": "javi", "text": "¡Mírale, ya va fino!" }
     ]
   }
 };
